@@ -65,8 +65,8 @@ Future<void> main(List<String> args) async {
         'updated_at': now
       };
       final inserted = await client.from('products').insert([p1, p2]).select('id,sku');
-      stdout.writeln('Productos creados: ${inserted}');
-      final uuid = const Uuid();
+      stdout.writeln('Productos creados: $inserted');
+      const uuid = Uuid();
       for (final pr in inserted as List) {
         final pid = pr['id'] as String;
         final invRow = {

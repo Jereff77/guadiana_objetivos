@@ -922,6 +922,11 @@ class $InventoryTable extends Inventory
   late final GeneratedColumn<String> serverOrigin = GeneratedColumn<String>(
       'server_origin', aliasedName, true,
       type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _notesMeta = const VerificationMeta('notes');
+  @override
+  late final GeneratedColumn<String> notes = GeneratedColumn<String>(
+      'notes', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _updatedAtMeta =
       const VerificationMeta('updatedAt');
   @override
@@ -969,6 +974,7 @@ class $InventoryTable extends Inventory
         daysWithoutPurchase,
         daysWithoutSale,
         serverOrigin,
+        notes,
         updatedAt,
         syncStatus,
         lastModified,
@@ -1065,6 +1071,10 @@ class $InventoryTable extends Inventory
           serverOrigin.isAcceptableOrUnknown(
               data['server_origin']!, _serverOriginMeta));
     }
+    if (data.containsKey('notes')) {
+      context.handle(
+          _notesMeta, notes.isAcceptableOrUnknown(data['notes']!, _notesMeta));
+    }
     if (data.containsKey('updated_at')) {
       context.handle(_updatedAtMeta,
           updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta));
@@ -1128,6 +1138,8 @@ class $InventoryTable extends Inventory
           .read(DriftSqlType.int, data['${effectivePrefix}days_without_sale'])!,
       serverOrigin: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}server_origin']),
+      notes: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}notes']),
       updatedAt: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}updated_at'])!,
       syncStatus: attachedDatabase.typeMapping
@@ -1161,6 +1173,7 @@ class InventoryData extends DataClass implements Insertable<InventoryData> {
   final int daysWithoutPurchase;
   final int daysWithoutSale;
   final String? serverOrigin;
+  final String? notes;
   final DateTime updatedAt;
   final String syncStatus;
   final int lastModified;
@@ -1181,6 +1194,7 @@ class InventoryData extends DataClass implements Insertable<InventoryData> {
       required this.daysWithoutPurchase,
       required this.daysWithoutSale,
       this.serverOrigin,
+      this.notes,
       required this.updatedAt,
       required this.syncStatus,
       required this.lastModified,
@@ -1214,6 +1228,9 @@ class InventoryData extends DataClass implements Insertable<InventoryData> {
     map['days_without_sale'] = Variable<int>(daysWithoutSale);
     if (!nullToAbsent || serverOrigin != null) {
       map['server_origin'] = Variable<String>(serverOrigin);
+    }
+    if (!nullToAbsent || notes != null) {
+      map['notes'] = Variable<String>(notes);
     }
     map['updated_at'] = Variable<DateTime>(updatedAt);
     map['sync_status'] = Variable<String>(syncStatus);
@@ -1251,6 +1268,8 @@ class InventoryData extends DataClass implements Insertable<InventoryData> {
       serverOrigin: serverOrigin == null && nullToAbsent
           ? const Value.absent()
           : Value(serverOrigin),
+      notes:
+          notes == null && nullToAbsent ? const Value.absent() : Value(notes),
       updatedAt: Value(updatedAt),
       syncStatus: Value(syncStatus),
       lastModified: Value(lastModified),
@@ -1279,6 +1298,7 @@ class InventoryData extends DataClass implements Insertable<InventoryData> {
           serializer.fromJson<int>(json['daysWithoutPurchase']),
       daysWithoutSale: serializer.fromJson<int>(json['daysWithoutSale']),
       serverOrigin: serializer.fromJson<String?>(json['serverOrigin']),
+      notes: serializer.fromJson<String?>(json['notes']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       syncStatus: serializer.fromJson<String>(json['syncStatus']),
       lastModified: serializer.fromJson<int>(json['lastModified']),
@@ -1304,6 +1324,7 @@ class InventoryData extends DataClass implements Insertable<InventoryData> {
       'daysWithoutPurchase': serializer.toJson<int>(daysWithoutPurchase),
       'daysWithoutSale': serializer.toJson<int>(daysWithoutSale),
       'serverOrigin': serializer.toJson<String?>(serverOrigin),
+      'notes': serializer.toJson<String?>(notes),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'syncStatus': serializer.toJson<String>(syncStatus),
       'lastModified': serializer.toJson<int>(lastModified),
@@ -1327,6 +1348,7 @@ class InventoryData extends DataClass implements Insertable<InventoryData> {
           int? daysWithoutPurchase,
           int? daysWithoutSale,
           Value<String?> serverOrigin = const Value.absent(),
+          Value<String?> notes = const Value.absent(),
           DateTime? updatedAt,
           String? syncStatus,
           int? lastModified,
@@ -1352,6 +1374,7 @@ class InventoryData extends DataClass implements Insertable<InventoryData> {
         daysWithoutSale: daysWithoutSale ?? this.daysWithoutSale,
         serverOrigin:
             serverOrigin.present ? serverOrigin.value : this.serverOrigin,
+        notes: notes.present ? notes.value : this.notes,
         updatedAt: updatedAt ?? this.updatedAt,
         syncStatus: syncStatus ?? this.syncStatus,
         lastModified: lastModified ?? this.lastModified,
@@ -1388,6 +1411,7 @@ class InventoryData extends DataClass implements Insertable<InventoryData> {
       serverOrigin: data.serverOrigin.present
           ? data.serverOrigin.value
           : this.serverOrigin,
+      notes: data.notes.present ? data.notes.value : this.notes,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       syncStatus:
           data.syncStatus.present ? data.syncStatus.value : this.syncStatus,
@@ -1417,6 +1441,7 @@ class InventoryData extends DataClass implements Insertable<InventoryData> {
           ..write('daysWithoutPurchase: $daysWithoutPurchase, ')
           ..write('daysWithoutSale: $daysWithoutSale, ')
           ..write('serverOrigin: $serverOrigin, ')
+          ..write('notes: $notes, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('syncStatus: $syncStatus, ')
           ..write('lastModified: $lastModified, ')
@@ -1442,6 +1467,7 @@ class InventoryData extends DataClass implements Insertable<InventoryData> {
       daysWithoutPurchase,
       daysWithoutSale,
       serverOrigin,
+      notes,
       updatedAt,
       syncStatus,
       lastModified,
@@ -1465,6 +1491,7 @@ class InventoryData extends DataClass implements Insertable<InventoryData> {
           other.daysWithoutPurchase == this.daysWithoutPurchase &&
           other.daysWithoutSale == this.daysWithoutSale &&
           other.serverOrigin == this.serverOrigin &&
+          other.notes == this.notes &&
           other.updatedAt == this.updatedAt &&
           other.syncStatus == this.syncStatus &&
           other.lastModified == this.lastModified &&
@@ -1487,6 +1514,7 @@ class InventoryCompanion extends UpdateCompanion<InventoryData> {
   final Value<int> daysWithoutPurchase;
   final Value<int> daysWithoutSale;
   final Value<String?> serverOrigin;
+  final Value<String?> notes;
   final Value<DateTime> updatedAt;
   final Value<String> syncStatus;
   final Value<int> lastModified;
@@ -1508,6 +1536,7 @@ class InventoryCompanion extends UpdateCompanion<InventoryData> {
     this.daysWithoutPurchase = const Value.absent(),
     this.daysWithoutSale = const Value.absent(),
     this.serverOrigin = const Value.absent(),
+    this.notes = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.syncStatus = const Value.absent(),
     this.lastModified = const Value.absent(),
@@ -1530,6 +1559,7 @@ class InventoryCompanion extends UpdateCompanion<InventoryData> {
     this.daysWithoutPurchase = const Value.absent(),
     this.daysWithoutSale = const Value.absent(),
     this.serverOrigin = const Value.absent(),
+    this.notes = const Value.absent(),
     required DateTime updatedAt,
     this.syncStatus = const Value.absent(),
     this.lastModified = const Value.absent(),
@@ -1555,6 +1585,7 @@ class InventoryCompanion extends UpdateCompanion<InventoryData> {
     Expression<int>? daysWithoutPurchase,
     Expression<int>? daysWithoutSale,
     Expression<String>? serverOrigin,
+    Expression<String>? notes,
     Expression<DateTime>? updatedAt,
     Expression<String>? syncStatus,
     Expression<int>? lastModified,
@@ -1578,6 +1609,7 @@ class InventoryCompanion extends UpdateCompanion<InventoryData> {
         'days_without_purchase': daysWithoutPurchase,
       if (daysWithoutSale != null) 'days_without_sale': daysWithoutSale,
       if (serverOrigin != null) 'server_origin': serverOrigin,
+      if (notes != null) 'notes': notes,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (syncStatus != null) 'sync_status': syncStatus,
       if (lastModified != null) 'last_modified': lastModified,
@@ -1602,6 +1634,7 @@ class InventoryCompanion extends UpdateCompanion<InventoryData> {
       Value<int>? daysWithoutPurchase,
       Value<int>? daysWithoutSale,
       Value<String?>? serverOrigin,
+      Value<String?>? notes,
       Value<DateTime>? updatedAt,
       Value<String>? syncStatus,
       Value<int>? lastModified,
@@ -1623,6 +1656,7 @@ class InventoryCompanion extends UpdateCompanion<InventoryData> {
       daysWithoutPurchase: daysWithoutPurchase ?? this.daysWithoutPurchase,
       daysWithoutSale: daysWithoutSale ?? this.daysWithoutSale,
       serverOrigin: serverOrigin ?? this.serverOrigin,
+      notes: notes ?? this.notes,
       updatedAt: updatedAt ?? this.updatedAt,
       syncStatus: syncStatus ?? this.syncStatus,
       lastModified: lastModified ?? this.lastModified,
@@ -1679,6 +1713,9 @@ class InventoryCompanion extends UpdateCompanion<InventoryData> {
     if (serverOrigin.present) {
       map['server_origin'] = Variable<String>(serverOrigin.value);
     }
+    if (notes.present) {
+      map['notes'] = Variable<String>(notes.value);
+    }
     if (updatedAt.present) {
       map['updated_at'] = Variable<DateTime>(updatedAt.value);
     }
@@ -1715,6 +1752,7 @@ class InventoryCompanion extends UpdateCompanion<InventoryData> {
           ..write('daysWithoutPurchase: $daysWithoutPurchase, ')
           ..write('daysWithoutSale: $daysWithoutSale, ')
           ..write('serverOrigin: $serverOrigin, ')
+          ..write('notes: $notes, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('syncStatus: $syncStatus, ')
           ..write('lastModified: $lastModified, ')
@@ -2071,6 +2109,7 @@ typedef $$InventoryTableCreateCompanionBuilder = InventoryCompanion Function({
   Value<int> daysWithoutPurchase,
   Value<int> daysWithoutSale,
   Value<String?> serverOrigin,
+  Value<String?> notes,
   required DateTime updatedAt,
   Value<String> syncStatus,
   Value<int> lastModified,
@@ -2093,6 +2132,7 @@ typedef $$InventoryTableUpdateCompanionBuilder = InventoryCompanion Function({
   Value<int> daysWithoutPurchase,
   Value<int> daysWithoutSale,
   Value<String?> serverOrigin,
+  Value<String?> notes,
   Value<DateTime> updatedAt,
   Value<String> syncStatus,
   Value<int> lastModified,
@@ -2132,6 +2172,7 @@ class $$InventoryTableTableManager extends RootTableManager<
             Value<int> daysWithoutPurchase = const Value.absent(),
             Value<int> daysWithoutSale = const Value.absent(),
             Value<String?> serverOrigin = const Value.absent(),
+            Value<String?> notes = const Value.absent(),
             Value<DateTime> updatedAt = const Value.absent(),
             Value<String> syncStatus = const Value.absent(),
             Value<int> lastModified = const Value.absent(),
@@ -2154,6 +2195,7 @@ class $$InventoryTableTableManager extends RootTableManager<
             daysWithoutPurchase: daysWithoutPurchase,
             daysWithoutSale: daysWithoutSale,
             serverOrigin: serverOrigin,
+            notes: notes,
             updatedAt: updatedAt,
             syncStatus: syncStatus,
             lastModified: lastModified,
@@ -2176,6 +2218,7 @@ class $$InventoryTableTableManager extends RootTableManager<
             Value<int> daysWithoutPurchase = const Value.absent(),
             Value<int> daysWithoutSale = const Value.absent(),
             Value<String?> serverOrigin = const Value.absent(),
+            Value<String?> notes = const Value.absent(),
             required DateTime updatedAt,
             Value<String> syncStatus = const Value.absent(),
             Value<int> lastModified = const Value.absent(),
@@ -2198,6 +2241,7 @@ class $$InventoryTableTableManager extends RootTableManager<
             daysWithoutPurchase: daysWithoutPurchase,
             daysWithoutSale: daysWithoutSale,
             serverOrigin: serverOrigin,
+            notes: notes,
             updatedAt: updatedAt,
             syncStatus: syncStatus,
             lastModified: lastModified,
@@ -2282,6 +2326,11 @@ class $$InventoryTableFilterComposer
 
   ColumnFilters<String> get serverOrigin => $state.composableBuilder(
       column: $state.table.serverOrigin,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get notes => $state.composableBuilder(
+      column: $state.table.notes,
       builder: (column, joinBuilders) =>
           ColumnFilters(column, joinBuilders: joinBuilders));
 
@@ -2381,6 +2430,11 @@ class $$InventoryTableOrderingComposer
 
   ColumnOrderings<String> get serverOrigin => $state.composableBuilder(
       column: $state.table.serverOrigin,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get notes => $state.composableBuilder(
+      column: $state.table.notes,
       builder: (column, joinBuilders) =>
           ColumnOrderings(column, joinBuilders: joinBuilders));
 

@@ -43,9 +43,11 @@ class Inventory extends Table {
   RealColumn get stockValue => real().nullable()();
   DateTimeColumn get lastPurchaseDate => dateTime().nullable()();
   DateTimeColumn get lastSaleDate => dateTime().nullable()();
-  IntColumn get daysWithoutPurchase => integer().withDefault(const Constant(0))();
+  IntColumn get daysWithoutPurchase =>
+      integer().withDefault(const Constant(0))();
   IntColumn get daysWithoutSale => integer().withDefault(const Constant(0))();
   TextColumn get serverOrigin => text().nullable()();
+  TextColumn get notes => text().nullable()();
   DateTimeColumn get updatedAt => dateTime()();
   // Sync fields
   TextColumn get syncStatus => text().withDefault(const Constant('synced'))();
@@ -61,7 +63,16 @@ class LocalDatabase extends _$LocalDatabase {
   LocalDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+        onUpgrade: (Migrator m, int from, int to) async {
+          if (from < 2) {
+            await m.addColumn(inventory, inventory.notes);
+          }
+        },
+      );
 }
 
 LazyDatabase _openConnection() {

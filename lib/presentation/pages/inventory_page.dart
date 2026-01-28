@@ -5,6 +5,7 @@ import '../widgets/product_card.dart';
 import '../widgets/inventory_count_dialog.dart';
 import '../widgets/breadcrumb_navigation.dart';
 import '../widgets/filter_dialog.dart';
+import 'inventory_review_page.dart';
 
 class InventoryPage extends StatefulWidget {
   final String warehouseId;
@@ -43,10 +44,10 @@ class _InventoryPageState extends State<InventoryPage> {
         query = query.ilike('Descripcion', '%$_query%');
       }
       if (_selectedCategory != null && _selectedCategory!.isNotEmpty) {
-        query = query.eq('Categoria', _selectedCategory);
+        query = query.eq('Categoria', _selectedCategory!);
       }
       if (_selectedBrand != null && _selectedBrand!.isNotEmpty) {
-        query = query.eq('Marca', _selectedBrand);
+        query = query.eq('Marca', _selectedBrand!);
       }
       final res = await query;
       setState(() {
@@ -68,26 +69,36 @@ class _InventoryPageState extends State<InventoryPage> {
     _load();
   }
 
-  void _openCountDialog(Map<String, dynamic> product, Map<String, dynamic>? inv) {
+  void _openCountDialog(
+      Map<String, dynamic> product, Map<String, dynamic>? inv) {
     showDialog(
       context: context,
       builder: (context) => InventoryCountDialog(
         product: product,
-        currentInventory: {'Existencia': product['Existencia']},
-        onSave: (newQuantity) async {
-          await _updateInventory(product, newQuantity);
+        currentInventory: {
+          'Existencia': product['Existencia'],
+          'Notas': product['Notas'],
+        },
+        onSave: (newQuantity, notes) async {
+          await _updateInventory(product, newQuantity, notes);
           await _load();
         },
       ),
     );
   }
 
-  Future<void> _updateInventory(Map<String, dynamic> row, int newQty) async {
+  Future<void> _updateInventory(
+      Map<String, dynamic> row, int newQty, String? notes) async {
     final id = row['ProductId'];
-    await _client.from('inventario').update({
-      'Existencia': newQty,
-      'Disponible': newQty,
-    }).eq('ProductId', id).eq('Almacen', widget.warehouseId);
+    await _client
+        .from('inventario')
+        .update({
+          'Existencia': newQty,
+          'Disponible': newQty,
+          'Notas': notes,
+        })
+        .eq('ProductId', id)
+        .eq('Almacen', widget.warehouseId);
   }
 
   Future<void> _showFilterDialog() async {
@@ -114,6 +125,18 @@ class _InventoryPageState extends State<InventoryPage> {
       appBar: AppBar(
         title: const Text('Inventario'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.list_alt),
+            tooltip: 'Ver Inventariados',
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) =>
+                      InventoryReviewPage(warehouseId: widget.warehouseId),
+                ),
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.filter_list),
             onPressed: _showFilterDialog,

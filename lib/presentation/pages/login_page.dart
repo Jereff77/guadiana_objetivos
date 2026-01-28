@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../services/auth_service.dart';
 import 'warehouse_select_page.dart';
+import 'register_page.dart';
+import 'forgot_password_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -24,7 +26,8 @@ class _LoginPageState extends State<LoginPage> {
       _error = null;
     });
     try {
-      await _auth.signInWithEmail(_emailController.text.trim(), _passwordController.text);
+      await _auth.signInWithEmail(
+          _emailController.text.trim(), _passwordController.text);
       if (!mounted) return;
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => const WarehouseSelectPage()),
@@ -71,16 +74,20 @@ class _LoginPageState extends State<LoginPage> {
                       const SizedBox(height: 12),
                       TextFormField(
                         controller: _passwordController,
-                        decoration: const InputDecoration(labelText: 'Contraseña'),
+                        decoration:
+                            const InputDecoration(labelText: 'Contraseña'),
                         obscureText: true,
                         validator: (v) {
-                          if (v == null || v.isEmpty) return 'Ingresa tu contraseña';
+                          if (v == null || v.isEmpty) {
+                            return 'Ingresa tu contraseña';
+                          }
                           return null;
                         },
                       ),
                       const SizedBox(height: 16),
                       if (_error != null)
-                        Text(_error!, style: const TextStyle(color: Colors.red)),
+                        Text(_error!,
+                            style: const TextStyle(color: Colors.red)),
                       const SizedBox(height: 8),
                       SizedBox(
                         width: double.infinity,
@@ -90,10 +97,30 @@ class _LoginPageState extends State<LoginPage> {
                               ? const SizedBox(
                                   height: 20,
                                   width: 20,
-                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                  child:
+                                      CircularProgressIndicator(strokeWidth: 2),
                                 )
                               : const Text('Ingresar'),
                         ),
+                      ),
+                      const SizedBox(height: 12),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                                builder: (_) => const ForgotPasswordPage()),
+                          );
+                        },
+                        child: const Text('¿Olvidaste tu contraseña?'),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                                builder: (_) => const RegisterPage()),
+                          );
+                        },
+                        child: const Text('Registrarse'),
                       ),
                     ],
                   ),

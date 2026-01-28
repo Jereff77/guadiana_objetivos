@@ -11,6 +11,17 @@ class AuthService {
     }
   }
 
+  Future<void> signUp(String email, String password) async {
+    final res = await _client.auth.signUp(email: email, password: password);
+    if (res.user == null) {
+      throw Exception('Registro fallido');
+    }
+  }
+
+  Future<void> resetPassword(String email) async {
+    await _client.auth.resetPasswordForEmail(email);
+  }
+
   Future<void> signOut() async {
     await _client.auth.signOut();
   }

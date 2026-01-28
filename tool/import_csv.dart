@@ -12,14 +12,14 @@ void main(List<String> args) async {
   final key = results['key'];
 
   if (url == null || key == null) {
-    print('Uso: dart run tool/import_csv.dart --url=... --key=...');
+    stdout.writeln('Uso: dart run tool/import_csv.dart --url=... --key=...');
     return;
   }
 
   final client = SupabaseClient(url, key);
 
   try {
-    print('1. Limpiando datos antiguos...');
+    stdout.writeln('1. Limpiando datos antiguos...');
     // Intentamos borrar todas las tablas normalizadas anteriores si existen
     final tables = ['inventory_movements', 'inventory', 'products', 'categories', 'warehouses', 'inventario'];
     for (var table in tables) {
@@ -30,10 +30,10 @@ void main(List<String> args) async {
       }
     }
 
-    print('2. Leyendo CSV...');
+    stdout.writeln('2. Leyendo CSV...');
     final file = File('documentos/fragmento inventario (1).csv');
     if (!file.existsSync()) {
-      print('Error: No se encontró el archivo CSV en documentos/');
+      stderr.writeln('Error: No se encontró el archivo CSV en documentos/');
       return;
     }
 
@@ -41,7 +41,7 @@ void main(List<String> args) async {
     if (lines.isEmpty) return;
 
     final headers = lines.first.split(',');
-    print('Columnas detectadas: $headers');
+    stdout.writeln('Columnas detectadas: $headers');
 
     final rows = lines.skip(1).map((line) {
       final values = _splitCsvLine(line);
@@ -68,19 +68,19 @@ void main(List<String> args) async {
       return map;
     }).toList();
 
-    print('3. Insertando ${rows.length} registros en tabla "inventario"...');
+    stdout.writeln('3. Insertando ${rows.length} registros en tabla "inventario"...');
     // Insertamos en bloques para evitar límites de payload
     const chunkSize = 50;
     for (var i = 0; i < rows.length; i += chunkSize) {
       final end = (i + chunkSize < rows.length) ? i + chunkSize : rows.length;
       final chunk = rows.sublist(i, end);
       await client.from('inventario').insert(chunk);
-      print('   Progreso: $end / ${rows.length}');
+      stdout.writeln('   Progreso: $end / ${rows.length}');
     }
 
-    print('¡Importación completada con éxito!');
+    stdout.writeln('¡Importación completada con éxito!');
   } catch (e) {
-    print('Error durante la importación: $e');
+    stderr.writeln('Error durante la importación: $e');
   }
 }
 

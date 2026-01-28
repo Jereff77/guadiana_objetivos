@@ -7,8 +7,8 @@
       "type": "dart",
       "program": "lib/main.dart",
       "toolArgs": [
-        "--dart-define=SUPABASE_URL=https://TU_PROYECTO.supabase.co",
-        "--dart-define=SUPABASE_ANON_KEY=TU_ANON_KEY"
+        "--dart-define=SUPABASE_URL=https://mhdswebflviruafdlkvb.supabase.co",
+        "--dart-define=SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1oZHN3ZWJmbHZpcnVhZmRsa3ZiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk1NjQ1NzYsImV4cCI6MjA4NTE0MDU3Nn0.uDoz9E0SCZMcQaFk6soUfXG0wB92tIJZb_fRAP-NrjQ"
       ]
     },
     {
@@ -18,8 +18,8 @@
       "program": "lib/main.dart",
       "deviceId": "chrome",
       "toolArgs": [
-        "--dart-define=SUPABASE_URL=https://TU_PROYECTO.supabase.co",
-        "--dart-define=SUPABASE_ANON_KEY=TU_ANON_KEY"
+        "--dart-define=SUPABASE_URL=https://mhdswebflviruafdlkvb.supabase.co",
+        "--dart-define=SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1oZHN3ZWJmbHZpcnVhZmRsa3ZiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk1NjQ1NzYsImV4cCI6MjA4NTE0MDU3Nn0.uDoz9E0SCZMcQaFk6soUfXG0wB92tIJZb_fRAP-NrjQ"
       ]
     }
   ]
