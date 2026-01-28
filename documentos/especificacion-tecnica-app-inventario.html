@@ -1,0 +1,1247 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>especificacion-tecnica-app-inventario.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<h1 id="especificaci%C3%B3n-t%C3%A9cnica---aplicaci%C3%B3n-m%C3%B3vil-de-gesti%C3%B3n-de-inventarios">Especificación Técnica - Aplicación Móvil de Gestión de Inventarios</h1>
+<h2 id="tabla-de-contenidos">Tabla de Contenidos</h2>
+<ol>
+<li><a href="#resumen-ejecutivo">Resumen Ejecutivo</a></li>
+<li><a href="#arquitectura-del-sistema">Arquitectura del Sistema</a></li>
+<li><a href="#especificaciones-t%C3%A9cnicas">Especificaciones Técnicas</a></li>
+<li><a href="#dise%C3%B1o-de-base-de-datos">Diseño de Base de Datos</a></li>
+<li><a href="#m%C3%B3dulos-funcionales">Módulos Funcionales</a></li>
+<li><a href="#interfaz-de-usuario">Interfaz de Usuario</a></li>
+<li><a href="#estrategia-de-sincronizaci%C3%B3n">Estrategia de Sincronización</a></li>
+<li><a href="#seguridad">Seguridad</a></li>
+<li><a href="#requisitos-no-funcionales">Requisitos No Funcionales</a></li>
+<li><a href="#plan-de-implementaci%C3%B3n">Plan de Implementación</a></li>
+<li><a href="#diagramas">Diagramas</a></li>
+</ol>
+<hr>
+<h2 id="resumen-ejecutivo">Resumen Ejecutivo</h2>
+<p>Este documento describe la especificación técnica para una aplicación móvil de gestión de inventarios robusta desarrollada con Flutter y Dart, utilizando Supabase como backend principal y SQLite para almacenamiento local offline. La aplicación permitirá a los usuarios gestionar inventarios de manera eficiente tanto en línea como sin conexión, con sincronización automática cuando se restablezca la conectividad.</p>
+<h3 id="caracter%C3%ADsticas-principales">Características Principales</h3>
+<ul>
+<li>Gestión completa de inventarios con soporte offline</li>
+<li>Sincronización bidireccional entre SQLite local y Supabase</li>
+<li>Sistema de autenticación robusto con roles de usuario</li>
+<li>Interfaz intuitiva con Material Design 3</li>
+<li>Proceso de toma de inventario manual (sin escaneo individual)</li>
+<li>Sistema de filtros jerárquico y búsqueda avanzada</li>
+</ul>
+<hr>
+<h2 id="arquitectura-del-sistema">Arquitectura del Sistema</h2>
+<h3 id="arquitectura-general">Arquitectura General</h3>
+<pre class="hljs"><code><div>┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   Flutter App   │    │   Supabase      │    │   SQLite        │
+│                 │◄──►│   Backend       │◄──►│   Local DB      │
+│ - UI/UX         │    │ - PostgreSQL    │    │ - Offline Store │
+│ - Business Logic│    │ - Auth          │    │ - Cache         │
+│ - Local Storage │    │ - Edge Functions│    │ - Sync State    │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+</div></code></pre>
+<h3 id="arquitectura-interna-de-la-aplicaci%C3%B3n-flutter">Arquitectura Interna de la Aplicación Flutter</h3>
+<pre class="hljs"><code><div>┌─────────────────────────────────────────────────────────────┐
+│                        Presentation Layer                    │
+├─────────────────────────────────────────────────────────────┤
+│                      Business Logic Layer                   │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐  │
+│  │   Auth      │  │  Inventory  │  │    Synchronization  │  │
+│  │  Manager    │  │  Manager    │  │      Manager        │  │
+│  └─────────────┘  └─────────────┘  └─────────────────────┘  │
+├─────────────────────────────────────────────────────────────┤
+│                       Data Layer                            │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐  │
+│  │ Supabase    │  │   SQLite    │  │   Repository        │  │
+│  │  Service    │  │  Service    │  │   Pattern           │  │
+│  └─────────────┘  └─────────────┘  └─────────────────────┘  │
+└─────────────────────────────────────────────────────────────┘
+</div></code></pre>
+<hr>
+<h2 id="especificaciones-t%C3%A9cnicas">Especificaciones Técnicas</h2>
+<h3 id="tecnolog%C3%ADas-principales">Tecnologías Principales</h3>
+<ul>
+<li><strong>Frontend</strong>: Flutter 3.x con Dart 3.x</li>
+<li><strong>Backend</strong>: Supabase (PostgreSQL, Auth, Storage, Edge Functions)</li>
+<li><strong>Base de Datos Local</strong>: SQLite con Drift (recomendado)</li>
+<li><strong>Gestión de Estado</strong>: Provider o Bloc</li>
+<li><strong>Inyección de Dependencias</strong>: get_it</li>
+<li><strong>Arquitectura</strong>: Clean Architecture con separación de capas</li>
+</ul>
+<h3 id="dependencias-principales">Dependencias Principales</h3>
+<pre class="hljs"><code><div><span class="hljs-attr">dependencies:</span>
+  <span class="hljs-attr">flutter:</span>
+    <span class="hljs-attr">sdk:</span> <span class="hljs-string">flutter</span>
+  
+  <span class="hljs-comment"># State Management</span>
+  <span class="hljs-attr">provider:</span> <span class="hljs-string">^6.0.5</span>
+  <span class="hljs-comment"># o bloc: ^8.1.2 + flutter_bloc: ^8.1.3</span>
+  
+  <span class="hljs-comment"># Database</span>
+  <span class="hljs-attr">drift:</span> <span class="hljs-string">^2.14.1</span>
+  <span class="hljs-attr">sqlite3_flutter_libs:</span> <span class="hljs-string">^0.5.15</span>
+  <span class="hljs-attr">path_provider:</span> <span class="hljs-string">^2.0.15</span>
+  <span class="hljs-attr">path:</span> <span class="hljs-string">^1.8.3</span>
+  
+  <span class="hljs-comment"># Supabase</span>
+  <span class="hljs-attr">supabase_flutter:</span> <span class="hljs-string">^1.10.25</span>
+  
+  <span class="hljs-comment"># Utils</span>
+  <span class="hljs-attr">intl:</span> <span class="hljs-string">^0.18.1</span>
+  <span class="hljs-attr">uuid:</span> <span class="hljs-string">^3.0.7</span>
+  <span class="hljs-attr">connectivity_plus:</span> <span class="hljs-string">^5.0.1</span>
+  
+  <span class="hljs-comment"># UI</span>
+  <span class="hljs-attr">material_design_icons_flutter:</span> <span class="hljs-string">^7.0.7296</span>
+  <span class="hljs-attr">cached_network_image:</span> <span class="hljs-string">^3.2.3</span>
+  
+  <span class="hljs-comment"># Barcode (opcional para futuras implementaciones)</span>
+  <span class="hljs-attr">mobile_scanner:</span> <span class="hljs-string">^3.5.6</span>
+  
+  <span class="hljs-comment"># File handling</span>
+  <span class="hljs-attr">file_picker:</span> <span class="hljs-string">^6.1.1</span>
+  <span class="hljs-attr">open_file:</span> <span class="hljs-string">^3.3.2</span>
+  
+  <span class="hljs-comment"># Permissions</span>
+  <span class="hljs-attr">permission_handler:</span> <span class="hljs-string">^11.0.1</span>
+
+<span class="hljs-attr">dev_dependencies:</span>
+  <span class="hljs-attr">flutter_test:</span>
+    <span class="hljs-attr">sdk:</span> <span class="hljs-string">flutter</span>
+  <span class="hljs-attr">drift_dev:</span> <span class="hljs-string">^2.14.1</span>
+  <span class="hljs-attr">build_runner:</span> <span class="hljs-string">^2.4.7</span>
+  <span class="hljs-attr">flutter_lints:</span> <span class="hljs-string">^3.0.1</span>
+</div></code></pre>
+<hr>
+<h2 id="dise%C3%B1o-de-base-de-datos">Diseño de Base de Datos</h2>
+<h3 id="esquema-supabase-postgresql">Esquema Supabase (PostgreSQL)</h3>
+<h4 id="tablas-principales">Tablas Principales</h4>
+<pre class="hljs"><code><div><span class="hljs-comment">-- Usuarios</span>
+<span class="hljs-keyword">CREATE</span> <span class="hljs-keyword">TABLE</span> <span class="hljs-keyword">users</span> (
+  <span class="hljs-keyword">id</span> <span class="hljs-keyword">UUID</span> <span class="hljs-keyword">REFERENCES</span> auth.users(<span class="hljs-keyword">id</span>) PRIMARY <span class="hljs-keyword">KEY</span>,
+  email <span class="hljs-built_in">TEXT</span> <span class="hljs-keyword">UNIQUE</span> <span class="hljs-keyword">NOT</span> <span class="hljs-literal">NULL</span>,
+  <span class="hljs-keyword">name</span> <span class="hljs-built_in">TEXT</span> <span class="hljs-keyword">NOT</span> <span class="hljs-literal">NULL</span>,
+  <span class="hljs-keyword">role</span> <span class="hljs-built_in">TEXT</span> <span class="hljs-keyword">NOT</span> <span class="hljs-literal">NULL</span> <span class="hljs-keyword">CHECK</span> (<span class="hljs-keyword">role</span> <span class="hljs-keyword">IN</span> (<span class="hljs-string">'admin'</span>, <span class="hljs-string">'operator'</span>, <span class="hljs-string">'viewer'</span>)),
+  warehouse_id <span class="hljs-keyword">UUID</span> <span class="hljs-keyword">REFERENCES</span> warehouses(<span class="hljs-keyword">id</span>),
+  created_at <span class="hljs-built_in">TIMESTAMP</span> <span class="hljs-keyword">WITH</span> <span class="hljs-built_in">TIME</span> ZONE <span class="hljs-keyword">DEFAULT</span> <span class="hljs-keyword">NOW</span>(),
+  updated_at <span class="hljs-built_in">TIMESTAMP</span> <span class="hljs-keyword">WITH</span> <span class="hljs-built_in">TIME</span> ZONE <span class="hljs-keyword">DEFAULT</span> <span class="hljs-keyword">NOW</span>()
+);
+
+<span class="hljs-comment">-- Almacenes</span>
+<span class="hljs-keyword">CREATE</span> <span class="hljs-keyword">TABLE</span> warehouses (
+  <span class="hljs-keyword">id</span> <span class="hljs-keyword">UUID</span> PRIMARY <span class="hljs-keyword">KEY</span> <span class="hljs-keyword">DEFAULT</span> gen_random_uuid(),
+  <span class="hljs-keyword">name</span> <span class="hljs-built_in">TEXT</span> <span class="hljs-keyword">NOT</span> <span class="hljs-literal">NULL</span>,
+  code <span class="hljs-built_in">TEXT</span> <span class="hljs-keyword">UNIQUE</span> <span class="hljs-keyword">NOT</span> <span class="hljs-literal">NULL</span>,
+  address <span class="hljs-built_in">TEXT</span>,
+  is_active <span class="hljs-built_in">BOOLEAN</span> <span class="hljs-keyword">DEFAULT</span> <span class="hljs-literal">true</span>,
+  created_at <span class="hljs-built_in">TIMESTAMP</span> <span class="hljs-keyword">WITH</span> <span class="hljs-built_in">TIME</span> ZONE <span class="hljs-keyword">DEFAULT</span> <span class="hljs-keyword">NOW</span>(),
+  updated_at <span class="hljs-built_in">TIMESTAMP</span> <span class="hljs-keyword">WITH</span> <span class="hljs-built_in">TIME</span> ZONE <span class="hljs-keyword">DEFAULT</span> <span class="hljs-keyword">NOW</span>()
+);
+
+<span class="hljs-comment">-- Categorías</span>
+<span class="hljs-keyword">CREATE</span> <span class="hljs-keyword">TABLE</span> categories (
+  <span class="hljs-keyword">id</span> <span class="hljs-keyword">UUID</span> PRIMARY <span class="hljs-keyword">KEY</span> <span class="hljs-keyword">DEFAULT</span> gen_random_uuid(),
+  <span class="hljs-keyword">name</span> <span class="hljs-built_in">TEXT</span> <span class="hljs-keyword">NOT</span> <span class="hljs-literal">NULL</span>,
+  parent_id <span class="hljs-keyword">UUID</span> <span class="hljs-keyword">REFERENCES</span> categories(<span class="hljs-keyword">id</span>),
+  warehouse_id <span class="hljs-keyword">UUID</span> <span class="hljs-keyword">REFERENCES</span> warehouses(<span class="hljs-keyword">id</span>),
+  created_at <span class="hljs-built_in">TIMESTAMP</span> <span class="hljs-keyword">WITH</span> <span class="hljs-built_in">TIME</span> ZONE <span class="hljs-keyword">DEFAULT</span> <span class="hljs-keyword">NOW</span>()
+);
+
+<span class="hljs-comment">-- Productos</span>
+<span class="hljs-keyword">CREATE</span> <span class="hljs-keyword">TABLE</span> products (
+  <span class="hljs-keyword">id</span> <span class="hljs-keyword">UUID</span> PRIMARY <span class="hljs-keyword">KEY</span> <span class="hljs-keyword">DEFAULT</span> gen_random_uuid(),
+  sku <span class="hljs-built_in">TEXT</span> <span class="hljs-keyword">UNIQUE</span> <span class="hljs-keyword">NOT</span> <span class="hljs-literal">NULL</span>,
+  <span class="hljs-keyword">name</span> <span class="hljs-built_in">TEXT</span> <span class="hljs-keyword">NOT</span> <span class="hljs-literal">NULL</span>,
+  description <span class="hljs-built_in">TEXT</span>,
+  category_id <span class="hljs-keyword">UUID</span> <span class="hljs-keyword">REFERENCES</span> categories(<span class="hljs-keyword">id</span>),
+  subcategory <span class="hljs-built_in">TEXT</span>,
+  line <span class="hljs-built_in">TEXT</span>,
+  subline <span class="hljs-built_in">TEXT</span>,
+  brand <span class="hljs-built_in">TEXT</span>,
+  <span class="hljs-keyword">model</span> <span class="hljs-built_in">TEXT</span>,
+  <span class="hljs-keyword">range</span> <span class="hljs-built_in">TEXT</span>,
+  <span class="hljs-keyword">type</span> <span class="hljs-built_in">TEXT</span>,
+  standard_cost <span class="hljs-built_in">DECIMAL</span>(<span class="hljs-number">10</span>,<span class="hljs-number">2</span>),
+  average_cost <span class="hljs-built_in">DECIMAL</span>(<span class="hljs-number">10</span>,<span class="hljs-number">2</span>),
+  last_cost <span class="hljs-built_in">DECIMAL</span>(<span class="hljs-number">10</span>,<span class="hljs-number">2</span>),
+  stock_max <span class="hljs-built_in">INTEGER</span>,
+  stock_min <span class="hljs-built_in">INTEGER</span>,
+  reorder_stock <span class="hljs-built_in">INTEGER</span>,
+  umb <span class="hljs-built_in">TEXT</span>, <span class="hljs-comment">-- Unidad de Medida Base</span>
+  upc_code <span class="hljs-built_in">TEXT</span>,
+  is_active <span class="hljs-built_in">BOOLEAN</span> <span class="hljs-keyword">DEFAULT</span> <span class="hljs-literal">true</span>,
+  warehouse_id <span class="hljs-keyword">UUID</span> <span class="hljs-keyword">REFERENCES</span> warehouses(<span class="hljs-keyword">id</span>),
+  created_at <span class="hljs-built_in">TIMESTAMP</span> <span class="hljs-keyword">WITH</span> <span class="hljs-built_in">TIME</span> ZONE <span class="hljs-keyword">DEFAULT</span> <span class="hljs-keyword">NOW</span>(),
+  updated_at <span class="hljs-built_in">TIMESTAMP</span> <span class="hljs-keyword">WITH</span> <span class="hljs-built_in">TIME</span> ZONE <span class="hljs-keyword">DEFAULT</span> <span class="hljs-keyword">NOW</span>(),
+  <span class="hljs-keyword">version</span> <span class="hljs-built_in">INTEGER</span> <span class="hljs-keyword">DEFAULT</span> <span class="hljs-number">1</span>
+);
+
+<span class="hljs-comment">-- Existencias</span>
+<span class="hljs-keyword">CREATE</span> <span class="hljs-keyword">TABLE</span> inventory (
+  <span class="hljs-keyword">id</span> <span class="hljs-keyword">UUID</span> PRIMARY <span class="hljs-keyword">KEY</span> <span class="hljs-keyword">DEFAULT</span> gen_random_uuid(),
+  product_id <span class="hljs-keyword">UUID</span> <span class="hljs-keyword">REFERENCES</span> products(<span class="hljs-keyword">id</span>),
+  warehouse_id <span class="hljs-keyword">UUID</span> <span class="hljs-keyword">REFERENCES</span> warehouses(<span class="hljs-keyword">id</span>),
+  quantity <span class="hljs-built_in">INTEGER</span> <span class="hljs-keyword">NOT</span> <span class="hljs-literal">NULL</span> <span class="hljs-keyword">DEFAULT</span> <span class="hljs-number">0</span>,
+  to_fulfill <span class="hljs-built_in">INTEGER</span> <span class="hljs-keyword">DEFAULT</span> <span class="hljs-number">0</span>,
+  order_to_fulfill <span class="hljs-built_in">INTEGER</span> <span class="hljs-keyword">DEFAULT</span> <span class="hljs-number">0</span>,
+  available <span class="hljs-built_in">INTEGER</span> <span class="hljs-keyword">NOT</span> <span class="hljs-literal">NULL</span> <span class="hljs-keyword">DEFAULT</span> <span class="hljs-number">0</span>,
+  entry <span class="hljs-built_in">INTEGER</span> <span class="hljs-keyword">DEFAULT</span> <span class="hljs-number">0</span>,
+  <span class="hljs-keyword">exit</span> <span class="hljs-built_in">INTEGER</span> <span class="hljs-keyword">DEFAULT</span> <span class="hljs-number">0</span>,
+  stock_value <span class="hljs-built_in">DECIMAL</span>(<span class="hljs-number">12</span>,<span class="hljs-number">2</span>),
+  last_purchase_date <span class="hljs-built_in">TIMESTAMP</span> <span class="hljs-keyword">WITH</span> <span class="hljs-built_in">TIME</span> ZONE,
+  last_sale_date <span class="hljs-built_in">TIMESTAMP</span> <span class="hljs-keyword">WITH</span> <span class="hljs-built_in">TIME</span> ZONE,
+  days_without_purchase <span class="hljs-built_in">INTEGER</span> <span class="hljs-keyword">DEFAULT</span> <span class="hljs-number">0</span>,
+  days_without_sale <span class="hljs-built_in">INTEGER</span> <span class="hljs-keyword">DEFAULT</span> <span class="hljs-number">0</span>,
+  server_origin <span class="hljs-built_in">TEXT</span>,
+  updated_at <span class="hljs-built_in">TIMESTAMP</span> <span class="hljs-keyword">WITH</span> <span class="hljs-built_in">TIME</span> ZONE <span class="hljs-keyword">DEFAULT</span> <span class="hljs-keyword">NOW</span>(),
+  <span class="hljs-keyword">UNIQUE</span>(product_id, warehouse_id)
+);
+
+<span class="hljs-comment">-- Movimientos de Inventario</span>
+<span class="hljs-keyword">CREATE</span> <span class="hljs-keyword">TABLE</span> inventory_movements (
+  <span class="hljs-keyword">id</span> <span class="hljs-keyword">UUID</span> PRIMARY <span class="hljs-keyword">KEY</span> <span class="hljs-keyword">DEFAULT</span> gen_random_uuid(),
+  product_id <span class="hljs-keyword">UUID</span> <span class="hljs-keyword">REFERENCES</span> products(<span class="hljs-keyword">id</span>),
+  warehouse_id <span class="hljs-keyword">UUID</span> <span class="hljs-keyword">REFERENCES</span> warehouses(<span class="hljs-keyword">id</span>),
+  movement_type <span class="hljs-built_in">TEXT</span> <span class="hljs-keyword">NOT</span> <span class="hljs-literal">NULL</span> <span class="hljs-keyword">CHECK</span> (movement_type <span class="hljs-keyword">IN</span> (<span class="hljs-string">'entry'</span>, <span class="hljs-string">'exit'</span>, <span class="hljs-string">'transfer'</span>)),
+  quantity <span class="hljs-built_in">INTEGER</span> <span class="hljs-keyword">NOT</span> <span class="hljs-literal">NULL</span>,
+  previous_quantity <span class="hljs-built_in">INTEGER</span> <span class="hljs-keyword">NOT</span> <span class="hljs-literal">NULL</span>,
+  new_quantity <span class="hljs-built_in">INTEGER</span> <span class="hljs-keyword">NOT</span> <span class="hljs-literal">NULL</span>,
+  reason <span class="hljs-built_in">TEXT</span>,
+  user_id <span class="hljs-keyword">UUID</span> <span class="hljs-keyword">REFERENCES</span> <span class="hljs-keyword">users</span>(<span class="hljs-keyword">id</span>),
+  created_at <span class="hljs-built_in">TIMESTAMP</span> <span class="hljs-keyword">WITH</span> <span class="hljs-built_in">TIME</span> ZONE <span class="hljs-keyword">DEFAULT</span> <span class="hljs-keyword">NOW</span>(),
+  sync_status <span class="hljs-built_in">TEXT</span> <span class="hljs-keyword">DEFAULT</span> <span class="hljs-string">'synced'</span> <span class="hljs-keyword">CHECK</span> (sync_status <span class="hljs-keyword">IN</span> (<span class="hljs-string">'pending'</span>, <span class="hljs-string">'synced'</span>, <span class="hljs-string">'conflict'</span>))
+);
+
+<span class="hljs-comment">-- Sincronización</span>
+<span class="hljs-keyword">CREATE</span> <span class="hljs-keyword">TABLE</span> sync_logs (
+  <span class="hljs-keyword">id</span> <span class="hljs-keyword">UUID</span> PRIMARY <span class="hljs-keyword">KEY</span> <span class="hljs-keyword">DEFAULT</span> gen_random_uuid(),
+  user_id <span class="hljs-keyword">UUID</span> <span class="hljs-keyword">REFERENCES</span> <span class="hljs-keyword">users</span>(<span class="hljs-keyword">id</span>),
+  operation <span class="hljs-built_in">TEXT</span> <span class="hljs-keyword">NOT</span> <span class="hljs-literal">NULL</span>,
+  table_name <span class="hljs-built_in">TEXT</span> <span class="hljs-keyword">NOT</span> <span class="hljs-literal">NULL</span>,
+  record_id <span class="hljs-keyword">UUID</span>,
+  <span class="hljs-keyword">status</span> <span class="hljs-built_in">TEXT</span> <span class="hljs-keyword">NOT</span> <span class="hljs-literal">NULL</span> <span class="hljs-keyword">CHECK</span> (<span class="hljs-keyword">status</span> <span class="hljs-keyword">IN</span> (<span class="hljs-string">'success'</span>, <span class="hljs-string">'error'</span>, <span class="hljs-string">'conflict'</span>)),
+  details JSONB,
+  created_at <span class="hljs-built_in">TIMESTAMP</span> <span class="hljs-keyword">WITH</span> <span class="hljs-built_in">TIME</span> ZONE <span class="hljs-keyword">DEFAULT</span> <span class="hljs-keyword">NOW</span>()
+);
+</div></code></pre>
+<h3 id="esquema-sqlite-local">Esquema SQLite (Local)</h3>
+<p>Las tablas locales tendrán la misma estructura que las de Supabase, con algunos campos adicionales para sincronización:</p>
+<pre class="hljs"><code><div><span class="hljs-comment">-- Tablas con estructura idéntica a Supabase</span>
+<span class="hljs-comment">-- ... (mismas tablas que arriba)</span>
+
+<span class="hljs-comment">-- Campos adicionales para sincronización en cada tabla</span>
+<span class="hljs-comment">-- sync_status: TEXT NOT NULL CHECK (sync_status IN ('pending', 'synced', 'conflict', 'deleted'))</span>
+<span class="hljs-comment">-- last_modified: INTEGER NOT NULL -- Timestamp Unix</span>
+<span class="hljs-comment">-- sync_version: INTEGER DEFAULT 1</span>
+</div></code></pre>
+<hr>
+<h2 id="m%C3%B3dulos-funcionales">Módulos Funcionales</h2>
+<h3 id="1-autenticaci%C3%B3n-y-gesti%C3%B3n-de-usuarios">1. Autenticación y Gestión de Usuarios</h3>
+<h4 id="funcionalidades">Funcionalidades</h4>
+<ul>
+<li>Login/Logout con email y contraseña</li>
+<li>Recuperación de contraseña mediante email</li>
+<li>Token refresh automático</li>
+<li>Gestión de roles (administrador, operador, visualizador)</li>
+<li>Perfil de usuario</li>
+</ul>
+<h4 id="flujo-de-autenticaci%C3%B3n">Flujo de Autenticación</h4>
+<pre><code class="language-mermaid"><div class="mermaid">graph TD
+    A[Pantalla de Login] --> B{Credenciales Válidas?}
+    B -->|Sí| C[Seleccionar Almacén]
+    B -->|No| D[Mostrar Error]
+    C --> E[Descargar Datos del Almacén]
+    E --> F[Pantalla Principal]
+    D --> A
+</div></code></pre>
+<h3 id="2-gesti%C3%B3n-de-almacenes">2. Gestión de Almacenes</h3>
+<h4 id="funcionalidades">Funcionalidades</h4>
+<ul>
+<li>Selección de almacén al iniciar sesión</li>
+<li>Descarga completa de datos del almacén</li>
+<li>Cache inteligente para minimizar transferencias</li>
+<li>Validación de permisos por almacén</li>
+</ul>
+<h3 id="3-gesti%C3%B3n-de-inventario">3. Gestión de Inventario</h3>
+<h4 id="funcionalidades-principales">Funcionalidades Principales</h4>
+<ul>
+<li>CRUD completo de productos</li>
+<li>Toma de inventario manual (mostrar existencia actual y permitir edición)</li>
+<li>Movimientos de inventario (entrada, salida, transferencia)</li>
+<li>Historial de movimientos</li>
+<li>Alertas de stock mínimo</li>
+</ul>
+<h4 id="proceso-de-toma-de-inventario">Proceso de Toma de Inventario</h4>
+<pre><code class="language-mermaid"><div class="mermaid">graph TD
+    A[Seleccionar Producto] --> B[Mostrar Existencia Actual]
+    B --> C[Usuario Ingresa Cantidad Real]
+    C --> D[Validar Cambio]
+    D --> E{Hay Cambio?}
+    E -->|Sí| F[Registrar Movimiento]
+    E -->|No| G[Siguiente Producto]
+    F --> H[Marcar para Sincronización]
+    H --> G
+</div></code></pre>
+<h3 id="4-filtros-y-b%C3%BAsqueda">4. Filtros y Búsqueda</h3>
+<h4 id="sistema-de-filtros-jer%C3%A1rquico">Sistema de Filtros Jerárquico</h4>
+<ol>
+<li><strong>Almacén</strong> (filtro base)</li>
+<li><strong>Categoría</strong></li>
+<li><strong>Marca</strong></li>
+<li><strong>Descripción</strong> (búsqueda por texto)</li>
+</ol>
+<h4 id="caracter%C3%ADsticas">Características</h4>
+<ul>
+<li>Búsqueda instantánea con debounce</li>
+<li>Guardado de combinaciones de filtros frecuentes</li>
+<li>Navegación por breadcrumb</li>
+</ul>
+<h3 id="5-sincronizaci%C3%B3n">5. Sincronización</h3>
+<h4 id="estrategia-de-sincronizaci%C3%B3n-bidireccional">Estrategia de Sincronización Bidireccional</h4>
+<h5 id="pull-strategy-descargar-cambios">Pull Strategy (Descargar cambios)</h5>
+<pre><code class="language-mermaid"><div class="mermaid">graph TD
+    A[Verificar Conectividad] --> B{Hay Conexión?}
+    B -->|Sí| C[Obtener Última Sincronización]
+    C --> D[Solicitar Cambios desde Supabase]
+    D --> E[Procesar Cambios Locales]
+    E --> F[Actualizar Timestamp]
+    B -->|No| G[Trabajar Offline]
+</div></code></pre>
+<h5 id="push-strategy-subir-cambios">Push Strategy (Subir cambios)</h5>
+<pre><code class="language-mermaid"><div class="mermaid">graph TD
+    A[Identificar Cambios Pendientes] --> B[Procesar por Orden de Timestamp]
+    B --> C{Conflicto?}
+    C -->|No| D[Subir a Supabase]
+    C -->|Sí| E[Aplicar Estrategia de Resolución]
+    E --> F[Última Modificación Gana]
+    F --> D
+    D --> G[Marcar como Sincronizado]
+    G --> H[Actualizar Timestamp Local]
+</div></code></pre>
+<h4 id="resoluci%C3%B3n-de-conflictos">Resolución de Conflictos</h4>
+<ul>
+<li><strong>Última modificación gana</strong> (estrategia por defecto)</li>
+<li><strong>Opción manual</strong> para conflictos complejos</li>
+<li><strong>Registro detallado</strong> de operaciones de sincronización</li>
+</ul>
+<hr>
+<h2 id="interfaz-de-usuario">Interfaz de Usuario</h2>
+<h3 id="dise%C3%B1o-y-navegaci%C3%B3n">Diseño y Navegación</h3>
+<h4 id="estructura-principal">Estructura Principal</h4>
+<ul>
+<li><strong>Bottom Navigation Bar</strong> para navegación principal</li>
+<li><strong>Drawer lateral</strong> con opciones avanzadas</li>
+<li><strong>Breadcrumb</strong> para navegación jerárquica</li>
+<li><strong>Material Design 3</strong> con tema personalizable</li>
+</ul>
+<h4 id="tema-y-estilo">Tema y Estilo</h4>
+<pre class="hljs"><code><div><span class="hljs-comment">// Ejemplo de configuración de tema</span>
+ThemeData(
+  useMaterial3: <span class="hljs-keyword">true</span>,
+  colorScheme: ColorScheme.fromSeed(
+    seedColor: Colors.blue,
+    brightness: Brightness.light,
+  ),
+  appBarTheme: <span class="hljs-keyword">const</span> AppBarTheme(
+    centerTitle: <span class="hljs-keyword">true</span>,
+    elevation: <span class="hljs-number">0</span>,
+  ),
+  cardTheme: CardTheme(
+    elevation: <span class="hljs-number">2</span>,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(<span class="hljs-number">12</span>),
+    ),
+  ),
+)
+</div></code></pre>
+<h3 id="componentes-principales">Componentes Principales</h3>
+<h4 id="1-tarjeta-de-producto">1. Tarjeta de Producto</h4>
+<pre class="hljs"><code><div><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ProductCard</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">StatelessWidget</span> </span>{
+  <span class="hljs-keyword">final</span> Product product;
+  <span class="hljs-keyword">final</span> Inventory inventory;
+  
+  <span class="hljs-keyword">const</span> ProductCard({
+    Key? key,
+    required <span class="hljs-keyword">this</span>.product,
+    required <span class="hljs-keyword">this</span>.inventory,
+  }) : <span class="hljs-keyword">super</span>(key: key);
+  
+  <span class="hljs-meta">@override</span>
+  Widget build(BuildContext context) {
+    <span class="hljs-keyword">return</span> Card(
+      child: Padding(
+        padding: <span class="hljs-keyword">const</span> EdgeInsets.all(<span class="hljs-number">16.0</span>),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              product.name,
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            <span class="hljs-keyword">const</span> SizedBox(height: <span class="hljs-number">8</span>),
+            Text(product.description ?? <span class="hljs-string">''</span>),
+            <span class="hljs-keyword">const</span> SizedBox(height: <span class="hljs-number">8</span>),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(<span class="hljs-string">'SKU: <span class="hljs-subst">${product.sku}</span>'</span>),
+                Text(<span class="hljs-string">'Stock: <span class="hljs-subst">${inventory.quantity}</span>'</span>),
+              ],
+            ),
+            <span class="hljs-comment">// Indicadores visuales de estado</span>
+            <span class="hljs-keyword">if</span> (inventory.quantity &lt;= product.stockMin)
+              Container(
+                padding: <span class="hljs-keyword">const</span> EdgeInsets.symmetric(horizontal: <span class="hljs-number">8</span>, vertical: <span class="hljs-number">4</span>),
+                decoration: BoxDecoration(
+                  color: Colors.red,
+                  borderRadius: BorderRadius.circular(<span class="hljs-number">12</span>),
+                ),
+                child: <span class="hljs-keyword">const</span> Text(
+                  <span class="hljs-string">'Stock Bajo'</span>,
+                  style: TextStyle(color: Colors.white, fontSize: <span class="hljs-number">12</span>),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+</div></code></pre>
+<h4 id="2-pantalla-de-toma-de-inventario">2. Pantalla de Toma de Inventario</h4>
+<pre class="hljs"><code><div><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">InventoryCountScreen</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">StatelessWidget</span> </span>{
+  <span class="hljs-meta">@override</span>
+  Widget build(BuildContext context) {
+    <span class="hljs-keyword">return</span> Scaffold(
+      appBar: AppBar(
+        title: <span class="hljs-keyword">const</span> Text(<span class="hljs-string">'Toma de Inventario'</span>),
+        actions: [
+          IconButton(
+            icon: <span class="hljs-keyword">const</span> Icon(Icons.filter_list),
+            onPressed: () =&gt; _showFilterDialog(context),
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          <span class="hljs-comment">// Breadcrumb de navegación</span>
+          BreadcrumbNavigation(),
+          
+          <span class="hljs-comment">// Lista de productos con búsqueda</span>
+          Expanded(
+            child: ProductList(
+              onProductSelected: (product, inventory) {
+                _showInventoryDialog(context, product, inventory);
+              },
+            ),
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _syncInventory,
+        child: <span class="hljs-keyword">const</span> Icon(Icons.<span class="hljs-keyword">sync</span>),
+      ),
+    );
+  }
+  
+  <span class="hljs-keyword">void</span> _showInventoryDialog(BuildContext context, Product product, Inventory inventory) {
+    showDialog(
+      context: context,
+      builder: (context) =&gt; InventoryCountDialog(
+        product: product,
+        currentInventory: inventory,
+        onSave: (newQuantity) {
+          _updateInventory(product.id, newQuantity);
+        },
+      ),
+    );
+  }
+}
+</div></code></pre>
+<h4 id="3-di%C3%A1logo-de-conteo-de-inventario">3. Diálogo de Conteo de Inventario</h4>
+<pre class="hljs"><code><div><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">InventoryCountDialog</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">StatefulWidget</span> </span>{
+  <span class="hljs-keyword">final</span> Product product;
+  <span class="hljs-keyword">final</span> Inventory currentInventory;
+  <span class="hljs-keyword">final</span> <span class="hljs-built_in">Function</span>(<span class="hljs-built_in">int</span>) onSave;
+  
+  <span class="hljs-keyword">const</span> InventoryCountDialog({
+    Key? key,
+    required <span class="hljs-keyword">this</span>.product,
+    required <span class="hljs-keyword">this</span>.currentInventory,
+    required <span class="hljs-keyword">this</span>.onSave,
+  }) : <span class="hljs-keyword">super</span>(key: key);
+  
+  <span class="hljs-meta">@override</span>
+  State&lt;InventoryCountDialog&gt; createState() =&gt; _InventoryCountDialogState();
+}
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">_InventoryCountDialogState</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">State</span>&lt;<span class="hljs-title">InventoryCountDialog</span>&gt; </span>{
+  late TextEditingController _controller;
+  
+  <span class="hljs-meta">@override</span>
+  <span class="hljs-keyword">void</span> initState() {
+    <span class="hljs-keyword">super</span>.initState();
+    _controller = TextEditingController(text: widget.currentInventory.quantity.toString());
+  }
+  
+  <span class="hljs-meta">@override</span>
+  Widget build(BuildContext context) {
+    <span class="hljs-keyword">return</span> AlertDialog(
+      title: Text(widget.product.name),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(<span class="hljs-string">'SKU: <span class="hljs-subst">${widget.product.sku}</span>'</span>),
+          <span class="hljs-keyword">const</span> SizedBox(height: <span class="hljs-number">8</span>),
+          Text(<span class="hljs-string">'Existencia Actual: <span class="hljs-subst">${widget.currentInventory.quantity}</span>'</span>),
+          <span class="hljs-keyword">const</span> SizedBox(height: <span class="hljs-number">16</span>),
+          TextField(
+            controller: _controller,
+            keyboardType: TextInputType.number,
+            decoration: <span class="hljs-keyword">const</span> InputDecoration(
+              labelText: <span class="hljs-string">'Cantidad Real'</span>,
+              border: OutlineInputBorder(),
+            ),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () =&gt; Navigator.of(context).pop(),
+          child: <span class="hljs-keyword">const</span> Text(<span class="hljs-string">'Cancelar'</span>),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            <span class="hljs-keyword">final</span> newQuantity = <span class="hljs-built_in">int</span>.tryParse(_controller.text) ?? <span class="hljs-number">0</span>;
+            widget.onSave(newQuantity);
+            Navigator.of(context).pop();
+          },
+          child: <span class="hljs-keyword">const</span> Text(<span class="hljs-string">'Guardar'</span>),
+        ),
+      ],
+    );
+  }
+}
+</div></code></pre>
+<hr>
+<h2 id="estrategia-de-sincronizaci%C3%B3n">Estrategia de Sincronización</h2>
+<h3 id="arquitectura-de-sincronizaci%C3%B3n">Arquitectura de Sincronización</h3>
+<pre class="hljs"><code><div><span class="hljs-keyword">abstract</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">SyncManager</span> </span>{
+  Future&lt;<span class="hljs-keyword">void</span>&gt; syncAll();
+  Future&lt;<span class="hljs-keyword">void</span>&gt; syncTable(<span class="hljs-built_in">String</span> tableName);
+  Future&lt;<span class="hljs-keyword">void</span>&gt; pushPendingChanges();
+  Future&lt;<span class="hljs-keyword">void</span>&gt; pullLatestChanges();
+  Stream&lt;SyncStatus&gt; <span class="hljs-keyword">get</span> syncStatusStream;
+}
+
+<span class="hljs-keyword">enum</span> SyncStatus {
+  idle,
+  syncing,
+  success,
+  error,
+  conflict,
+}
+</div></code></pre>
+<h3 id="implementaci%C3%B3n-de-sincronizaci%C3%B3n">Implementación de Sincronización</h3>
+<h4 id="1-detecci%C3%B3n-de-cambios-locales">1. Detección de Cambios Locales</h4>
+<pre class="hljs"><code><div><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ChangeDetector</span> </span>{
+  Future&lt;<span class="hljs-built_in">List</span>&lt;LocalChange&gt;&gt; detectChanges() <span class="hljs-keyword">async</span> {
+    <span class="hljs-keyword">final</span> changes = &lt;LocalChange&gt;[];
+    
+    <span class="hljs-comment">// Detectar cambios en productos</span>
+    <span class="hljs-keyword">final</span> productChanges = <span class="hljs-keyword">await</span> _detectProductChanges();
+    changes.addAll(productChanges);
+    
+    <span class="hljs-comment">// Detectar cambios en inventario</span>
+    <span class="hljs-keyword">final</span> inventoryChanges = <span class="hljs-keyword">await</span> _detectInventoryChanges();
+    changes.addAll(inventoryChanges);
+    
+    <span class="hljs-keyword">return</span> changes;
+  }
+  
+  Future&lt;<span class="hljs-built_in">List</span>&lt;LocalChange&gt;&gt; _detectProductChanges() <span class="hljs-keyword">async</span> {
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">await</span> database.select(database.products)
+        .where((tbl) =&gt; tbl.sync_status.equals(<span class="hljs-string">'pending'</span>))
+        .<span class="hljs-keyword">get</span>();
+  }
+}
+</div></code></pre>
+<h4 id="2-resoluci%C3%B3n-de-conflictos">2. Resolución de Conflictos</h4>
+<pre class="hljs"><code><div><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ConflictResolver</span> </span>{
+  Future&lt;ConflictResolution&gt; resolveConflict(
+    LocalChange localChange,
+    RemoteChange remoteChange,
+  ) <span class="hljs-keyword">async</span> {
+    <span class="hljs-comment">// Estrategia: última modificación gana</span>
+    <span class="hljs-keyword">if</span> (localChange.lastModified &gt; remoteChange.lastModified) {
+      <span class="hljs-keyword">return</span> ConflictResolution.useLocal;
+    } <span class="hljs-keyword">else</span> {
+      <span class="hljs-keyword">return</span> ConflictResolution.useRemote;
+    }
+  }
+}
+
+<span class="hljs-keyword">enum</span> ConflictResolution {
+  useLocal,
+  useRemote,
+  manual,
+}
+</div></code></pre>
+<h4 id="3-gesti%C3%B3n-de-estados-de-sincronizaci%C3%B3n">3. Gestión de Estados de Sincronización</h4>
+<pre class="hljs"><code><div><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">SyncStateManager</span> </span>{
+  Future&lt;<span class="hljs-keyword">void</span>&gt; markAsPending(<span class="hljs-built_in">String</span> tableName, <span class="hljs-built_in">String</span> recordId) <span class="hljs-keyword">async</span> {
+    <span class="hljs-keyword">await</span> _updateSyncStatus(tableName, recordId, <span class="hljs-string">'pending'</span>);
+  }
+  
+  Future&lt;<span class="hljs-keyword">void</span>&gt; markAsSynced(<span class="hljs-built_in">String</span> tableName, <span class="hljs-built_in">String</span> recordId) <span class="hljs-keyword">async</span> {
+    <span class="hljs-keyword">await</span> _updateSyncStatus(tableName, recordId, <span class="hljs-string">'synced'</span>);
+  }
+  
+  Future&lt;<span class="hljs-keyword">void</span>&gt; markAsConflict(<span class="hljs-built_in">String</span> tableName, <span class="hljs-built_in">String</span> recordId) <span class="hljs-keyword">async</span> {
+    <span class="hljs-keyword">await</span> _updateSyncStatus(tableName, recordId, <span class="hljs-string">'conflict'</span>);
+  }
+}
+</div></code></pre>
+<hr>
+<h2 id="seguridad">Seguridad</h2>
+<h3 id="autenticaci%C3%B3n">Autenticación</h3>
+<ul>
+<li>JWT tokens con refresh automático</li>
+<li>Política de sesión con timeout configurable</li>
+<li>Manejo seguro de credenciales</li>
+</ul>
+<h3 id="autorizaci%C3%B3n">Autorización</h3>
+<ul>
+<li>Row Level Security (RLS) en Supabase</li>
+<li>Roles de usuario: administrador, operador, visualizador</li>
+<li>Permisos por almacén</li>
+</ul>
+<h3 id="encriptaci%C3%B3n">Encriptación</h3>
+<ul>
+<li>Datos sensibles encriptados en SQLite</li>
+<li>Comunicación HTTPS obligatoria</li>
+<li>Almacenamiento seguro de tokens</li>
+</ul>
+<h3 id="auditor%C3%ADa">Auditoría</h3>
+<ul>
+<li>Logs de auditoría para acciones críticas</li>
+<li>Registro de movimientos de inventario</li>
+<li>Historial de sincronización</li>
+</ul>
+<hr>
+<h2 id="requisitos-no-funcionales">Requisitos No Funcionales</h2>
+<h3 id="performance">Performance</h3>
+<ul>
+<li>Tiempo de respuesta &lt; 500ms en operaciones locales</li>
+<li>Inicio de aplicación &lt; 3 segundos</li>
+<li>Memoria RAM máxima: 150MB en uso normal</li>
+<li>Soporte para hasta 10,000 productos por almacén</li>
+</ul>
+<h3 id="disponibilidad">Disponibilidad</h3>
+<ul>
+<li>Funcionamiento completo offline</li>
+<li>Sincronización automática al restaurar conexión</li>
+<li>Cache inteligente para minimizar transferencias</li>
+</ul>
+<h3 id="calidad">Calidad</h3>
+<ul>
+<li>Cobertura de pruebas unitarias &gt; 80%</li>
+<li>Pruebas de integración para flujos críticos</li>
+<li>Pruebas de usabilidad con usuarios reales</li>
+</ul>
+<h3 id="compatibilidad">Compatibilidad</h3>
+<ul>
+<li>Android (API 24+) e iOS (13+)</li>
+<li>Soporte para diferentes tamaños de pantalla</li>
+<li>Adaptación para modo claro/oscuro</li>
+</ul>
+<hr>
+<h2 id="plan-de-implementaci%C3%B3n">Plan de Implementación</h2>
+<h3 id="fases-del-proyecto">Fases del Proyecto</h3>
+<h4 id="fase-1-fundamentos-semanas-1-4">Fase 1: Fundamentos (Semanas 1-4)</h4>
+<ul>
+<li>Configuración del proyecto Flutter</li>
+<li>Implementación de autenticación</li>
+<li>Diseño de base de datos (Supabase y SQLite)</li>
+<li>Estructura base de la aplicación</li>
+</ul>
+<h4 id="fase-2-m%C3%B3dulos-core-semanas-5-8">Fase 2: Módulos Core (Semanas 5-8)</h4>
+<ul>
+<li>Gestión de usuarios y almacenes</li>
+<li>CRUD de productos</li>
+<li>Implementación de sincronización básica</li>
+<li>UI/UX principal</li>
+</ul>
+<h4 id="fase-3-funcionalidades-avanzadas-semanas-9-12">Fase 3: Funcionalidades Avanzadas (Semanas 9-12)</h4>
+<ul>
+<li>Sistema de filtros y búsqueda</li>
+<li>Toma de inventario manual</li>
+<li>Movimientos de inventario</li>
+<li>Reportes básicos</li>
+</ul>
+<h4 id="fase-4-optimizaci%C3%B3n-y-testing-semanas-13-16">Fase 4: Optimización y Testing (Semanas 13-16)</h4>
+<ul>
+<li>Optimización de rendimiento</li>
+<li>Pruebas exhaustivas</li>
+<li>Implementación de notificaciones</li>
+<li>Documentación</li>
+</ul>
+<h4 id="fase-5-despliegue-y-mantenimiento-semanas-17-20">Fase 5: Despliegue y Mantenimiento (Semanas 17-20)</h4>
+<ul>
+<li>Configuración de CI/CD</li>
+<li>Despliegue en tiendas de aplicaciones</li>
+<li>Monitoreo y analytics</li>
+<li>Capacitación de usuarios</li>
+</ul>
+<h3 id="hitos-principales">Hitos Principales</h3>
+<ol>
+<li><strong>MVP Funcional</strong> (Semana 8): Aplicación básica con sincronización</li>
+<li><strong>Beta Interna</strong> (Semana 12): Todas las funcionalidades principales</li>
+<li><strong>Beta Pública</strong> (Semana 16): Aplicación optimizada y probada</li>
+<li><strong>Lanzamiento Oficial</strong> (Semana 20): Aplicación en producción</li>
+</ol>
+<hr>
+<h2 id="diagramas">Diagramas</h2>
+<h3 id="arquitectura-de-datos">Arquitectura de Datos</h3>
+<pre><code class="language-mermaid"><div class="mermaid">graph TD
+    A[Flutter App] --> B[SQLite Local]
+    A --> C[Supabase Remote]
+    
+    B --> D[Products Cache]
+    B --> E[Inventory Cache]
+    B --> F[Sync Queue]
+    
+    C --> G[PostgreSQL]
+    C --> H[Auth Service]
+    C --> I[Storage]
+    
+    F --> J[Sync Manager]
+    J --> C
+    C --> J
+</div></code></pre>
+<h3 id="flujo-de-sincronizaci%C3%B3n">Flujo de Sincronización</h3>
+<pre><code class="language-mermaid"><div class="mermaid">sequenceDiagram
+    participant App as Flutter App
+    participant Local as SQLite
+    participant Sync as Sync Manager
+    participant Remote as Supabase
+    
+    App->>Local: Realizar Cambio
+    Local->>Sync: Marcar como Pendiente
+    Sync->>Sync: Verificar Conectividad
+    
+    alt Hay Conexión
+        Sync->>Remote: Subir Cambios
+        Remote-->>Sync: Confirmación
+        Sync->>Local: Marcar como Sincronizado
+    else Sin Conexión
+        Sync->>Local: Mantener como Pendiente
+    end
+    
+    Note over App,Remote: Proceso periódico de Pull
+    Sync->>Remote: Solicitar Cambios
+    Remote-->>Sync: Datos Actualizados
+    Sync->>Local: Actualizar Datos Locales
+</div></code></pre>
+<h3 id="estructura-de-navegaci%C3%B3n">Estructura de Navegación</h3>
+<pre><code class="language-mermaid"><div class="mermaid">graph TD
+    A[Login] --> B[Seleccionar Almacén]
+    B --> C[Dashboard]
+    
+    C --> D[Inventario]
+    C --> E[Movimientos]
+    C --> F[Reportes]
+    C --> G[Configuración]
+    
+    D --> H[Lista de Productos]
+    H --> I[Detalle de Producto]
+    I --> J[Toma de Inventario]
+    
+    E --> K[Historial de Movimientos]
+    E --> L[Nuevo Movimiento]
+    
+    F --> M[Reporte de Inventario]
+    F --> N[Exportar Datos]
+</div></code></pre>
+<hr>
+<h2 id="anexos">Anexos</h2>
+<h3 id="a-estructura-de-proyecto-flutter">A. Estructura de Proyecto Flutter</h3>
+<pre class="hljs"><code><div>lib/
+├── main.dart
+├── app.dart
+├── core/
+│   ├── constants/
+│   ├── errors/
+│   ├── network/
+│   ├── security/
+│   └── utils/
+├── data/
+│   ├── datasources/
+│   │   ├── local/
+│   │   └── remote/
+│   ├── models/
+│   └── repositories/
+├── domain/
+│   ├── entities/
+│   ├── repositories/
+│   └── usecases/
+├── presentation/
+│   ├── pages/
+│   ├── widgets/
+│   └── providers/
+└── services/
+    ├── auth_service.dart
+    ├── sync_service.dart
+    └── notification_service.dart
+</div></code></pre>
+<h3 id="b-ejemplo-de-modelo-de-datos">B. Ejemplo de Modelo de Datos</h3>
+<pre class="hljs"><code><div><span class="hljs-comment">// Entity</span>
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Product</span> </span>{
+  <span class="hljs-keyword">final</span> <span class="hljs-built_in">String</span> id;
+  <span class="hljs-keyword">final</span> <span class="hljs-built_in">String</span> sku;
+  <span class="hljs-keyword">final</span> <span class="hljs-built_in">String</span> name;
+  <span class="hljs-keyword">final</span> <span class="hljs-built_in">String</span>? description;
+  <span class="hljs-keyword">final</span> <span class="hljs-built_in">String</span>? categoryId;
+  <span class="hljs-keyword">final</span> <span class="hljs-built_in">String</span>? brand;
+  <span class="hljs-keyword">final</span> <span class="hljs-built_in">double</span>? standardCost;
+  <span class="hljs-keyword">final</span> <span class="hljs-built_in">double</span>? averageCost;
+  <span class="hljs-keyword">final</span> <span class="hljs-built_in">int</span>? stockMax;
+  <span class="hljs-keyword">final</span> <span class="hljs-built_in">int</span>? stockMin;
+  <span class="hljs-keyword">final</span> <span class="hljs-built_in">bool</span> isActive;
+  <span class="hljs-keyword">final</span> <span class="hljs-built_in">String</span> warehouseId;
+  <span class="hljs-keyword">final</span> <span class="hljs-built_in">DateTime</span> createdAt;
+  <span class="hljs-keyword">final</span> <span class="hljs-built_in">DateTime</span> updatedAt;
+  
+  <span class="hljs-keyword">const</span> Product({
+    required <span class="hljs-keyword">this</span>.id,
+    required <span class="hljs-keyword">this</span>.sku,
+    required <span class="hljs-keyword">this</span>.name,
+    <span class="hljs-keyword">this</span>.description,
+    <span class="hljs-keyword">this</span>.categoryId,
+    <span class="hljs-keyword">this</span>.brand,
+    <span class="hljs-keyword">this</span>.standardCost,
+    <span class="hljs-keyword">this</span>.averageCost,
+    <span class="hljs-keyword">this</span>.stockMax,
+    <span class="hljs-keyword">this</span>.stockMin,
+    required <span class="hljs-keyword">this</span>.isActive,
+    required <span class="hljs-keyword">this</span>.warehouseId,
+    required <span class="hljs-keyword">this</span>.createdAt,
+    required <span class="hljs-keyword">this</span>.updatedAt,
+  });
+}
+
+<span class="hljs-comment">// Model for local database</span>
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ProductTable</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Table</span> </span>{
+  TextColumn <span class="hljs-keyword">get</span> id =&gt; text()();
+  TextColumn <span class="hljs-keyword">get</span> sku =&gt; text()();
+  TextColumn <span class="hljs-keyword">get</span> name =&gt; text()();
+  TextColumn <span class="hljs-keyword">get</span> description =&gt; text().nullable()();
+  TextColumn <span class="hljs-keyword">get</span> categoryId =&gt; text().nullable()();
+  TextColumn <span class="hljs-keyword">get</span> brand =&gt; text().nullable()();
+  RealColumn <span class="hljs-keyword">get</span> standardCost =&gt; real().nullable()();
+  RealColumn <span class="hljs-keyword">get</span> averageCost =&gt; real().nullable()();
+  IntColumn <span class="hljs-keyword">get</span> stockMax =&gt; integer().nullable()();
+  IntColumn <span class="hljs-keyword">get</span> stockMin =&gt; integer().nullable()();
+  BoolColumn <span class="hljs-keyword">get</span> isActive =&gt; boolean()();
+  TextColumn <span class="hljs-keyword">get</span> warehouseId =&gt; text()();
+  DateTimeColumn <span class="hljs-keyword">get</span> createdAt =&gt; dateTime()();
+  DateTimeColumn <span class="hljs-keyword">get</span> updatedAt =&gt; dateTime()();
+  
+  <span class="hljs-comment">// Sync fields</span>
+  TextColumn <span class="hljs-keyword">get</span> syncStatus =&gt; text()();
+  IntColumn <span class="hljs-keyword">get</span> lastModified =&gt; integer()();
+  IntColumn <span class="hljs-keyword">get</span> syncVersion =&gt; integer()();
+  
+  <span class="hljs-meta">@override</span>
+  <span class="hljs-built_in">Set</span>&lt;Column&gt; <span class="hljs-keyword">get</span> primaryKey =&gt; {id};
+}
+</div></code></pre>
+<h3 id="c-configuraci%C3%B3n-de-supabase">C. Configuración de Supabase</h3>
+<pre class="hljs"><code><div><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">SupabaseConfig</span> </span>{
+  <span class="hljs-keyword">static</span> <span class="hljs-keyword">const</span> <span class="hljs-built_in">String</span> supabaseUrl = <span class="hljs-string">'https://your-project.supabase.co'</span>;
+  <span class="hljs-keyword">static</span> <span class="hljs-keyword">const</span> <span class="hljs-built_in">String</span> supabaseAnonKey = <span class="hljs-string">'your-anon-key'</span>;
+  
+  <span class="hljs-keyword">static</span> Future&lt;<span class="hljs-keyword">void</span>&gt; initialize() <span class="hljs-keyword">async</span> {
+    <span class="hljs-keyword">await</span> Supabase.initialize(
+      url: supabaseUrl,
+      anonKey: supabaseAnonKey,
+      authOptions: <span class="hljs-keyword">const</span> AuthOptions(
+        localStorage: SecureLocalStorage(),
+        autoRefreshToken: <span class="hljs-keyword">true</span>,
+        persistSession: <span class="hljs-keyword">true</span>,
+      ),
+    );
+  }
+}
+</div></code></pre>
+<hr>
+<h2 id="conclusi%C3%B3n">Conclusión</h2>
+<p>Esta especificación técnica proporciona una base sólida para el desarrollo de una aplicación móvil de gestión de inventarios robusta y escalable. La arquitectura propuesta garantiza un funcionamiento eficiente tanto en línea como sin conexión, con una estrategia de sincronización que mantiene la integridad de los datos en todo momento.</p>
+<p>La implementación siguiendo esta especificación resultará en una aplicación que cumple con todos los requisitos funcionales y no funcionales, proporcionando una experiencia de usuario óptima y un rendimiento excelente incluso con grandes volúmenes de datos.</p>
+
+</body>
+</html>

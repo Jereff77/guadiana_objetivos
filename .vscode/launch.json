@@ -1,0 +1,26 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Flutter Windows (Inventario)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "toolArgs": [
+        "--dart-define=SUPABASE_URL=https://TU_PROYECTO.supabase.co",
+        "--dart-define=SUPABASE_ANON_KEY=TU_ANON_KEY"
+      ]
+    },
+    {
+      "name": "Flutter Web (Chrome)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "deviceId": "chrome",
+      "toolArgs": [
+        "--dart-define=SUPABASE_URL=https://TU_PROYECTO.supabase.co",
+        "--dart-define=SUPABASE_ANON_KEY=TU_ANON_KEY"
+      ]
+    }
+  ]
+}
