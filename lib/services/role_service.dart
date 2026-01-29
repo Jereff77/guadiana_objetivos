@@ -61,25 +61,12 @@ class RoleService {
       // Asumimos que 'profiles' tiene una columna 'assigned_warehouses' (array de texto)
       // O usamos una tabla de relación.
 
-      // Ejemplo con tabla profiles:
-      /*
-      final response = await _client
-          .from('profiles')
-          .select('assigned_warehouses')
-          .eq('id', user.id)
-          .maybeSingle();
-      
-      if (response != null && response['assigned_warehouses'] != null) {
-        return List<String>.from(response['assigned_warehouses']);
-      }
-      */
-
       // Por ahora, para que funcione sin migración de BD,
       // si es almacenista retornamos una lista vacía o todos (dependiendo de la política de error).
       // Para cumplir con el requerimiento "solo al almacen asignado",
       // retornamos solo el primero de la lista global como simulación si no hay datos.
 
-      // TODO: Implementar tabla real de asignaciones
+      // Nota: Implementar tabla real de asignaciones cuando esté definida en BD
       return allWarehouses.take(1).toList();
     } catch (e) {
       return [];
