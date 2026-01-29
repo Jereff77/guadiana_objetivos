@@ -6,8 +6,13 @@ import '../widgets/inventory_count_dialog.dart';
 
 class InventoryReviewPage extends StatefulWidget {
   final String warehouseId;
+  final bool isSessionActive;
 
-  const InventoryReviewPage({super.key, required this.warehouseId});
+  const InventoryReviewPage({
+    super.key,
+    required this.warehouseId,
+    this.isSessionActive = true,
+  });
 
   @override
   State<InventoryReviewPage> createState() => _InventoryReviewPageState();
@@ -34,8 +39,7 @@ class _InventoryReviewPageState extends State<InventoryReviewPage> {
       final db = context.read<LocalDatabase>();
       var query = db.select(db.localInventory)
         ..where((t) => t.warehouseId.equals(widget.warehouseId))
-        ..where((t) =>
-            t.stock.isBiggerThanValue(0)); // Filtra items con existencia > 0
+        ..where((t) => t.physicalStock.isNotNull()); // Mostrar solo lo contado
 
       if (_query.isNotEmpty) {
         query.where((t) => t.description.like('%$_query%'));
@@ -54,7 +58,8 @@ class _InventoryReviewPageState extends State<InventoryReviewPage> {
                   'Descripcion': item.description,
                   'Categoria': item.category,
                   'Marca': item.brand,
-                  'Existencia': item.stock,
+                  'Existencia': item.stock, // Stock Sistema
+                  'ConteoFisico': item.physicalStock, // Conteo Físico
                   'Disponible': item.available,
                   'Notas': item.notes,
                   'Almacen': item.warehouseId,
@@ -73,12 +78,24 @@ class _InventoryReviewPageState extends State<InventoryReviewPage> {
   }
 
   void _openCountDialog(Map<String, dynamic> product) {
+    if (!widget.isSessionActive) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content:
+              Text('Inventario finalizado. No se pueden editar los conteos.'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+
     showDialog(
       context: context,
       builder: (context) => InventoryCountDialog(
         product: product,
         currentInventory: {
           'Existencia': product['Existencia'],
+          'ConteoFisico': product['ConteoFisico'],
           'Notas': product['Notas'],
         },
         onSave: (newQuantity, notes) async {
@@ -99,8 +116,7 @@ class _InventoryReviewPageState extends State<InventoryReviewPage> {
               t.productId.equals(id) &
               t.warehouseId.equals(widget.warehouseId)))
         .write(LocalInventoryCompanion(
-      stock: drift.Value(newQty),
-      available: drift.Value(newQty),
+      physicalStock: drift.Value(newQty), // Actualizar Conteo Físico
       notes: drift.Value(notes),
       isSynced: const drift.Value(false), // Marcar como no sincronizado
       lastUpdated: drift.Value(DateTime.now()),
@@ -136,11 +152,16 @@ class _InventoryReviewPageState extends State<InventoryReviewPage> {
                     ? Center(child: Text('Error: $_error'))
                     : _items.isEmpty
                         ? const Center(
-                            child: Text('No hay artículos inventariados.'))
+                            child: Text('No hay artículos contados aún.'))
                         : ListView.builder(
                             itemCount: _items.length,
                             itemBuilder: (context, index) {
                               final item = _items[index];
+                              final sysStock = item['Existencia'] ?? 0;
+                              final physStock = item['ConteoFisico'] ?? 0;
+                              final diff = physStock - sysStock;
+                              final hasDiff = diff != 0;
+
                               return Card(
                                 margin: const EdgeInsets.symmetric(
                                     horizontal: 8, vertical: 4),
@@ -152,7 +173,27 @@ class _InventoryReviewPageState extends State<InventoryReviewPage> {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text('Código: ${item['Codigo'] ?? ''}'),
-                                      Text('Existencia: ${item['Existencia']}'),
+                                      Row(
+                                        children: [
+                                          Text('Sistema: $sysStock'),
+                                          const SizedBox(width: 16),
+                                          Text(
+                                            'Conteo: $physStock',
+                                            style: const TextStyle(
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                          const SizedBox(width: 16),
+                                          Text(
+                                            'Dif: $diff',
+                                            style: TextStyle(
+                                              color: hasDiff
+                                                  ? Colors.red
+                                                  : Colors.green,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                       if (item['Notas'] != null &&
                                           item['Notas'].toString().isNotEmpty)
                                         Text('Nota: ${item['Notas']}',
@@ -161,7 +202,9 @@ class _InventoryReviewPageState extends State<InventoryReviewPage> {
                                                 color: Colors.blueGrey)),
                                     ],
                                   ),
-                                  trailing: const Icon(Icons.edit),
+                                  trailing: widget.isSessionActive
+                                      ? const Icon(Icons.edit)
+                                      : null,
                                   onTap: () => _openCountDialog(item),
                                 ),
                               );

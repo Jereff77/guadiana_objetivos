@@ -10,7 +10,13 @@ import 'inventory_review_page.dart';
 
 class InventoryPage extends StatefulWidget {
   final String warehouseId;
-  const InventoryPage({super.key, required this.warehouseId});
+  final bool isSessionActive;
+
+  const InventoryPage({
+    super.key,
+    required this.warehouseId,
+    this.isSessionActive = true,
+  });
 
   @override
   State<InventoryPage> createState() => InventoryPageState();
@@ -87,6 +93,16 @@ class InventoryPageState extends State<InventoryPage> {
 
   void _openCountDialog(
       Map<String, dynamic> product, Map<String, dynamic>? inv) {
+    if (!widget.isSessionActive) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Inventario finalizado. Inicia uno nuevo para editar.'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+
     showDialog(
       context: context,
       builder: (context) => InventoryCountDialog(
@@ -140,7 +156,10 @@ class InventoryPageState extends State<InventoryPage> {
   void openReviewPage() {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => InventoryReviewPage(warehouseId: widget.warehouseId),
+        builder: (_) => InventoryReviewPage(
+          warehouseId: widget.warehouseId,
+          isSessionActive: widget.isSessionActive,
+        ),
       ),
     );
   }

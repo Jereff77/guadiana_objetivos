@@ -77,10 +77,11 @@ class SyncService {
           .gt('Disponible',
               0); // Solo descargar artículos con disponible mayor a cero
 
-      final List<dynamic> data = response as List<dynamic>;
+      final List<dynamic> remoteInventory = response as List<dynamic>;
 
       // 1.1 Obtener conteos previos de la sesión (si existe)
       Map<String, Map<String, dynamic>> sessionCounts = {};
+      bool sessionCountsFetched = false;
       if (sessionId != null) {
         try {
           final countsResponse = await client
@@ -93,11 +94,19 @@ class SyncService {
               sessionCounts[item['product_id']] = item;
             }
           }
+          sessionCountsFetched = true;
         } catch (e) {
           // Si falla la carga de conteos, continuamos con el inventario base
-          // pero logueamos el error
-          print('Error cargando conteos de sesión: $e');
+          // pero logueamos el error (en producción usar logger)
+          // print('Error loading session counts: $e');
         }
+      }
+
+      // Helper para convertir valores numéricos de forma segura
+      int parseInt(dynamic value) {
+        if (value is int) return value;
+        if (value is num) return value.toInt();
+        return 0;
       }
 
       // 2. Guardar en base de datos local (Transacción para asegurar consistencia)
@@ -125,28 +134,37 @@ class SyncService {
 
         // C. Insertar datos descargados fusionando con conteos preservados y de sesión
         await db.batch((batch) {
-          for (final item in data) {
+          for (final item in remoteInventory) {
             final productId = item['ProductId']?.toString() ?? '';
             final preserved = preservedItems[productId];
             final sessionCount = sessionCounts[productId];
 
             // Prioridad:
-            // 1. Conteo Local Preservado (cambios recientes no subidos)
-            // 2. Conteo de Sesión Remota (ya sincronizado)
-            // 3. Null (sin conteo)
+            // 1. Conteo Local NO Sincronizado (cambios pendientes de subir)
+            // 2. Conteo de Sesión Remota (si se pudo descargar)
+            // 3. Conteo Local Sincronizado (si no hay dato remoto o falló descarga)
+            // 4. Null (sin conteo)
 
             int? physicalStock;
             String? notes;
             bool isSynced = true;
 
-            if (preserved != null) {
+            if (preserved != null && !preserved.isSynced) {
+              // 1. Prioridad máxima: Cambios locales no subidos
+              physicalStock = preserved.physicalStock;
+              notes = preserved.notes;
+              isSynced = false;
+            } else if (sessionCount != null) {
+              // 2. Dato del servidor (más actual que local sincronizado)
+              physicalStock = sessionCount['quantity'] as int?;
+              notes = sessionCount['notes'] as String?;
+              isSynced = true;
+            } else if (preserved != null) {
+              // 3. Fallback a local sincronizado (si no vino nada del servidor pero lo teníamos)
+              // Esto cubre casos donde falló la descarga de sessionCounts o el item no estaba en la lista remota
               physicalStock = preserved.physicalStock;
               notes = preserved.notes;
               isSynced = preserved.isSynced;
-            } else if (sessionCount != null) {
-              physicalStock = sessionCount['quantity'] as int?;
-              notes = sessionCount['notes'] as String?;
-              isSynced = true; // Viene del servidor, así que está sincronizado
             }
 
             batch.insert(
@@ -158,13 +176,9 @@ class SyncService {
                 description: Value(item['Descripcion']?.toString() ?? ''),
                 category: Value(item['Categoria']?.toString()),
                 brand: Value(item['Marca']?.toString()),
-                stock: Value(item['Existencia'] is int
-                    ? item['Existencia']
-                    : (item['Existencia'] as num?)?.toInt() ?? 0),
+                stock: Value(parseInt(item['Existencia'])),
                 physicalStock: Value(physicalStock),
-                available: Value(item['Disponible'] is int
-                    ? item['Disponible']
-                    : (item['Disponible'] as num?)?.toInt() ?? 0),
+                available: Value(parseInt(item['Disponible'])),
                 notes: Value(notes),
                 isSynced: Value(isSynced),
                 lastUpdated: Value(DateTime.now()),

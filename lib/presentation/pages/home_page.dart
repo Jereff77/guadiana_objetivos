@@ -20,6 +20,7 @@ class _HomePageState extends State<HomePage> {
   String? _selectedWarehouse;
   final GlobalKey<InventoryPageState> _inventoryKey = GlobalKey();
   int _pendingCount = 0;
+  bool _isSessionActive = false;
 
   @override
   void initState() {
@@ -28,11 +29,26 @@ class _HomePageState extends State<HomePage> {
       _selectedWarehouse = widget.initialWarehouseId;
       _selectedIndex = 1;
     }
-    _checkPendingCount();
+    _checkSessionStatus();
+  }
+
+  Future<void> _checkSessionStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    final sessionId = prefs.getString('current_session_id');
+    if (mounted) {
+      setState(() {
+        _isSessionActive = sessionId != null;
+      });
+      if (_isSessionActive) {
+        _checkPendingCount();
+      } else {
+        _pendingCount = 0;
+      }
+    }
   }
 
   Future<void> _checkPendingCount() async {
-    if (_selectedWarehouse == null) {
+    if (_selectedWarehouse == null || !_isSessionActive) {
       return;
     }
     try {
@@ -130,6 +146,7 @@ class _HomePageState extends State<HomePage> {
           ? InventoryPage(
               key: _inventoryKey, // Asignamos la key para acceder al estado
               warehouseId: _selectedWarehouse!,
+              isSessionActive: _isSessionActive,
             )
           : const Center(
               child: Padding(
@@ -183,39 +200,40 @@ class _HomePageState extends State<HomePage> {
         centerTitle: _selectedIndex == 0,
         actions: [
           if (_selectedIndex == 1 && _selectedWarehouse != null) ...[
-            IconButton(
-              icon: Stack(
-                children: [
-                  const Icon(Icons.sync),
-                  if (_pendingCount > 0)
-                    Positioned(
-                      right: 0,
-                      top: 0,
-                      child: Container(
-                        padding: const EdgeInsets.all(2),
-                        decoration: BoxDecoration(
-                          color: Colors.red,
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        constraints: const BoxConstraints(
-                          minWidth: 12,
-                          minHeight: 12,
-                        ),
-                        child: Text(
-                          '$_pendingCount',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 8,
+            if (_isSessionActive)
+              IconButton(
+                icon: Stack(
+                  children: [
+                    const Icon(Icons.sync),
+                    if (_pendingCount > 0)
+                      Positioned(
+                        right: 0,
+                        top: 0,
+                        child: Container(
+                          padding: const EdgeInsets.all(2),
+                          decoration: BoxDecoration(
+                            color: Colors.red,
+                            borderRadius: BorderRadius.circular(6),
                           ),
-                          textAlign: TextAlign.center,
+                          constraints: const BoxConstraints(
+                            minWidth: 12,
+                            minHeight: 12,
+                          ),
+                          child: Text(
+                            '$_pendingCount',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 8,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
                         ),
                       ),
-                    ),
-                ],
+                  ],
+                ),
+                tooltip: 'Sincronizar ($_pendingCount pendientes)',
+                onPressed: _sync,
               ),
-              tooltip: 'Sincronizar ($_pendingCount pendientes)',
-              onPressed: _sync,
-            ),
             IconButton(
               icon: const Icon(Icons.list_alt),
               tooltip: 'Ver Inventariados',
@@ -229,7 +247,10 @@ class _HomePageState extends State<HomePage> {
           ],
         ],
       ),
-      drawer: const AppDrawer(),
+      drawer: AppDrawer(
+        onSessionClosed: _checkSessionStatus,
+        warehouseId: _selectedWarehouse,
+      ),
       body: content,
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[

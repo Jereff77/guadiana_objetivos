@@ -234,169 +234,15 @@ class _WarehouseSelectPageState extends State<WarehouseSelectPage> {
 
                         if (!context.mounted) return;
 
-                        // GESTIÓN DE SESIÓN DE INVENTARIO
-                        final syncService = context.read<SyncService>();
-                        String? sessionId;
-                        String? sessionName;
-                        bool isNewSession = false;
-
-                        try {
-                          // Mostrar loading mientras buscamos sesiones
-                          showDialog(
-                            context: context,
-                            barrierDismissible: false,
-                            builder: (ctx) => const Center(
-                                child: CircularProgressIndicator()),
-                          );
-
-                          final activeSessions =
-                              await syncService.getActiveSessions(w);
-
-                          if (context.mounted) {
-                            Navigator.pop(context); // Cerrar loading
-                          }
-
-                          if (!context.mounted) return;
-
-                          if (activeSessions.isNotEmpty) {
-                            final result = await showDialog<
-                                    Map<String, dynamic>>(
-                                context: context,
-                                barrierDismissible: false,
-                                builder: (ctx) => SimpleDialog(
-                                      title:
-                                          const Text('Seleccionar Inventario'),
-                                      children: [
-                                        SimpleDialogOption(
-                                          onPressed: () {
-                                            Navigator.pop(
-                                                ctx, {'action': 'new'});
-                                          },
-                                          child: const Padding(
-                                            padding: EdgeInsets.all(8.0),
-                                            child: Row(children: [
-                                              Icon(Icons.add),
-                                              SizedBox(width: 8),
-                                              Text('Nuevo Inventario')
-                                            ]),
-                                          ),
-                                        ),
-                                        const Divider(),
-                                        ...activeSessions.map((s) =>
-                                            SimpleDialogOption(
-                                              onPressed: () {
-                                                Navigator.pop(ctx, {
-                                                  'action': 'select',
-                                                  'session': s
-                                                });
-                                              },
-                                              child: Padding(
-                                                padding:
-                                                    const EdgeInsets.all(8.0),
-                                                child: Text(
-                                                    s['name'] ?? 'Sin nombre'),
-                                              ),
-                                            )),
-                                      ],
-                                    ));
-
-                            if (result == null) return;
-
-                            if (result['action'] == 'select') {
-                              sessionId = result['session']['id'];
-                              sessionName = result['session']['name'];
-
-                              final prefs =
-                                  await SharedPreferences.getInstance();
-                              final lastSessionId =
-                                  prefs.getString('current_session_id');
-                              // Si es una sesión diferente a la última usada, limpiar datos locales
-                              isNewSession = (sessionId != lastSessionId);
-                            } else {
-                              final name = await _promptSessionName(context);
-                              if (name == null) return;
-                              try {
-                                sessionId =
-                                    await syncService.createSession(name, w);
-                                sessionName = name;
-                                isNewSession = true;
-                              } catch (e) {
-                                if (!context.mounted) return;
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text(e.toString())),
-                                );
-                                return;
-                              }
-                            }
-                          } else {
-                            // No hay sesiones activas
-                            bool create = await showDialog(
-                                    context: context,
-                                    builder: (ctx) => AlertDialog(
-                                            title:
-                                                const Text('Nuevo Inventario'),
-                                            content: const Text(
-                                                'No hay inventarios activos. ¿Deseas iniciar uno nuevo?'),
-                                            actions: [
-                                              TextButton(
-                                                  onPressed: () =>
-                                                      Navigator.pop(ctx, false),
-                                                  child:
-                                                      const Text('Cancelar')),
-                                              TextButton(
-                                                  onPressed: () =>
-                                                      Navigator.pop(ctx, true),
-                                                  child: const Text('Iniciar')),
-                                            ])) ??
-                                false;
-
-                            if (!create) return;
-
-                            final name = await _promptSessionName(context);
-                            if (name == null) return;
-                            try {
-                              sessionId =
-                                  await syncService.createSession(name, w);
-                              sessionName = name;
-                              isNewSession = true;
-                            } catch (e) {
-                              if (!context.mounted) return;
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text(e.toString())),
-                              );
-                              return;
-                            }
-                          }
-                        } catch (e) {
-                          // Si falla, intentamos usar sesión guardada (offline)
-                          final prefs = await SharedPreferences.getInstance();
-                          sessionId = prefs.getString('current_session_id');
-                          sessionName = prefs.getString('current_session_name');
-                          isNewSession =
-                              false; // Asumimos false en offline por seguridad
-
-                          if (sessionId == null) {
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                    content: Text(
-                                        'Modo Offline: No se podrá sincronizar hasta conectar y seleccionar sesión.')),
-                              );
-                            }
-                          }
-                        }
-
-                        if (sessionId != null) {
-                          final prefs = await SharedPreferences.getInstance();
-                          await prefs.setString(
-                              'current_session_id', sessionId);
-                          await prefs.setString('current_session_name',
-                              sessionName ?? 'Inventario');
-                        }
+                        // GESTIÓN DE ENTRADA AL ALMACÉN
+                        // Limpiamos sesión activa al entrar (Modo solo lectura por defecto)
+                        final prefs = await SharedPreferences.getInstance();
+                        await prefs.remove('current_session_id');
+                        await prefs.remove('current_session_name');
 
                         if (!context.mounted) return;
 
-                        // Mostrar indicador de carga (Descarga de inventario)
+                        // Mostrar indicador de carga
                         showDialog(
                           context: context,
                           barrierDismissible: false,
@@ -406,21 +252,20 @@ class _WarehouseSelectPageState extends State<WarehouseSelectPage> {
                               children: [
                                 CircularProgressIndicator(),
                                 SizedBox(height: 16),
-                                Text('Descargando inventario...'),
+                                Text('Accediendo al almacén...'),
                               ],
                             ),
                           ),
                         );
 
                         try {
-                          await context.read<SyncService>().downloadInventory(w,
-                              sessionId: sessionId,
-                              clearExistingCounts: isNewSession);
+                          // Intentar descargar/actualizar inventario (sin sesión)
+                          await context
+                              .read<SyncService>()
+                              .downloadInventory(w, sessionId: null);
 
-                          if (!context.mounted) {
-                            return;
-                          }
-                          Navigator.of(context).pop(); // Cerrar diálogo
+                          if (!context.mounted) return;
+                          Navigator.of(context).pop(); // Cerrar loading
 
                           Navigator.of(context).pushReplacement(
                             MaterialPageRoute(
@@ -428,20 +273,15 @@ class _WarehouseSelectPageState extends State<WarehouseSelectPage> {
                             ),
                           );
                         } catch (e) {
-                          if (!context.mounted) {
-                            return;
-                          }
-                          Navigator.of(context).pop(); // Cerrar diálogo
+                          if (!context.mounted) return;
+                          Navigator.of(context).pop(); // Cerrar loading
 
-                          // Verificar si tenemos datos locales
+                          // Si falla la descarga (ej. offline), intentamos usar datos locales
                           final hasLocalData = await context
                               .read<LocalDatabase>()
                               .hasInventoryFor(w);
 
                           if (hasLocalData) {
-                            if (!context.mounted) {
-                              return;
-                            }
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                   content: Text(
@@ -453,13 +293,8 @@ class _WarehouseSelectPageState extends State<WarehouseSelectPage> {
                               ),
                             );
                           } else {
-                            if (!context.mounted) {
-                              return;
-                            }
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                  content: Text(
-                                      'Error al descargar y no hay datos locales: $e')),
+                              SnackBar(content: Text('Error al acceder: $e')),
                             );
                           }
                         }
@@ -469,42 +304,6 @@ class _WarehouseSelectPageState extends State<WarehouseSelectPage> {
                   separatorBuilder: (_, __) => const Divider(height: 1),
                   itemCount: _warehouses.length,
                 ),
-    );
-  }
-
-  Future<String?> _promptSessionName(BuildContext context) async {
-    final weekNum =
-        (DateTime.now().difference(DateTime(DateTime.now().year, 1, 1)).inDays /
-                7)
-            .ceil();
-    final defaultName = 'Semana ${weekNum.toInt()} ${DateTime.now().year}';
-    final controller = TextEditingController(text: defaultName);
-
-    return showDialog<String>(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Nombre del Inventario'),
-        content: TextField(
-          controller: controller,
-          decoration: const InputDecoration(
-            labelText: 'Nombre',
-            hintText: 'Ej. Inventario Enero',
-          ),
-          autofocus: true,
-          textCapitalization: TextCapitalization.sentences,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancelar'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, controller.text.trim()),
-            child: const Text('Aceptar'),
-          ),
-        ],
-      ),
     );
   }
 }
