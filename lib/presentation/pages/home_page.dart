@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../core/config/supabase_config.dart';
 import '../../services/sync_service.dart';
 import '../widgets/app_drawer.dart';
 import 'dashboard_page.dart';
