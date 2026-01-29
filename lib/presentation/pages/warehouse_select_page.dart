@@ -305,7 +305,13 @@ class _WarehouseSelectPageState extends State<WarehouseSelectPage> {
                             if (result['action'] == 'select') {
                               sessionId = result['session']['id'];
                               sessionName = result['session']['name'];
-                              isNewSession = false;
+
+                              final prefs =
+                                  await SharedPreferences.getInstance();
+                              final lastSessionId =
+                                  prefs.getString('current_session_id');
+                              // Si es una sesión diferente a la última usada, limpiar datos locales
+                              isNewSession = (sessionId != lastSessionId);
                             } else {
                               final name = await _promptSessionName(context);
                               if (name == null) return;
