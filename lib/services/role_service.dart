@@ -16,9 +16,9 @@ class RoleService {
       final user = _client.auth.currentUser;
       if (user == null) return UserRole.almacenista;
 
-      // Intentar obtener el rol desde la tabla 'profiles'
+      // Intentar obtener el rol desde la tabla 'app_profiles'
       final response = await _client
-          .from('profiles')
+          .from('app_profiles')
           .select('role')
           .eq('id', user.id)
           .maybeSingle();
@@ -28,9 +28,15 @@ class RoleService {
         if (roleStr == 'auditor') return UserRole.auditor;
       }
 
-      // Fallback: Verificar metadata si existe
-      if (user.userMetadata?['role'] == 'auditor') {
-        return UserRole.auditor;
+      // Fallback: Verificar metadata si existe (retrocompatibilidad)
+      final metadata = user.userMetadata;
+      if (metadata != null) {
+        final role = metadata['role']?.toString().toLowerCase() ?? '';
+        final puesto = metadata['puesto']?.toString().toLowerCase() ?? '';
+
+        if (role.contains('auditor') || puesto.contains('auditor')) {
+          return UserRole.auditor;
+        }
       }
 
       // Regla de negocio temporal por dominio (opcional)
@@ -45,7 +51,7 @@ class RoleService {
 
   /// Obtiene la lista de almacenes permitidos para el usuario.
   /// Si es Auditor, retorna todos.
-  /// Si es Almacenista, retorna solo los asignados.
+  /// Si es Almacenista, retorna solo el asignado en 'app_profiles'.
   static Future<List<String>> getAccessibleWarehouses(
       List<String> allWarehouses) async {
     final role = await getRole();
@@ -57,19 +63,41 @@ class RoleService {
       final user = _client.auth.currentUser;
       if (user == null) return [];
 
-      // Intentar obtener almacenes asignados desde 'profiles' o tabla 'user_warehouses'
-      // Asumimos que 'profiles' tiene una columna 'assigned_warehouses' (array de texto)
-      // O usamos una tabla de relación.
+      // Obtener almacén asignado desde 'app_profiles'
+      final response = await _client
+          .from('app_profiles')
+          .select('assigned_warehouse')
+          .eq('id', user.id)
+          .maybeSingle();
 
-      // Por ahora, para que funcione sin migración de BD,
-      // si es almacenista retornamos una lista vacía o todos (dependiendo de la política de error).
-      // Para cumplir con el requerimiento "solo al almacen asignado",
-      // retornamos solo el primero de la lista global como simulación si no hay datos.
+      if (response != null &&
+          response['assigned_warehouse'] != null &&
+          response['assigned_warehouse'].toString().isNotEmpty) {
+        final assigned = response['assigned_warehouse'].toString();
+        // Verificar que el almacén asignado exista en la lista global
+        if (allWarehouses.contains(assigned)) {
+          return [assigned];
+        }
+      }
 
-      // Nota: Implementar tabla real de asignaciones cuando esté definida en BD
-      return allWarehouses.take(1).toList();
+      // Si no tiene almacén asignado, retornamos todos para que pueda seleccionar uno
+      // y asignárselo permanentemente.
+      return allWarehouses;
     } catch (e) {
-      return [];
+      // En caso de error, retornamos todos como fallback seguro
+      // (la app intentará asignarlo al seleccionar)
+      return allWarehouses;
     }
+  }
+
+  /// Asigna un almacén al usuario actual.
+  static Future<void> assignWarehouse(String warehouseName) async {
+    final user = _client.auth.currentUser;
+    if (user == null) return;
+
+    await _client.from('app_profiles').update({
+      'assigned_warehouse': warehouseName,
+      'updated_at': DateTime.now().toIso8601String(),
+    }).eq('id', user.id);
   }
 }

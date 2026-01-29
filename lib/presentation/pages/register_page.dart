@@ -13,6 +13,8 @@ class RegisterPage extends StatefulWidget {
 class _RegisterPageState extends State<RegisterPage> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
+  final _firstNameController = TextEditingController();
+  final _lastNameController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   final _auth = AuthService();
@@ -22,6 +24,8 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   void dispose() {
     _emailController.dispose();
+    _firstNameController.dispose();
+    _lastNameController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
@@ -39,7 +43,11 @@ class _RegisterPageState extends State<RegisterPage> {
 
     try {
       await _auth.signUp(
-          _emailController.text.trim(), _passwordController.text);
+        _emailController.text.trim(),
+        _passwordController.text,
+        firstName: _firstNameController.text.trim(),
+        lastName: _lastNameController.text.trim(),
+      );
       if (!mounted) {
         return;
       }
@@ -98,6 +106,31 @@ class _RegisterPageState extends State<RegisterPage> {
                         height: 80,
                       ),
                       const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _firstNameController,
+                        decoration: const InputDecoration(labelText: 'Nombre'),
+                        textCapitalization: TextCapitalization.words,
+                        validator: (v) {
+                          if (v == null || v.isEmpty) {
+                            return 'Ingresa tu nombre';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        controller: _lastNameController,
+                        decoration:
+                            const InputDecoration(labelText: 'Apellidos'),
+                        textCapitalization: TextCapitalization.words,
+                        validator: (v) {
+                          if (v == null || v.isEmpty) {
+                            return 'Ingresa tus apellidos';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 12),
                       TextFormField(
                         controller: _emailController,
                         decoration: const InputDecoration(labelText: 'Email'),

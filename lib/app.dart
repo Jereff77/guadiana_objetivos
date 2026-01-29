@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'core/config/supabase_config.dart';
 import 'data/datasources/local/database.dart';
 import 'services/sync_service.dart';
@@ -101,8 +102,6 @@ class _GuadianaAppState extends State<GuadianaApp> {
       );
     }
 
-    final session = SupabaseConfig.client.auth.currentSession;
-
     return MultiProvider(
       providers: [
         Provider<LocalDatabase>.value(value: _database),
@@ -110,7 +109,16 @@ class _GuadianaAppState extends State<GuadianaApp> {
       ],
       child: MaterialApp(
         theme: theme,
-        home: session != null ? const HomePage() : const LoginPage(),
+        home: StreamBuilder<AuthState>(
+          stream: SupabaseConfig.client.auth.onAuthStateChange,
+          builder: (context, snapshot) {
+            final session = SupabaseConfig.client.auth.currentSession;
+            if (session != null) {
+              return const HomePage();
+            }
+            return const LoginPage();
+          },
+        ),
       ),
     );
   }

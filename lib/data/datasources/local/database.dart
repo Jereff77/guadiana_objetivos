@@ -12,6 +12,8 @@ class LocalInventory extends Table {
   TextColumn get brand => text().nullable()();
   IntColumn get stock => integer().withDefault(const Constant(0))();
   IntColumn get available => integer().withDefault(const Constant(0))();
+  IntColumn get physicalStock =>
+      integer().nullable()(); // Nuevo campo para conteo físico
   TextColumn get notes => text().nullable()();
 
   // Sync fields
@@ -27,7 +29,7 @@ class LocalDatabase extends _$LocalDatabase {
   LocalDatabase() : super(connect());
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -35,14 +37,8 @@ class LocalDatabase extends _$LocalDatabase {
           await m.createAll();
         },
         onUpgrade: (Migrator m, int from, int to) async {
-          // Since we are changing schema significantly, we might want to drop and recreate
-          // or handle migration. For now, since it's dev, we can just create new tables.
-          if (from < 3) {
-            // If we had previous tables, we could drop them here if needed,
-            // but Drift usually handles new table creation.
-            // Given the complete change, it's safer to delete old tables manually if we could,
-            // but for now let's just create the new one.
-            await m.createTable(localInventory);
+          if (from < 4) {
+            await m.addColumn(localInventory, localInventory.physicalStock);
           }
         },
       );
@@ -61,5 +57,20 @@ class LocalDatabase extends _$LocalDatabase {
         .map((row) => row.read(localInventory.productId.count()))
         .getSingle();
     return (count ?? 0) > 0;
+  }
+
+  Future<Map<String, dynamic>> getWarehouseStats(String warehouseId) async {
+    final countExp = localInventory.productId.count();
+    final maxDateExp = localInventory.lastUpdated.max();
+
+    final row = await (selectOnly(localInventory)
+          ..addColumns([countExp, maxDateExp])
+          ..where(localInventory.warehouseId.equals(warehouseId)))
+        .getSingle();
+
+    return {
+      'count': row.read(countExp) ?? 0,
+      'lastUpdated': row.read(maxDateExp),
+    };
   }
 }

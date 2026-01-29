@@ -23,8 +23,10 @@ class _InventoryCountDialogState extends State<InventoryCountDialog> {
   @override
   void initState() {
     super.initState();
-    _controller = TextEditingController(
-        text: (widget.currentInventory?['Existencia'] ?? 0).toString());
+    // Inicializar con ConteoFisico si existe, sino 0 (o vacío para forzar entrada)
+    // El usuario quiere capturar stock físico, no ver el del sistema en el campo editable.
+    final initialValue = widget.currentInventory?['ConteoFisico'] ?? 0;
+    _controller = TextEditingController(text: initialValue.toString());
     _notesController =
         TextEditingController(text: widget.currentInventory?['Notas'] ?? '');
   }
@@ -48,14 +50,13 @@ class _InventoryCountDialogState extends State<InventoryCountDialog> {
           const SizedBox(height: 8),
           Text('Modelo: ${widget.product['Modelo'] ?? ''}'),
           const SizedBox(height: 8),
-          Text(
-              'Existencia Actual: ${widget.currentInventory?['Existencia'] ?? 0}'),
+          Text('Stock Sistema: ${widget.currentInventory?['Existencia'] ?? 0}'),
           const SizedBox(height: 16),
           TextField(
             controller: _controller,
             keyboardType: TextInputType.number,
             decoration: const InputDecoration(
-              labelText: 'Cantidad Real',
+              labelText: 'Conteo Físico',
               border: OutlineInputBorder(),
             ),
           ),

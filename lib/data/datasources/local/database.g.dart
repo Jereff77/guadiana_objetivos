@@ -58,6 +58,12 @@ class $LocalInventoryTable extends LocalInventory
       type: DriftSqlType.int,
       requiredDuringInsert: false,
       defaultValue: const Constant(0));
+  static const VerificationMeta _physicalStockMeta =
+      const VerificationMeta('physicalStock');
+  @override
+  late final GeneratedColumn<int> physicalStock = GeneratedColumn<int>(
+      'physical_stock', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
   static const VerificationMeta _notesMeta = const VerificationMeta('notes');
   @override
   late final GeneratedColumn<String> notes = GeneratedColumn<String>(
@@ -89,6 +95,7 @@ class $LocalInventoryTable extends LocalInventory
         brand,
         stock,
         available,
+        physicalStock,
         notes,
         isSynced,
         lastUpdated
@@ -145,6 +152,12 @@ class $LocalInventoryTable extends LocalInventory
       context.handle(_availableMeta,
           available.isAcceptableOrUnknown(data['available']!, _availableMeta));
     }
+    if (data.containsKey('physical_stock')) {
+      context.handle(
+          _physicalStockMeta,
+          physicalStock.isAcceptableOrUnknown(
+              data['physical_stock']!, _physicalStockMeta));
+    }
     if (data.containsKey('notes')) {
       context.handle(
           _notesMeta, notes.isAcceptableOrUnknown(data['notes']!, _notesMeta));
@@ -184,6 +197,8 @@ class $LocalInventoryTable extends LocalInventory
           .read(DriftSqlType.int, data['${effectivePrefix}stock'])!,
       available: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}available'])!,
+      physicalStock: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}physical_stock']),
       notes: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}notes']),
       isSynced: attachedDatabase.typeMapping
@@ -209,6 +224,7 @@ class LocalInventoryData extends DataClass
   final String? brand;
   final int stock;
   final int available;
+  final int? physicalStock;
   final String? notes;
   final bool isSynced;
   final DateTime? lastUpdated;
@@ -221,6 +237,7 @@ class LocalInventoryData extends DataClass
       this.brand,
       required this.stock,
       required this.available,
+      this.physicalStock,
       this.notes,
       required this.isSynced,
       this.lastUpdated});
@@ -241,6 +258,9 @@ class LocalInventoryData extends DataClass
     }
     map['stock'] = Variable<int>(stock);
     map['available'] = Variable<int>(available);
+    if (!nullToAbsent || physicalStock != null) {
+      map['physical_stock'] = Variable<int>(physicalStock);
+    }
     if (!nullToAbsent || notes != null) {
       map['notes'] = Variable<String>(notes);
     }
@@ -264,6 +284,9 @@ class LocalInventoryData extends DataClass
           brand == null && nullToAbsent ? const Value.absent() : Value(brand),
       stock: Value(stock),
       available: Value(available),
+      physicalStock: physicalStock == null && nullToAbsent
+          ? const Value.absent()
+          : Value(physicalStock),
       notes:
           notes == null && nullToAbsent ? const Value.absent() : Value(notes),
       isSynced: Value(isSynced),
@@ -285,6 +308,7 @@ class LocalInventoryData extends DataClass
       brand: serializer.fromJson<String?>(json['brand']),
       stock: serializer.fromJson<int>(json['stock']),
       available: serializer.fromJson<int>(json['available']),
+      physicalStock: serializer.fromJson<int?>(json['physicalStock']),
       notes: serializer.fromJson<String?>(json['notes']),
       isSynced: serializer.fromJson<bool>(json['isSynced']),
       lastUpdated: serializer.fromJson<DateTime?>(json['lastUpdated']),
@@ -302,6 +326,7 @@ class LocalInventoryData extends DataClass
       'brand': serializer.toJson<String?>(brand),
       'stock': serializer.toJson<int>(stock),
       'available': serializer.toJson<int>(available),
+      'physicalStock': serializer.toJson<int?>(physicalStock),
       'notes': serializer.toJson<String?>(notes),
       'isSynced': serializer.toJson<bool>(isSynced),
       'lastUpdated': serializer.toJson<DateTime?>(lastUpdated),
@@ -317,6 +342,7 @@ class LocalInventoryData extends DataClass
           Value<String?> brand = const Value.absent(),
           int? stock,
           int? available,
+          Value<int?> physicalStock = const Value.absent(),
           Value<String?> notes = const Value.absent(),
           bool? isSynced,
           Value<DateTime?> lastUpdated = const Value.absent()}) =>
@@ -329,6 +355,8 @@ class LocalInventoryData extends DataClass
         brand: brand.present ? brand.value : this.brand,
         stock: stock ?? this.stock,
         available: available ?? this.available,
+        physicalStock:
+            physicalStock.present ? physicalStock.value : this.physicalStock,
         notes: notes.present ? notes.value : this.notes,
         isSynced: isSynced ?? this.isSynced,
         lastUpdated: lastUpdated.present ? lastUpdated.value : this.lastUpdated,
@@ -345,6 +373,9 @@ class LocalInventoryData extends DataClass
       brand: data.brand.present ? data.brand.value : this.brand,
       stock: data.stock.present ? data.stock.value : this.stock,
       available: data.available.present ? data.available.value : this.available,
+      physicalStock: data.physicalStock.present
+          ? data.physicalStock.value
+          : this.physicalStock,
       notes: data.notes.present ? data.notes.value : this.notes,
       isSynced: data.isSynced.present ? data.isSynced.value : this.isSynced,
       lastUpdated:
@@ -363,6 +394,7 @@ class LocalInventoryData extends DataClass
           ..write('brand: $brand, ')
           ..write('stock: $stock, ')
           ..write('available: $available, ')
+          ..write('physicalStock: $physicalStock, ')
           ..write('notes: $notes, ')
           ..write('isSynced: $isSynced, ')
           ..write('lastUpdated: $lastUpdated')
@@ -371,8 +403,19 @@ class LocalInventoryData extends DataClass
   }
 
   @override
-  int get hashCode => Object.hash(productId, warehouseId, code, description,
-      category, brand, stock, available, notes, isSynced, lastUpdated);
+  int get hashCode => Object.hash(
+      productId,
+      warehouseId,
+      code,
+      description,
+      category,
+      brand,
+      stock,
+      available,
+      physicalStock,
+      notes,
+      isSynced,
+      lastUpdated);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -385,6 +428,7 @@ class LocalInventoryData extends DataClass
           other.brand == this.brand &&
           other.stock == this.stock &&
           other.available == this.available &&
+          other.physicalStock == this.physicalStock &&
           other.notes == this.notes &&
           other.isSynced == this.isSynced &&
           other.lastUpdated == this.lastUpdated);
@@ -399,6 +443,7 @@ class LocalInventoryCompanion extends UpdateCompanion<LocalInventoryData> {
   final Value<String?> brand;
   final Value<int> stock;
   final Value<int> available;
+  final Value<int?> physicalStock;
   final Value<String?> notes;
   final Value<bool> isSynced;
   final Value<DateTime?> lastUpdated;
@@ -412,6 +457,7 @@ class LocalInventoryCompanion extends UpdateCompanion<LocalInventoryData> {
     this.brand = const Value.absent(),
     this.stock = const Value.absent(),
     this.available = const Value.absent(),
+    this.physicalStock = const Value.absent(),
     this.notes = const Value.absent(),
     this.isSynced = const Value.absent(),
     this.lastUpdated = const Value.absent(),
@@ -426,6 +472,7 @@ class LocalInventoryCompanion extends UpdateCompanion<LocalInventoryData> {
     this.brand = const Value.absent(),
     this.stock = const Value.absent(),
     this.available = const Value.absent(),
+    this.physicalStock = const Value.absent(),
     this.notes = const Value.absent(),
     this.isSynced = const Value.absent(),
     this.lastUpdated = const Value.absent(),
@@ -442,6 +489,7 @@ class LocalInventoryCompanion extends UpdateCompanion<LocalInventoryData> {
     Expression<String>? brand,
     Expression<int>? stock,
     Expression<int>? available,
+    Expression<int>? physicalStock,
     Expression<String>? notes,
     Expression<bool>? isSynced,
     Expression<DateTime>? lastUpdated,
@@ -456,6 +504,7 @@ class LocalInventoryCompanion extends UpdateCompanion<LocalInventoryData> {
       if (brand != null) 'brand': brand,
       if (stock != null) 'stock': stock,
       if (available != null) 'available': available,
+      if (physicalStock != null) 'physical_stock': physicalStock,
       if (notes != null) 'notes': notes,
       if (isSynced != null) 'is_synced': isSynced,
       if (lastUpdated != null) 'last_updated': lastUpdated,
@@ -472,6 +521,7 @@ class LocalInventoryCompanion extends UpdateCompanion<LocalInventoryData> {
       Value<String?>? brand,
       Value<int>? stock,
       Value<int>? available,
+      Value<int?>? physicalStock,
       Value<String?>? notes,
       Value<bool>? isSynced,
       Value<DateTime?>? lastUpdated,
@@ -485,6 +535,7 @@ class LocalInventoryCompanion extends UpdateCompanion<LocalInventoryData> {
       brand: brand ?? this.brand,
       stock: stock ?? this.stock,
       available: available ?? this.available,
+      physicalStock: physicalStock ?? this.physicalStock,
       notes: notes ?? this.notes,
       isSynced: isSynced ?? this.isSynced,
       lastUpdated: lastUpdated ?? this.lastUpdated,
@@ -519,6 +570,9 @@ class LocalInventoryCompanion extends UpdateCompanion<LocalInventoryData> {
     if (available.present) {
       map['available'] = Variable<int>(available.value);
     }
+    if (physicalStock.present) {
+      map['physical_stock'] = Variable<int>(physicalStock.value);
+    }
     if (notes.present) {
       map['notes'] = Variable<String>(notes.value);
     }
@@ -545,6 +599,7 @@ class LocalInventoryCompanion extends UpdateCompanion<LocalInventoryData> {
           ..write('brand: $brand, ')
           ..write('stock: $stock, ')
           ..write('available: $available, ')
+          ..write('physicalStock: $physicalStock, ')
           ..write('notes: $notes, ')
           ..write('isSynced: $isSynced, ')
           ..write('lastUpdated: $lastUpdated, ')
@@ -575,6 +630,7 @@ typedef $$LocalInventoryTableCreateCompanionBuilder = LocalInventoryCompanion
   Value<String?> brand,
   Value<int> stock,
   Value<int> available,
+  Value<int?> physicalStock,
   Value<String?> notes,
   Value<bool> isSynced,
   Value<DateTime?> lastUpdated,
@@ -590,6 +646,7 @@ typedef $$LocalInventoryTableUpdateCompanionBuilder = LocalInventoryCompanion
   Value<String?> brand,
   Value<int> stock,
   Value<int> available,
+  Value<int?> physicalStock,
   Value<String?> notes,
   Value<bool> isSynced,
   Value<DateTime?> lastUpdated,
@@ -622,6 +679,7 @@ class $$LocalInventoryTableTableManager extends RootTableManager<
             Value<String?> brand = const Value.absent(),
             Value<int> stock = const Value.absent(),
             Value<int> available = const Value.absent(),
+            Value<int?> physicalStock = const Value.absent(),
             Value<String?> notes = const Value.absent(),
             Value<bool> isSynced = const Value.absent(),
             Value<DateTime?> lastUpdated = const Value.absent(),
@@ -636,6 +694,7 @@ class $$LocalInventoryTableTableManager extends RootTableManager<
             brand: brand,
             stock: stock,
             available: available,
+            physicalStock: physicalStock,
             notes: notes,
             isSynced: isSynced,
             lastUpdated: lastUpdated,
@@ -650,6 +709,7 @@ class $$LocalInventoryTableTableManager extends RootTableManager<
             Value<String?> brand = const Value.absent(),
             Value<int> stock = const Value.absent(),
             Value<int> available = const Value.absent(),
+            Value<int?> physicalStock = const Value.absent(),
             Value<String?> notes = const Value.absent(),
             Value<bool> isSynced = const Value.absent(),
             Value<DateTime?> lastUpdated = const Value.absent(),
@@ -664,6 +724,7 @@ class $$LocalInventoryTableTableManager extends RootTableManager<
             brand: brand,
             stock: stock,
             available: available,
+            physicalStock: physicalStock,
             notes: notes,
             isSynced: isSynced,
             lastUpdated: lastUpdated,
@@ -712,6 +773,11 @@ class $$LocalInventoryTableFilterComposer
 
   ColumnFilters<int> get available => $state.composableBuilder(
       column: $state.table.available,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<int> get physicalStock => $state.composableBuilder(
+      column: $state.table.physicalStock,
       builder: (column, joinBuilders) =>
           ColumnFilters(column, joinBuilders: joinBuilders));
 
@@ -771,6 +837,11 @@ class $$LocalInventoryTableOrderingComposer
 
   ColumnOrderings<int> get available => $state.composableBuilder(
       column: $state.table.available,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<int> get physicalStock => $state.composableBuilder(
+      column: $state.table.physicalStock,
       builder: (column, joinBuilders) =>
           ColumnOrderings(column, joinBuilders: joinBuilders));
 

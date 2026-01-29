@@ -1,18 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:dropdown_search/dropdown_search.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/config/supabase_config.dart';
-import '../../data/datasources/local/database.dart';
 import '../../services/auth_service.dart';
-import '../../services/role_service.dart';
+import '../../services/sync_service.dart';
 import '../pages/login_page.dart';
 import '../pages/profile_page.dart';
+import '../pages/warehouse_select_page.dart';
 
 class AppDrawer extends StatefulWidget {
-  final Function(String) onWarehouseSelected;
-
-  const AppDrawer({super.key, required this.onWarehouseSelected});
+  const AppDrawer({super.key});
 
   @override
   State<AppDrawer> createState() => _AppDrawerState();
@@ -21,59 +19,21 @@ class AppDrawer extends StatefulWidget {
 class _AppDrawerState extends State<AppDrawer> {
   final AuthService _auth = AuthService();
   final SupabaseClient _client = SupabaseConfig.client;
-
-  List<String> _warehouses = [];
-  bool _loadingWarehouses = false;
-  String? _selectedWarehouse;
+  String? _currentSessionName;
+  String? _currentSessionId;
 
   @override
   void initState() {
     super.initState();
-    _loadWarehouses();
+    _loadSessionInfo();
   }
 
-  Future<void> _loadWarehouses() async {
-    if (!mounted) return;
-    setState(() => _loadingWarehouses = true);
-    try {
-      List<String> allWarehouses = [];
-      try {
-        final res = await _client.rpc('get_unique_warehouses');
-        allWarehouses = (res as List)
-            .map((e) => e['Almacen'] as String?)
-            .where((e) => (e ?? '').isNotEmpty)
-            .map((e) => e!)
-            .toList();
-      } catch (_) {
-        final res =
-            await _client.from('inventario').select('Almacen').order('Almacen');
-        allWarehouses = (res as List)
-            .map((e) => e['Almacen'] as String?)
-            .where((e) => (e ?? '').isNotEmpty)
-            .map((e) => e!)
-            .toSet()
-            .toList();
-      }
-
-      // Filtrar por rol
-      final accessibleWarehouses =
-          await RoleService.getAccessibleWarehouses(allWarehouses);
-
-      if (mounted) setState(() => _warehouses = accessibleWarehouses);
-    } catch (e) {
-      debugPrint('Error loading warehouses: $e');
-      // Intentar cargar almacenes locales (Offline)
-      try {
-        if (!mounted) return;
-        final localWarehouses =
-            await context.read<LocalDatabase>().getUniqueWarehouses();
-        if (mounted) setState(() => _warehouses = localWarehouses);
-      } catch (localError) {
-        debugPrint('Error loading local warehouses: $localError');
-      }
-    } finally {
-      if (mounted) setState(() => _loadingWarehouses = false);
-    }
+  Future<void> _loadSessionInfo() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _currentSessionName = prefs.getString('current_session_name');
+      _currentSessionId = prefs.getString('current_session_id');
+    });
   }
 
   Future<void> _logout() async {
@@ -82,6 +42,65 @@ class _AppDrawerState extends State<AppDrawer> {
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(builder: (_) => const LoginPage()),
     );
+  }
+
+  Future<void> _closeInventory() async {
+    if (_currentSessionId == null) return;
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Finalizar Inventario'),
+        content: const Text(
+            '¿Estás seguro de que deseas finalizar este inventario?\n\n'
+            'La sesión se cerrará y no podrás agregar más conteos a ella.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Finalizar'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true || !mounted) return;
+
+    try {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => const Center(child: CircularProgressIndicator()),
+      );
+
+      await context.read<SyncService>().closeSession(_currentSessionId!);
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('current_session_id');
+      await prefs.remove('current_session_name');
+
+      if (!mounted) return;
+      Navigator.pop(context); // Cerrar loading
+      Navigator.pop(context); // Cerrar drawer
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Inventario finalizado correctamente')),
+      );
+
+      // Redirigir a selección de almacén
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const WarehouseSelectPage()),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      Navigator.pop(context); // Cerrar loading
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al finalizar: $e')),
+      );
+    }
   }
 
   @override
@@ -108,42 +127,35 @@ class _AppDrawerState extends State<AppDrawer> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Seleccionar Almacén',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                if (_currentSessionName != null) ...[
+                  const Text(
+                    'Inventario Activo:',
+                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+                  Text(
+                    _currentSessionName!,
+                    style: const TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 20),
+                ],
+                ListTile(
+                  leading: const Icon(Icons.store),
+                  title: const Text('Cambiar Almacén'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(
+                          builder: (_) => const WarehouseSelectPage()),
+                    );
+                  },
                 ),
-                const SizedBox(height: 10),
-                _loadingWarehouses
-                    ? const Center(child: CircularProgressIndicator())
-                    : DropdownSearch<String>(
-                        popupProps: const PopupProps.menu(
-                          showSearchBox: true,
-                          searchFieldProps: TextFieldProps(
-                            decoration: InputDecoration(
-                              labelText: "Buscar almacén...",
-                              border: OutlineInputBorder(),
-                            ),
-                          ),
-                        ),
-                        items: _warehouses,
-                        dropdownDecoratorProps: const DropDownDecoratorProps(
-                          dropdownSearchDecoration: InputDecoration(
-                            labelText: "Almacén",
-                            hintText: "Selecciona un almacén",
-                            border: OutlineInputBorder(),
-                          ),
-                        ),
-                        onChanged: (value) {
-                          if (value != null) {
-                            setState(() {
-                              _selectedWarehouse = value;
-                            });
-                            widget.onWarehouseSelected(value);
-                            Navigator.pop(context); // Cerrar drawer
-                          }
-                        },
-                        selectedItem: _selectedWarehouse,
-                      ),
+                if (_currentSessionId != null)
+                  ListTile(
+                    leading: const Icon(Icons.check_circle_outline),
+                    title: const Text('Finalizar Inventario'),
+                    onTap: _closeInventory,
+                  ),
               ],
             ),
           ),

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../services/sync_service.dart';
 import '../widgets/app_drawer.dart';
 import 'dashboard_page.dart';
 import 'inventory_page.dart';
+import 'inventory_history_page.dart';
 
 class HomePage extends StatefulWidget {
   final String? initialWarehouseId;
@@ -72,7 +74,15 @@ class _HomePageState extends State<HomePage> {
     );
 
     try {
-      await context.read<SyncService>().syncUp(warehouseId);
+      final prefs = await SharedPreferences.getInstance();
+      final sessionId = prefs.getString('current_session_id');
+
+      if (sessionId == null) {
+        throw Exception(
+            'No hay sesión de inventario activa. Por favor reinicie la selección de almacén.');
+      }
+
+      await context.read<SyncService>().syncUp(warehouseId, sessionId);
 
       if (!mounted) {
         return;
@@ -107,93 +117,6 @@ class _HomePageState extends State<HomePage> {
     if (index == 1) {
       _checkPendingCount();
     }
-  }
-
-  Future<void> _onWarehouseSelected(String warehouseId) async {
-    // 1. Verificar cambios pendientes
-    try {
-      final pending =
-          await context.read<SyncService>().getPendingCount(warehouseId);
-      if (pending > 0 && mounted) {
-        final result = await showDialog<String>(
-          context: context,
-          builder: (ctx) => AlertDialog(
-            title: const Text('Cambios pendientes'),
-            content: Text(
-                'Tienes $pending cambios pendientes en $warehouseId. Si descargas ahora, perderás tus cambios locales. ¿Qué deseas hacer?'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx, 'cancel'),
-                child: const Text('Cancelar'),
-              ),
-              TextButton(
-                onPressed: () => Navigator.pop(ctx, 'overwrite'),
-                child: const Text('Sobrescribir'),
-              ),
-              ElevatedButton(
-                onPressed: () => Navigator.pop(ctx, 'sync'),
-                child: const Text('Sincronizar'),
-              ),
-            ],
-          ),
-        );
-
-        if (result == 'cancel' || result == null) {
-          return;
-        }
-        if (result == 'sync') {
-          await _syncWithId(warehouseId);
-          // Continuar con la descarga
-        }
-      }
-    } catch (e) {
-      debugPrint('Error checking pending: $e');
-    }
-
-    if (!mounted) {
-      return;
-    }
-
-    // 2. Descargar inventario
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => const AlertDialog(
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            CircularProgressIndicator(),
-            SizedBox(height: 16),
-            Text('Descargando inventario...'),
-          ],
-        ),
-      ),
-    );
-
-    try {
-      await context.read<SyncService>().downloadInventory(warehouseId);
-
-      if (!mounted) {
-        return;
-      }
-      Navigator.of(context).pop(); // Cerrar diálogo
-    } catch (e) {
-      if (!mounted) {
-        return;
-      }
-      Navigator.of(context).pop(); // Cerrar diálogo
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content: Text(
-                'Aviso: No se pudo descargar (Offline). Usando datos locales. Error: $e')),
-      );
-    }
-
-    setState(() {
-      _selectedWarehouse = warehouseId;
-      _selectedIndex = 1;
-    });
-    _checkPendingCount();
   }
 
   @override
@@ -240,58 +163,66 @@ class _HomePageState extends State<HomePage> {
                 ],
               ),
         centerTitle: _selectedIndex == 0,
-        actions: _selectedIndex == 1 && _selectedWarehouse != null
-            ? [
-                IconButton(
-                  icon: Stack(
-                    children: [
-                      const Icon(Icons.sync),
-                      if (_pendingCount > 0)
-                        Positioned(
-                          right: 0,
-                          top: 0,
-                          child: Container(
-                            padding: const EdgeInsets.all(2),
-                            decoration: BoxDecoration(
-                              color: Colors.red,
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            constraints: const BoxConstraints(
-                              minWidth: 12,
-                              minHeight: 12,
-                            ),
-                            child: Text(
-                              '$_pendingCount',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 8,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
+        actions: [
+          if (_selectedIndex == 1 && _selectedWarehouse != null) ...[
+            IconButton(
+              icon: Stack(
+                children: [
+                  const Icon(Icons.sync),
+                  if (_pendingCount > 0)
+                    Positioned(
+                      right: 0,
+                      top: 0,
+                      child: Container(
+                        padding: const EdgeInsets.all(2),
+                        decoration: BoxDecoration(
+                          color: Colors.red,
+                          borderRadius: BorderRadius.circular(6),
                         ),
-                    ],
-                  ),
-                  tooltip: 'Sincronizar ($_pendingCount pendientes)',
-                  onPressed: _sync,
+                        constraints: const BoxConstraints(
+                          minWidth: 12,
+                          minHeight: 12,
+                        ),
+                        child: Text(
+                          '$_pendingCount',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 8,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              tooltip: 'Sincronizar ($_pendingCount pendientes)',
+              onPressed: _sync,
+            ),
+            IconButton(
+              icon: const Icon(Icons.list_alt),
+              tooltip: 'Ver Inventariados',
+              onPressed: () => _inventoryKey.currentState?.openReviewPage(),
+            ),
+            IconButton(
+              icon: const Icon(Icons.filter_list),
+              tooltip: 'Filtrar',
+              onPressed: () => _inventoryKey.currentState?.showFilterDialog(),
+            ),
+          ],
+          IconButton(
+            icon: const Icon(Icons.history),
+            tooltip: 'Historial de Inventarios',
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const InventoryHistoryPage(),
                 ),
-                IconButton(
-                  icon: const Icon(Icons.list_alt),
-                  tooltip: 'Ver Inventariados',
-                  onPressed: () => _inventoryKey.currentState?.openReviewPage(),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.filter_list),
-                  tooltip: 'Filtrar',
-                  onPressed: () =>
-                      _inventoryKey.currentState?.showFilterDialog(),
-                ),
-              ]
-            : null,
+              );
+            },
+          ),
+        ],
       ),
-      drawer: AppDrawer(
-        onWarehouseSelected: _onWarehouseSelected,
-      ),
+      drawer: const AppDrawer(),
       body: content,
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[

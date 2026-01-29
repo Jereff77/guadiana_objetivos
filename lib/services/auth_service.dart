@@ -5,14 +5,23 @@ class AuthService {
   SupabaseClient get _client => SupabaseConfig.client;
 
   Future<void> signInWithEmail(String email, String password) async {
-    final res = await _client.auth.signInWithPassword(email: email, password: password);
+    final res =
+        await _client.auth.signInWithPassword(email: email, password: password);
     if (res.session == null) {
       throw Exception('Inicio de sesión fallido');
     }
   }
 
-  Future<void> signUp(String email, String password) async {
-    final res = await _client.auth.signUp(email: email, password: password);
+  Future<void> signUp(String email, String password,
+      {String? firstName, String? lastName}) async {
+    final res = await _client.auth.signUp(
+      email: email,
+      password: password,
+      data: {
+        if (firstName != null) 'first_name': firstName,
+        if (lastName != null) 'last_name': lastName,
+      },
+    );
     if (res.user == null) {
       throw Exception('Registro fallido');
     }

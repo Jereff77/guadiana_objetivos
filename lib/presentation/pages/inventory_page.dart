@@ -62,6 +62,7 @@ class InventoryPageState extends State<InventoryPage> {
                   'Categoria': item.category,
                   'Marca': item.brand,
                   'Existencia': item.stock,
+                  'ConteoFisico': item.physicalStock, // Mapear nuevo campo
                   'Disponible': item.available,
                   'Notas': item.notes,
                   'Almacen': item.warehouseId,
@@ -91,7 +92,8 @@ class InventoryPageState extends State<InventoryPage> {
       builder: (context) => InventoryCountDialog(
         product: product,
         currentInventory: {
-          'Existencia': product['Existencia'],
+          'Existencia': product['Existencia'], // Stock Sistema
+          'ConteoFisico': product['ConteoFisico'], // Conteo Físico Actual
           'Notas': product['Notas'],
         },
         onSave: (newQuantity, notes) async {
@@ -103,19 +105,16 @@ class InventoryPageState extends State<InventoryPage> {
   }
 
   Future<void> _updateInventory(
-      Map<String, dynamic> row, int newQty, String? notes) async {
-    final id = row['ProductId'];
+      Map<String, dynamic> product, int newQuantity, String? notes) async {
     final db = context.read<LocalDatabase>();
-
     await (db.update(db.localInventory)
           ..where((t) =>
-              t.productId.equals(id) &
+              t.productId.equals(product['ProductId']) &
               t.warehouseId.equals(widget.warehouseId)))
         .write(LocalInventoryCompanion(
-      stock: drift.Value(newQty),
-      available: drift.Value(newQty),
+      physicalStock: drift.Value(newQuantity), // Actualizar solo conteo físico
       notes: drift.Value(notes),
-      isSynced: const drift.Value(false), // Marcar como no sincronizado
+      isSynced: const drift.Value(false),
       lastUpdated: drift.Value(DateTime.now()),
     ));
   }

@@ -12,8 +12,10 @@ class ProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final qty = inventory?['Existencia'] ?? 0;
+    final systemQty = product['Existencia'] ?? 0;
+    final physicalQty = product['ConteoFisico']; // Puede ser null
     final stockMin = product['StockMin'] ?? 0;
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -21,28 +23,50 @@ class ProductCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              product['Producto'] ?? '',
+              product['Descripcion'] ?? product['ProductId'] ?? '',
               style: Theme.of(context).textTheme.titleMedium,
             ),
-            const SizedBox(height: 8),
-            Text(product['Descripcion'] ?? ''),
             const SizedBox(height: 8),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text('Marca: ${product['Marca'] ?? ''}'),
-                Text('Modelo: ${product['Modelo'] ?? ''}'),
+                Text('Cat: ${product['Categoria'] ?? ''}'),
               ],
             ),
             const SizedBox(height: 8),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('ProductoId: ${product['ProductId'] ?? ''}'),
-                Text('Stock: $qty'),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Sistema: $systemQty',
+                        style: const TextStyle(color: Colors.grey)),
+                    if (physicalQty != null)
+                      Text(
+                        'Físico: $physicalQty',
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold, color: Colors.blue),
+                      )
+                    else
+                      const Text('Físico: -',
+                          style: TextStyle(fontStyle: FontStyle.italic)),
+                  ],
+                ),
+                if (physicalQty != null)
+                  Text(
+                    'Dif: ${physicalQty - systemQty}',
+                    style: TextStyle(
+                      color: (physicalQty - systemQty) == 0
+                          ? Colors.green
+                          : Colors.red,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
               ],
             ),
-            if (qty is num && stockMin is num && qty <= stockMin)
+            if (systemQty is num && stockMin is num && systemQty <= stockMin)
               Container(
                 margin: const EdgeInsets.only(top: 8),
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
