@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../services/auth_service.dart';
-import 'warehouse_select_page.dart';
-import 'register_page.dart';
+import '../../core/utils/auth_error_mapper.dart';
+import 'home_page.dart';
 import 'forgot_password_page.dart';
+import 'register_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -18,6 +20,28 @@ class _LoginPageState extends State<LoginPage> {
   final _auth = AuthService();
   bool _loading = false;
   String? _error;
+  bool _obscurePassword = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadLastEmail();
+  }
+
+  Future<void> _loadLastEmail() async {
+    final prefs = await SharedPreferences.getInstance();
+    final lastEmail = prefs.getString('last_email');
+    if (lastEmail != null && mounted) {
+      setState(() {
+        _emailController.text = lastEmail;
+      });
+    }
+  }
+
+  Future<void> _saveLastEmail() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('last_email', _emailController.text.trim());
+  }
 
   Future<void> _login() async {
     if (!_formKey.currentState!.validate()) return;
@@ -28,13 +52,14 @@ class _LoginPageState extends State<LoginPage> {
     try {
       await _auth.signInWithEmail(
           _emailController.text.trim(), _passwordController.text);
+      await _saveLastEmail();
       if (!mounted) return;
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const WarehouseSelectPage()),
+        MaterialPageRoute(builder: (_) => const HomePage()),
       );
     } catch (e) {
       setState(() {
-        _error = e.toString();
+        _error = AuthErrorMapper.getMessage(e);
       });
     } finally {
       if (mounted) {
@@ -62,6 +87,11 @@ class _LoginPageState extends State<LoginPage> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
+                      Image.asset(
+                        'assets/images/guadiana.png',
+                        height: 100,
+                      ),
+                      const SizedBox(height: 24),
                       TextFormField(
                         controller: _emailController,
                         decoration: const InputDecoration(labelText: 'Email'),
@@ -74,9 +104,20 @@ class _LoginPageState extends State<LoginPage> {
                       const SizedBox(height: 12),
                       TextFormField(
                         controller: _passwordController,
-                        decoration:
-                            const InputDecoration(labelText: 'Contraseña'),
-                        obscureText: true,
+                        decoration: InputDecoration(
+                          labelText: 'Contraseña',
+                          suffixIcon: IconButton(
+                            icon: Icon(_obscurePassword
+                                ? Icons.visibility
+                                : Icons.visibility_off),
+                            onPressed: () {
+                              setState(() {
+                                _obscurePassword = !_obscurePassword;
+                              });
+                            },
+                          ),
+                        ),
+                        obscureText: _obscurePassword,
                         validator: (v) {
                           if (v == null || v.isEmpty) {
                             return 'Ingresa tu contraseña';

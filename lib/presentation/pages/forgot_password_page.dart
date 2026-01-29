@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/utils/auth_error_mapper.dart';
 import '../../services/auth_service.dart';
 
 class ForgotPasswordPage extends StatefulWidget {
@@ -18,7 +19,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
 
   Future<void> _resetPassword() async {
     if (!_formKey.currentState!.validate()) return;
-    
+
     setState(() {
       _loading = true;
       _error = null;
@@ -32,7 +33,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
       });
     } catch (e) {
       setState(() {
-        _error = 'Error al enviar correo de recuperación. Verifica el email ingresado.';
+        _error = AuthErrorMapper.getMessage(e);
       });
     } finally {
       if (mounted) {
@@ -60,6 +61,11 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
+                      Image.asset(
+                        'assets/images/guadiana.png',
+                        height: 80,
+                      ),
+                      const SizedBox(height: 16),
                       const Text(
                         'Ingresa tu correo electrónico para recibir un enlace de restablecimiento de contraseña.',
                         textAlign: TextAlign.center,
@@ -78,12 +84,14 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                       if (_message != null)
                         Padding(
                           padding: const EdgeInsets.only(bottom: 8),
-                          child: Text(_message!, style: const TextStyle(color: Colors.green)),
+                          child: Text(_message!,
+                              style: const TextStyle(color: Colors.green)),
                         ),
                       if (_error != null)
                         Padding(
                           padding: const EdgeInsets.only(bottom: 8),
-                          child: Text(_error!, style: const TextStyle(color: Colors.red)),
+                          child: Text(_error!,
+                              style: const TextStyle(color: Colors.red)),
                         ),
                       SizedBox(
                         width: double.infinity,
@@ -93,7 +101,8 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                               ? const SizedBox(
                                   height: 20,
                                   width: 20,
-                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                  child:
+                                      CircularProgressIndicator(strokeWidth: 2),
                                 )
                               : const Text('Enviar Enlace'),
                         ),

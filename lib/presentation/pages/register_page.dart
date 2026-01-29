@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/config/allowed_domains.dart';
+import '../../core/utils/auth_error_mapper.dart';
 import '../../services/auth_service.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -20,26 +21,25 @@ class _RegisterPageState extends State<RegisterPage> {
 
   Future<void> _register() async {
     if (!_formKey.currentState!.validate()) return;
-    
+
     setState(() {
       _loading = true;
       _error = null;
     });
 
     try {
-      await _auth.signUp(_emailController.text.trim(), _passwordController.text);
+      await _auth.signUp(
+          _emailController.text.trim(), _passwordController.text);
       if (!mounted) return;
-      
+
       // Mostrar diálogo de éxito y volver al login
       showDialog(
         context: context,
         barrierDismissible: false,
         builder: (context) => AlertDialog(
           title: const Text('Registro Exitoso'),
-          content: const Text(
-            'Se ha creado tu cuenta correctamente. '
-            'Por favor verifica tu correo electrónico para confirmar tu cuenta antes de iniciar sesión.'
-          ),
+          content: const Text('Se ha creado tu cuenta correctamente. '
+              'Por favor verifica tu correo electrónico para confirmar tu cuenta antes de iniciar sesión.'),
           actions: [
             TextButton(
               onPressed: () {
@@ -53,11 +53,7 @@ class _RegisterPageState extends State<RegisterPage> {
       );
     } catch (e) {
       setState(() {
-        _error = e.toString();
-        // Limpiar mensaje de error genérico de Supabase si es posible
-        if (_error!.contains('Exception:')) {
-          _error = _error!.replaceAll('Exception:', '').trim();
-        }
+        _error = AuthErrorMapper.getMessage(e);
       });
     } finally {
       if (mounted) {
@@ -85,6 +81,11 @@ class _RegisterPageState extends State<RegisterPage> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
+                      Image.asset(
+                        'assets/images/guadiana.png',
+                        height: 80,
+                      ),
+                      const SizedBox(height: 16),
                       TextFormField(
                         controller: _emailController,
                         decoration: const InputDecoration(labelText: 'Email'),
@@ -100,28 +101,35 @@ class _RegisterPageState extends State<RegisterPage> {
                       const SizedBox(height: 12),
                       TextFormField(
                         controller: _passwordController,
-                        decoration: const InputDecoration(labelText: 'Contraseña'),
+                        decoration:
+                            const InputDecoration(labelText: 'Contraseña'),
                         obscureText: true,
                         validator: (v) {
-                          if (v == null || v.isEmpty) return 'Ingresa tu contraseña';
-                          if (v.length < 6) return 'La contraseña debe tener al menos 6 caracteres';
+                          if (v == null || v.isEmpty)
+                            return 'Ingresa tu contraseña';
+                          if (v.length < 6)
+                            return 'La contraseña debe tener al menos 6 caracteres';
                           return null;
                         },
                       ),
                       const SizedBox(height: 12),
                       TextFormField(
                         controller: _confirmPasswordController,
-                        decoration: const InputDecoration(labelText: 'Confirmar Contraseña'),
+                        decoration: const InputDecoration(
+                            labelText: 'Confirmar Contraseña'),
                         obscureText: true,
                         validator: (v) {
-                          if (v == null || v.isEmpty) return 'Confirma tu contraseña';
-                          if (v != _passwordController.text) return 'Las contraseñas no coinciden';
+                          if (v == null || v.isEmpty)
+                            return 'Confirma tu contraseña';
+                          if (v != _passwordController.text)
+                            return 'Las contraseñas no coinciden';
                           return null;
                         },
                       ),
                       const SizedBox(height: 16),
                       if (_error != null)
-                        Text(_error!, style: const TextStyle(color: Colors.red)),
+                        Text(_error!,
+                            style: const TextStyle(color: Colors.red)),
                       const SizedBox(height: 8),
                       SizedBox(
                         width: double.infinity,
@@ -131,7 +139,8 @@ class _RegisterPageState extends State<RegisterPage> {
                               ? const SizedBox(
                                   height: 20,
                                   width: 20,
-                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                  child:
+                                      CircularProgressIndicator(strokeWidth: 2),
                                 )
                               : const Text('Registrarse'),
                         ),

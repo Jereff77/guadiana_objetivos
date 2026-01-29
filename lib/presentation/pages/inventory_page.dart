@@ -12,10 +12,10 @@ class InventoryPage extends StatefulWidget {
   const InventoryPage({super.key, required this.warehouseId});
 
   @override
-  State<InventoryPage> createState() => _InventoryPageState();
+  State<InventoryPage> createState() => InventoryPageState();
 }
 
-class _InventoryPageState extends State<InventoryPage> {
+class InventoryPageState extends State<InventoryPage> {
   final SupabaseClient _client = SupabaseConfig.client;
   String _query = '';
   String? _selectedCategory;
@@ -39,7 +39,8 @@ class _InventoryPageState extends State<InventoryPage> {
       var query = _client
           .from('inventario')
           .select('*')
-          .eq('Almacen', widget.warehouseId);
+          .eq('Almacen', widget.warehouseId)
+          .gt('Existencia', 0);
       if (_query.isNotEmpty) {
         query = query.ilike('Descripcion', '%$_query%');
       }
@@ -101,7 +102,7 @@ class _InventoryPageState extends State<InventoryPage> {
         .eq('Almacen', widget.warehouseId);
   }
 
-  Future<void> _showFilterDialog() async {
+  Future<void> showFilterDialog() async {
     final result = await showDialog<Map<String, String?>>(
       context: context,
       builder: (context) => FilterDialog(
@@ -119,31 +120,19 @@ class _InventoryPageState extends State<InventoryPage> {
     }
   }
 
+  void openReviewPage() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => InventoryReviewPage(warehouseId: widget.warehouseId),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Inventario'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.list_alt),
-            tooltip: 'Ver Inventariados',
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) =>
-                      InventoryReviewPage(warehouseId: widget.warehouseId),
-                ),
-              );
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.filter_list),
-            onPressed: _showFilterDialog,
-          ),
-        ],
-      ),
-      body: Column(
+    return Material(
+      type: MaterialType.transparency,
+      child: Column(
         children: [
           const BreadcrumbNavigation(),
           Padding(
@@ -177,10 +166,6 @@ class _InventoryPageState extends State<InventoryPage> {
                       ),
           ),
         ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        child: const Icon(Icons.sync),
       ),
     );
   }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/config/supabase_config.dart';
-import 'inventory_page.dart';
+import 'home_page.dart';
 
 class WarehouseSelectPage extends StatefulWidget {
   const WarehouseSelectPage({super.key});
@@ -43,7 +43,8 @@ class _WarehouseSelectPageState extends State<WarehouseSelectPage> {
         // Fallback: si no existe la RPC, intentamos leer (limitado)
         // Nota: Esto solo traerá los primeros 1000 registros, por lo que podría no mostrar todos los almacenes.
         // Se recomienda encarecidamente crear la función RPC.
-        final res = await _client.from('inventario').select('Almacen').order('Almacen');
+        final res =
+            await _client.from('inventario').select('Almacen').order('Almacen');
         final names = (res as List)
             .map((e) => e['Almacen'] as String?)
             .where((e) => (e ?? '').isNotEmpty)
@@ -81,9 +82,9 @@ class _WarehouseSelectPageState extends State<WarehouseSelectPage> {
                       title: Text(w),
                       trailing: const Icon(Icons.chevron_right),
                       onTap: () {
-                        Navigator.of(context).push(
+                        Navigator.of(context).pushReplacement(
                           MaterialPageRoute(
-                            builder: (_) => InventoryPage(warehouseId: w),
+                            builder: (_) => HomePage(initialWarehouseId: w),
                           ),
                         );
                       },

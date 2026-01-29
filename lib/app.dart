@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'core/config/supabase_config.dart';
 import 'presentation/pages/login_page.dart';
-import 'presentation/pages/warehouse_select_page.dart';
+import 'presentation/pages/home_page.dart';
 
 class GuadianaApp extends StatefulWidget {
   const GuadianaApp({super.key});
@@ -38,8 +38,18 @@ class _GuadianaAppState extends State<GuadianaApp> {
     final theme = ThemeData(
       useMaterial3: true,
       colorScheme: ColorScheme.fromSeed(
-        seedColor: Colors.blue,
+        seedColor: const Color(0xFF004A93),
         brightness: Brightness.light,
+        primary: const Color(0xFF004A93),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFF004A93),
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+        ),
       ),
       appBarTheme: const AppBarTheme(
         centerTitle: true,
@@ -77,7 +87,7 @@ class _GuadianaAppState extends State<GuadianaApp> {
 
     return MaterialApp(
       theme: theme,
-      home: session != null ? const WarehouseSelectPage() : const LoginPage(),
+      home: session != null ? const HomePage() : const LoginPage(),
     );
   }
 }
