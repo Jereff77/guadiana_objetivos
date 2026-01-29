@@ -1,7 +1,7 @@
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../core/config/supabase_config.dart';
+import 'package:provider/provider.dart';
+import '../../data/datasources/local/database.dart';
 
 class FilterDialog extends StatefulWidget {
   final String warehouseId;
@@ -19,7 +19,7 @@ class FilterDialog extends StatefulWidget {
 }
 
 class _FilterDialogState extends State<FilterDialog> {
-  final SupabaseClient _client = SupabaseConfig.client;
+  // Eliminado: final SupabaseClient _client = SupabaseConfig.client;
   bool _loading = true;
   String? _error;
   List<String> _categories = [];
@@ -41,16 +41,18 @@ class _FilterDialogState extends State<FilterDialog> {
       _error = null;
     });
     try {
-      final res = await _client
-          .from('inventario')
-          .select('Categoria')
-          .eq('Almacen', widget.warehouseId);
-          
-      final categories = (res as List)
-          .map((e) => e['Categoria'] as String?)
-          .where((e) => (e ?? '').isNotEmpty)
-          .map((e) => e!)
-          .toSet()
+      final db = context.read<LocalDatabase>();
+
+      // Obtener categorías únicas desde la BD local
+      final categoriesQuery = db.selectOnly(db.localInventory, distinct: true)
+        ..addColumns([db.localInventory.category])
+        ..where(db.localInventory.warehouseId.equals(widget.warehouseId));
+
+      final categoriesResult = await categoriesQuery.get();
+      final categories = categoriesResult
+          .map((row) => row.read(db.localInventory.category))
+          .where((c) => c != null && c.isNotEmpty)
+          .map((c) => c!)
           .toList();
       categories.sort();
 
@@ -58,16 +60,16 @@ class _FilterDialogState extends State<FilterDialog> {
         _categories = categories;
       });
 
-      final prodRes = await _client
-          .from('inventario')
-          .select('Marca')
-          .eq('Almacen', widget.warehouseId);
-          
-      final brands = (prodRes as List)
-          .map((e) => e['Marca'] as String?)
-          .where((e) => (e ?? '').isNotEmpty)
-          .map((e) => e!)
-          .toSet()
+      // Obtener marcas únicas desde la BD local
+      final brandsQuery = db.selectOnly(db.localInventory, distinct: true)
+        ..addColumns([db.localInventory.brand])
+        ..where(db.localInventory.warehouseId.equals(widget.warehouseId));
+
+      final brandsResult = await brandsQuery.get();
+      final brands = brandsResult
+          .map((row) => row.read(db.localInventory.brand))
+          .where((b) => b != null && b.isNotEmpty)
+          .map((b) => b!)
           .toList();
       brands.sort();
 
@@ -76,12 +78,14 @@ class _FilterDialogState extends State<FilterDialog> {
       });
     } catch (e) {
       setState(() {
-        _error = e.toString();
+        _error = 'Error cargando filtros: $e';
       });
     } finally {
-      setState(() {
-        _loading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _loading = false;
+        });
+      }
     }
   }
 
