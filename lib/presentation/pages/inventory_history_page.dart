@@ -17,6 +17,7 @@ class _InventoryHistoryPageState extends State<InventoryHistoryPage> {
   List<Map<String, dynamic>> _sessions = [];
   Map<String, Map<String, dynamic>> _userProfiles = {};
   String? _error;
+  UserRole? _currentUserRole;
 
   // Filtros
   String? _selectedUserId;
@@ -30,7 +31,17 @@ class _InventoryHistoryPageState extends State<InventoryHistoryPage> {
   @override
   void initState() {
     super.initState();
+    _loadUserRole();
     _loadHistory();
+  }
+
+  Future<void> _loadUserRole() async {
+    final role = await RoleService.getRole();
+    if (mounted) {
+      setState(() {
+        _currentUserRole = role;
+      });
+    }
   }
 
   Future<void> _loadHistory() async {
@@ -61,12 +72,12 @@ class _InventoryHistoryPageState extends State<InventoryHistoryPage> {
         }
       }
 
-      // Filtro de Estatus
+      // Filtro de Estatus (aplica para todos los roles)
       if (_selectedStatus != 'all') {
         query = query.eq('status', _selectedStatus);
       }
 
-      // Filtro de Fechas (Creación)
+      // Filtro de Fechas (aplica para todos los roles)
       if (_startDate != null) {
         query = query.gte('created_at', _startDate!.toIso8601String());
       }
@@ -137,33 +148,35 @@ class _InventoryHistoryPageState extends State<InventoryHistoryPage> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Filtro de Usuario
-                  const Text('Usuario:',
-                      style: TextStyle(fontWeight: FontWeight.bold)),
-                  DropdownButton<String>(
-                    isExpanded: true,
-                    value: _selectedUserId,
-                    hint: const Text('Todos los usuarios'),
-                    items: [
-                      const DropdownMenuItem(
-                        value: null,
-                        child: Text('Todos los usuarios'),
-                      ),
-                      ..._availableUsers.map((u) {
-                        final name = u['first_name'] != null
-                            ? '${u['first_name']} ${u['last_name'] ?? ''}'
-                            : (u['email'] ?? u['id']); // Fallback
-                        return DropdownMenuItem(
-                          value: u['id'] as String,
-                          child: Text(name),
-                        );
-                      }),
-                    ],
-                    onChanged: (val) {
-                      setStateDialog(() => _selectedUserId = val);
-                    },
-                  ),
-                  const SizedBox(height: 16),
+                  // Filtro de Usuario (solo para auditores)
+                  if (_currentUserRole == UserRole.auditor && _availableUsers.isNotEmpty) ...[
+                    const Text('Usuario:',
+                        style: TextStyle(fontWeight: FontWeight.bold)),
+                    DropdownButton<String>(
+                      isExpanded: true,
+                      value: _selectedUserId,
+                      hint: const Text('Todos los usuarios'),
+                      items: [
+                        const DropdownMenuItem(
+                          value: null,
+                          child: Text('Todos los usuarios'),
+                        ),
+                        ..._availableUsers.map((u) {
+                          final name = u['first_name'] != null
+                              ? '${u['first_name']} ${u['last_name'] ?? ''}'
+                              : (u['email'] ?? u['id']); // Fallback
+                          return DropdownMenuItem(
+                            value: u['id'] as String,
+                            child: Text(name),
+                          );
+                        }),
+                      ],
+                      onChanged: (val) {
+                        setStateDialog(() => _selectedUserId = val);
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                  ],
 
                   // Filtro de Estatus
                   const Text('Estatus:',
@@ -327,7 +340,9 @@ class _InventoryHistoryPageState extends State<InventoryHistoryPage> {
                         children: [
                           const Text('No hay inventarios registrados.'),
                           if (_selectedUserId != null ||
-                              _selectedStatus != 'all')
+                              _selectedStatus != 'all' ||
+                              _startDate != null ||
+                              _endDate != null)
                             TextButton(
                               onPressed: () {
                                 setState(() {

@@ -2,6 +2,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:drift/drift.dart';
 import '../core/config/supabase_config.dart';
 import '../data/datasources/local/database.dart';
+import '../services/role_service.dart';
 
 class SyncService {
   final LocalDatabase db;
@@ -84,10 +85,21 @@ class SyncService {
       bool sessionCountsFetched = false;
       if (sessionId != null) {
         try {
-          final countsResponse = await client
+          // Obtener rol del usuario para filtrar conteos
+          final role = await RoleService.getRole();
+          final user = client.auth.currentUser;
+
+          var countsQuery = client
               .from('conteo_inventario')
               .select('product_id, quantity, notes')
               .eq('session_id', sessionId);
+
+          // Filtrar por usuario si es almacenista
+          if (role == UserRole.almacenista && user != null) {
+            countsQuery = countsQuery.eq('user_id', user.id);
+          }
+
+          final countsResponse = await countsQuery;
 
           for (var item in (countsResponse as List)) {
             if (item['product_id'] != null) {

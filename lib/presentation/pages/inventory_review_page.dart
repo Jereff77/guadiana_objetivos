@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:drift/drift.dart' as drift;
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../data/datasources/local/database.dart';
+import '../../services/role_service.dart';
 import '../widgets/inventory_count_dialog.dart';
 
 class InventoryReviewPage extends StatefulWidget {
@@ -23,6 +25,7 @@ class _InventoryReviewPageState extends State<InventoryReviewPage> {
   String? _error;
   List<Map<String, dynamic>> _items = [];
   String _query = '';
+  Map<String, Map<String, dynamic>> _userProfiles = {};
 
   @override
   void initState() {
@@ -50,6 +53,12 @@ class _InventoryReviewPageState extends State<InventoryReviewPage> {
 
       final results = await query.get();
 
+      // Obtener información de usuarios si es auditor
+      final role = await RoleService.getRole();
+      if (role == UserRole.auditor) {
+        await _loadUserProfiles();
+      }
+
       setState(() {
         _items = results
             .map((item) => {
@@ -63,6 +72,8 @@ class _InventoryReviewPageState extends State<InventoryReviewPage> {
                   'Disponible': item.available,
                   'Notas': item.notes,
                   'Almacen': item.warehouseId,
+                  'lastUpdated': item.lastUpdated,
+                  'isSynced': item.isSynced,
                 })
             .toList();
       });
@@ -75,6 +86,56 @@ class _InventoryReviewPageState extends State<InventoryReviewPage> {
         _loading = false;
       });
     }
+  }
+
+  Future<void> _loadUserProfiles() async {
+    try {
+      final client = Supabase.instance.client;
+      
+      // Obtener conteos de inventario para saber qué usuarios participaron
+      final countsResponse = await client
+          .from('conteo_inventario')
+          .select('user_id')
+          .eq('warehouse_id', widget.warehouseId);
+      
+      final userIds = (countsResponse as List)
+          .map((c) => c['user_id'] as String?)
+          .where((id) => id != null)
+          .toSet()
+          .toList();
+
+      if (userIds.isNotEmpty) {
+        final profilesResponse = await client
+            .from('app_profiles')
+            .select()
+            .filter('id', 'in', userIds);
+
+        for (var p in profilesResponse) {
+          _userProfiles[p['id']] = p;
+        }
+      }
+    } catch (e) {
+      debugPrint('Error loading user profiles: $e');
+    }
+  }
+
+  String _getUserName(String? userId) {
+    if (userId == null) return 'Desconocido';
+    
+    // Si es almacenista, mostrar su propio nombre
+    final currentUser = Supabase.instance.client.auth.currentUser;
+    if (currentUser != null && userId == currentUser.id) {
+      return 'Tú';
+    }
+    
+    final profile = _userProfiles[userId];
+    if (profile != null) {
+      if (profile['first_name'] != null) {
+        return '${profile['first_name']} ${profile['last_name'] ?? ''}'.trim();
+      }
+      return profile['email'] ?? 'Usuario ${userId.substring(0, 4)}';
+    }
+    return 'Usuario ${userId.substring(0, 4)}';
   }
 
   void _openCountDialog(Map<String, dynamic> product) {
@@ -161,6 +222,8 @@ class _InventoryReviewPageState extends State<InventoryReviewPage> {
                               final physStock = item['ConteoFisico'] ?? 0;
                               final diff = physStock - sysStock;
                               final hasDiff = diff != 0;
+                              final lastUpdated = item['lastUpdated'] as DateTime?;
+                              final isSynced = item['isSynced'] as bool? ?? true;
 
                               return Card(
                                 margin: const EdgeInsets.symmetric(
@@ -194,6 +257,35 @@ class _InventoryReviewPageState extends State<InventoryReviewPage> {
                                           ),
                                         ],
                                       ),
+                                      // Mostrar información de sincronización y usuario
+                                      Row(
+                                        children: [
+                                          Icon(
+                                            isSynced ? Icons.cloud_done : Icons.cloud_upload,
+                                            size: 14,
+                                            color: isSynced ? Colors.green : Colors.orange,
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            isSynced ? 'Sincronizado' : 'Pendiente',
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              color: isSynced ? Colors.green : Colors.orange,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                          if (lastUpdated != null) ...[
+                                            const SizedBox(width: 8),
+                                            Text(
+                                              'Actualizado: ${_formatDateTime(lastUpdated)}',
+                                              style: const TextStyle(
+                                                fontSize: 12,
+                                                color: Colors.grey,
+                                              ),
+                                            ),
+                                          ],
+                                        ],
+                                      ),
                                       if (item['Notas'] != null &&
                                           item['Notas'].toString().isNotEmpty)
                                         Text('Nota: ${item['Notas']}',
@@ -214,5 +306,9 @@ class _InventoryReviewPageState extends State<InventoryReviewPage> {
         ],
       ),
     );
+  }
+
+  String _formatDateTime(DateTime dateTime) {
+    return '${dateTime.day.toString().padLeft(2, '0')}/${dateTime.month.toString().padLeft(2, '0')} ${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
   }
 }

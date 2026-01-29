@@ -87,17 +87,41 @@ class _GuadianaAppState extends State<GuadianaApp> {
         theme: theme,
         home: Scaffold(
           body: Center(
-            child: Text('Error al inicializar: $_initError'),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error, size: 64, color: Colors.red),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Error de Configuración',
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(_initError.toString()),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Por favor, configura las credenciales de Supabase',
+                    style: TextStyle(fontSize: 16),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () {
+                      // Reiniciar la aplicación para que intente configurar de nuevo
+                      Navigator.of(context).pushReplacement(
+                        MaterialPageRoute(
+                          builder: (context) => const GuadianaApp(),
+                        ),
+                      );
+                    },
+                    child: const Text('Reintentar'),
+                  ),
+                ],
+              ),
+            ),
           ),
-        ),
-      );
-    }
-
-    if (!_initialized) {
-      return MaterialApp(
-        theme: theme,
-        home: const Scaffold(
-          body: Center(child: CircularProgressIndicator()),
         ),
       );
     }
