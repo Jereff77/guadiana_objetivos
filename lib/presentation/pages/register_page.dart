@@ -19,6 +19,14 @@ class _RegisterPageState extends State<RegisterPage> {
   bool _loading = false;
   String? _error;
 
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
+  }
+
   Future<void> _register() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -139,9 +147,10 @@ class _RegisterPageState extends State<RegisterPage> {
                               ? const SizedBox(
                                   height: 20,
                                   width: 20,
-                                  child:
-                                      CircularProgressIndicator(strokeWidth: 2),
-                                )
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ))
                               : const Text('Registrarse'),
                         ),
                       ),
