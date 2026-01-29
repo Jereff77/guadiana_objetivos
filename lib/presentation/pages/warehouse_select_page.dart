@@ -74,7 +74,9 @@ class _WarehouseSelectPageState extends State<WarehouseSelectPage> {
       // 4. Fallback final: Local Database (Offline)
       debugPrint('Error cargando almacenes remotos: $e');
       try {
-        if (!mounted) return;
+        if (!mounted) {
+          return;
+        }
         final localWarehouses =
             await context.read<LocalDatabase>().getUniqueWarehouses();
 
@@ -150,7 +152,9 @@ class _WarehouseSelectPageState extends State<WarehouseSelectPage> {
                               .read<SyncService>()
                               .downloadInventory(w);
 
-                          if (!context.mounted) return;
+                          if (!context.mounted) {
+                            return;
+                          }
                           Navigator.of(context).pop(); // Cerrar diálogo
 
                           Navigator.of(context).pushReplacement(
@@ -159,7 +163,9 @@ class _WarehouseSelectPageState extends State<WarehouseSelectPage> {
                             ),
                           );
                         } catch (e) {
-                          if (!context.mounted) return;
+                          if (!context.mounted) {
+                            return;
+                          }
                           Navigator.of(context).pop(); // Cerrar diálogo
 
                           // Verificar si tenemos datos locales
@@ -168,7 +174,9 @@ class _WarehouseSelectPageState extends State<WarehouseSelectPage> {
                               .hasInventoryFor(w);
 
                           if (hasLocalData) {
-                            if (!context.mounted) return;
+                            if (!context.mounted) {
+                              return;
+                            }
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                   content: Text(
@@ -180,7 +188,9 @@ class _WarehouseSelectPageState extends State<WarehouseSelectPage> {
                               ),
                             );
                           } else {
-                            if (!context.mounted) return;
+                            if (!context.mounted) {
+                              return;
+                            }
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                   content: Text(

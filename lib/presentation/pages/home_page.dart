@@ -30,7 +30,9 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _checkPendingCount() async {
-    if (_selectedWarehouse == null) return;
+    if (_selectedWarehouse == null) {
+      return;
+    }
     try {
       final count = await context
           .read<SyncService>()
@@ -46,7 +48,9 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _sync() async {
-    if (_selectedWarehouse == null) return;
+    if (_selectedWarehouse == null) {
+      return;
+    }
     await _syncWithId(_selectedWarehouse!);
   }
 
@@ -70,7 +74,9 @@ class _HomePageState extends State<HomePage> {
     try {
       await context.read<SyncService>().syncUp(warehouseId);
 
-      if (!mounted) return;
+      if (!mounted) {
+        return;
+      }
       Navigator.of(context).pop(); // Cerrar diálogo
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -83,7 +89,9 @@ class _HomePageState extends State<HomePage> {
         _inventoryKey.currentState?.reload();
       }
     } catch (e) {
-      if (!mounted) return;
+      if (!mounted) {
+        return;
+      }
       Navigator.of(context).pop(); // Cerrar diálogo
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -130,7 +138,9 @@ class _HomePageState extends State<HomePage> {
           ),
         );
 
-        if (result == 'cancel' || result == null) return;
+        if (result == 'cancel' || result == null) {
+          return;
+        }
         if (result == 'sync') {
           await _syncWithId(warehouseId);
           // Continuar con la descarga
@@ -140,7 +150,9 @@ class _HomePageState extends State<HomePage> {
       debugPrint('Error checking pending: $e');
     }
 
-    if (!mounted) return;
+    if (!mounted) {
+      return;
+    }
 
     // 2. Descargar inventario
     showDialog(
@@ -161,10 +173,14 @@ class _HomePageState extends State<HomePage> {
     try {
       await context.read<SyncService>().downloadInventory(warehouseId);
 
-      if (!mounted) return;
+      if (!mounted) {
+        return;
+      }
       Navigator.of(context).pop(); // Cerrar diálogo
     } catch (e) {
-      if (!mounted) return;
+      if (!mounted) {
+        return;
+      }
       Navigator.of(context).pop(); // Cerrar diálogo
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
