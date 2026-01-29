@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'core/config/supabase_config.dart';
+import 'data/datasources/local/database.dart';
+import 'services/sync_service.dart';
 import 'presentation/pages/login_page.dart';
 import 'presentation/pages/home_page.dart';
 
@@ -13,11 +16,21 @@ class GuadianaApp extends StatefulWidget {
 class _GuadianaAppState extends State<GuadianaApp> {
   bool _initialized = false;
   Object? _initError;
+  late final LocalDatabase _database;
+  late final SyncService _syncService;
 
   @override
   void initState() {
     super.initState();
+    _database = LocalDatabase();
+    _syncService = SyncService(_database);
     _initialize();
+  }
+
+  @override
+  void dispose() {
+    _database.close();
+    super.dispose();
   }
 
   Future<void> _initialize() async {
@@ -49,6 +62,11 @@ class _GuadianaAppState extends State<GuadianaApp> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
+        ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          foregroundColor: const Color(0xFF004A93),
         ),
       ),
       appBarTheme: const AppBarTheme(
@@ -85,9 +103,15 @@ class _GuadianaAppState extends State<GuadianaApp> {
 
     final session = SupabaseConfig.client.auth.currentSession;
 
-    return MaterialApp(
-      theme: theme,
-      home: session != null ? const HomePage() : const LoginPage(),
+    return MultiProvider(
+      providers: [
+        Provider<LocalDatabase>.value(value: _database),
+        Provider<SyncService>.value(value: _syncService),
+      ],
+      child: MaterialApp(
+        theme: theme,
+        home: session != null ? const HomePage() : const LoginPage(),
+      ),
     );
   }
 }

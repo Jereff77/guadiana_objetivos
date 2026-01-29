@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../core/config/supabase_config.dart';
+import 'package:provider/provider.dart';
+import 'package:drift/drift.dart' as drift;
+import '../../data/datasources/local/database.dart';
 
 class DashboardPage extends StatefulWidget {
   final String? warehouseId;
@@ -11,13 +12,12 @@ class DashboardPage extends StatefulWidget {
 }
 
 class _DashboardPageState extends State<DashboardPage> {
-  final SupabaseClient _client = SupabaseConfig.client;
   bool _loading = false;
-  
+
   int _totalItems = 0;
   int _itemsWithStock = 0;
   int _itemsWithNotes = 0;
-  
+
   @override
   void initState() {
     super.initState();
@@ -46,27 +46,28 @@ class _DashboardPageState extends State<DashboardPage> {
     setState(() => _loading = true);
     try {
       final warehouseId = widget.warehouseId!;
-      
-      // Total items in warehouse
-      final totalRes = await _client
-          .from('inventario')
-          .count(CountOption.exact)
-          .eq('Almacen', warehouseId);
-      
+      final db = context.read<LocalDatabase>();
+
+      // Helper to count
+      Future<int> count(drift.Expression<bool> predicate) {
+        final countExp = db.localInventory.productId.count();
+        final query = db.selectOnly(db.localInventory)
+          ..addColumns([countExp])
+          ..where(
+              db.localInventory.warehouseId.equals(warehouseId) & predicate);
+        return query.map((row) => row.read(countExp)!).getSingle();
+      }
+
+      // Total items (predicate true)
+      final totalRes = await count(const drift.Constant(true));
+
       // Items with stock > 0
-      final stockRes = await _client
-          .from('inventario')
-          .count(CountOption.exact)
-          .eq('Almacen', warehouseId)
-          .gt('Existencia', 0);
-          
+      final stockRes =
+          await count(db.localInventory.stock.isBiggerThanValue(0));
+
       // Items with notes
-      final notesRes = await _client
-          .from('inventario')
-          .count(CountOption.exact)
-          .eq('Almacen', warehouseId)
-          .not('Notas', 'is', null)
-          .neq('Notas', '');
+      final notesRes = await count(db.localInventory.notes.isNotNull() &
+          db.localInventory.notes.equals('').not());
 
       if (mounted) {
         setState(() {
@@ -147,8 +148,8 @@ class _DashboardPageState extends State<DashboardPage> {
                 context,
                 icon: Icons.percent,
                 title: 'Avance',
-                value: _totalItems > 0 
-                    ? '${((_itemsWithStock / _totalItems) * 100).toStringAsFixed(1)}%' 
+                value: _totalItems > 0
+                    ? '${((_itemsWithStock / _totalItems) * 100).toStringAsFixed(1)}%'
                     : '0%',
                 color: Colors.purple,
               ),

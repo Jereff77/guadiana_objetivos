@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../core/config/supabase_config.dart';
+import 'package:provider/provider.dart';
+import 'package:drift/drift.dart' as drift;
+import '../../data/datasources/local/database.dart';
 import '../widgets/product_card.dart';
 import '../widgets/inventory_count_dialog.dart';
 import '../widgets/breadcrumb_navigation.dart';
@@ -16,7 +17,6 @@ class InventoryPage extends StatefulWidget {
 }
 
 class InventoryPageState extends State<InventoryPage> {
-  final SupabaseClient _client = SupabaseConfig.client;
   String _query = '';
   String? _selectedCategory;
   String? _selectedBrand;
@@ -27,32 +27,46 @@ class InventoryPageState extends State<InventoryPage> {
   @override
   void initState() {
     super.initState();
-    _load();
+    reload();
   }
 
-  Future<void> _load() async {
+  Future<void> reload() async {
     setState(() {
       _loading = true;
       _error = null;
     });
     try {
-      var query = _client
-          .from('inventario')
-          .select('*')
-          .eq('Almacen', widget.warehouseId)
-          .gt('Existencia', 0);
+      final db = context.read<LocalDatabase>();
+      var query = db.select(db.localInventory)
+        ..where((t) => t.warehouseId.equals(widget.warehouseId));
+      // ..where((t) => t.stock.isBiggerThanValue(0)); // Mostrar todos para permitir conteo
+
       if (_query.isNotEmpty) {
-        query = query.ilike('Descripcion', '%$_query%');
+        query.where((t) => t.description.like('%$_query%'));
       }
       if (_selectedCategory != null && _selectedCategory!.isNotEmpty) {
-        query = query.eq('Categoria', _selectedCategory!);
+        query.where((t) => t.category.equals(_selectedCategory!));
       }
       if (_selectedBrand != null && _selectedBrand!.isNotEmpty) {
-        query = query.eq('Marca', _selectedBrand!);
+        query.where((t) => t.brand.equals(_selectedBrand!));
       }
-      final res = await query;
+
+      final results = await query.get();
+
       setState(() {
-        _items = (res as List).cast<Map<String, dynamic>>();
+        _items = results
+            .map((item) => {
+                  'ProductId': item.productId,
+                  'Codigo': item.code,
+                  'Descripcion': item.description,
+                  'Categoria': item.category,
+                  'Marca': item.brand,
+                  'Existencia': item.stock,
+                  'Disponible': item.available,
+                  'Notas': item.notes,
+                  'Almacen': item.warehouseId,
+                })
+            .toList();
       });
     } catch (e) {
       setState(() {
@@ -67,7 +81,7 @@ class InventoryPageState extends State<InventoryPage> {
 
   void _onSearchChanged(String value) {
     _query = value;
-    _load();
+    reload();
   }
 
   void _openCountDialog(
@@ -82,7 +96,7 @@ class InventoryPageState extends State<InventoryPage> {
         },
         onSave: (newQuantity, notes) async {
           await _updateInventory(product, newQuantity, notes);
-          await _load();
+          await reload();
         },
       ),
     );
@@ -91,15 +105,19 @@ class InventoryPageState extends State<InventoryPage> {
   Future<void> _updateInventory(
       Map<String, dynamic> row, int newQty, String? notes) async {
     final id = row['ProductId'];
-    await _client
-        .from('inventario')
-        .update({
-          'Existencia': newQty,
-          'Disponible': newQty,
-          'Notas': notes,
-        })
-        .eq('ProductId', id)
-        .eq('Almacen', widget.warehouseId);
+    final db = context.read<LocalDatabase>();
+
+    await (db.update(db.localInventory)
+          ..where((t) =>
+              t.productId.equals(id) &
+              t.warehouseId.equals(widget.warehouseId)))
+        .write(LocalInventoryCompanion(
+      stock: drift.Value(newQty),
+      available: drift.Value(newQty),
+      notes: drift.Value(notes),
+      isSynced: const drift.Value(false), // Marcar como no sincronizado
+      lastUpdated: drift.Value(DateTime.now()),
+    ));
   }
 
   Future<void> showFilterDialog() async {
@@ -116,7 +134,7 @@ class InventoryPageState extends State<InventoryPage> {
         _selectedCategory = result['categoryId'];
         _selectedBrand = result['brand'];
       });
-      await _load();
+      await reload();
     }
   }
 

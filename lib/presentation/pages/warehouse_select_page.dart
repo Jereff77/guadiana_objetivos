@@ -81,12 +81,43 @@ class _WarehouseSelectPageState extends State<WarehouseSelectPage> {
                     return ListTile(
                       title: Text(w),
                       trailing: const Icon(Icons.chevron_right),
-                      onTap: () {
-                        Navigator.of(context).pushReplacement(
-                          MaterialPageRoute(
-                            builder: (_) => HomePage(initialWarehouseId: w),
+                      onTap: () async {
+                        // Mostrar indicador de carga
+                        showDialog(
+                          context: context,
+                          barrierDismissible: false,
+                          builder: (ctx) => const AlertDialog(
+                            content: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                CircularProgressIndicator(),
+                                SizedBox(height: 16),
+                                Text('Descargando inventario...'),
+                              ],
+                            ),
                           ),
                         );
+
+                        try {
+                          await context
+                              .read<SyncService>()
+                              .downloadInventory(w);
+
+                          if (!context.mounted) return;
+                          Navigator.of(context).pop(); // Cerrar diálogo
+
+                          Navigator.of(context).pushReplacement(
+                            MaterialPageRoute(
+                              builder: (_) => HomePage(initialWarehouseId: w),
+                            ),
+                          );
+                        } catch (e) {
+                          if (!context.mounted) return;
+                          Navigator.of(context).pop(); // Cerrar diálogo
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Error al descargar: $e')),
+                          );
+                        }
                       },
                     );
                   },

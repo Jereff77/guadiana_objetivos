@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../core/config/supabase_config.dart';
+import 'package:provider/provider.dart';
+import 'package:drift/drift.dart' as drift;
+import '../../data/datasources/local/database.dart';
 import '../widgets/inventory_count_dialog.dart';
 
 class InventoryReviewPage extends StatefulWidget {
@@ -13,7 +14,6 @@ class InventoryReviewPage extends StatefulWidget {
 }
 
 class _InventoryReviewPageState extends State<InventoryReviewPage> {
-  final SupabaseClient _client = SupabaseConfig.client;
   bool _loading = true;
   String? _error;
   List<Map<String, dynamic>> _items = [];
@@ -31,22 +31,35 @@ class _InventoryReviewPageState extends State<InventoryReviewPage> {
       _error = null;
     });
     try {
-      dynamic query = _client
-          .from('inventario')
-          .select('*')
-          .eq('Almacen', widget.warehouseId)
-          .gt('Existencia', 0); // Filtra items con existencia > 0
+      final db = context.read<LocalDatabase>();
+      var query = db.select(db.localInventory)
+        ..where((t) => t.warehouseId.equals(widget.warehouseId))
+        ..where((t) =>
+            t.stock.isBiggerThanValue(0)); // Filtra items con existencia > 0
 
       if (_query.isNotEmpty) {
-        query = query.ilike('Descripcion', '%$_query%');
+        query.where((t) => t.description.like('%$_query%'));
       }
 
-      // Ordenar por descripción o última modificación si existiera
-      query = query.order('Descripcion', ascending: true);
+      // Ordenar por descripción
+      query.orderBy([(t) => drift.OrderingTerm(expression: t.description)]);
 
-      final res = await query;
+      final results = await query.get();
+
       setState(() {
-        _items = (res as List).cast<Map<String, dynamic>>();
+        _items = results
+            .map((item) => {
+                  'ProductId': item.productId,
+                  'Codigo': item.code,
+                  'Descripcion': item.description,
+                  'Categoria': item.category,
+                  'Marca': item.brand,
+                  'Existencia': item.stock,
+                  'Disponible': item.available,
+                  'Notas': item.notes,
+                  'Almacen': item.warehouseId,
+                })
+            .toList();
       });
     } catch (e) {
       setState(() {
@@ -79,15 +92,19 @@ class _InventoryReviewPageState extends State<InventoryReviewPage> {
   Future<void> _updateInventory(
       Map<String, dynamic> row, int newQty, String? notes) async {
     final id = row['ProductId'];
-    await _client
-        .from('inventario')
-        .update({
-          'Existencia': newQty,
-          'Disponible': newQty,
-          'Notas': notes,
-        })
-        .eq('ProductId', id)
-        .eq('Almacen', widget.warehouseId);
+    final db = context.read<LocalDatabase>();
+
+    await (db.update(db.localInventory)
+          ..where((t) =>
+              t.productId.equals(id) &
+              t.warehouseId.equals(widget.warehouseId)))
+        .write(LocalInventoryCompanion(
+      stock: drift.Value(newQty),
+      available: drift.Value(newQty),
+      notes: drift.Value(notes),
+      isSynced: const drift.Value(false), // Marcar como no sincronizado
+      lastUpdated: drift.Value(DateTime.now()),
+    ));
   }
 
   @override
