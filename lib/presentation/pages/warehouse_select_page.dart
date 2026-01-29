@@ -7,7 +7,6 @@ import '../../data/datasources/local/database.dart';
 import '../../services/role_service.dart';
 import '../../services/sync_service.dart';
 import 'home_page.dart';
-import 'inventory_history_page.dart';
 
 class WarehouseSelectPage extends StatefulWidget {
   const WarehouseSelectPage({super.key});
