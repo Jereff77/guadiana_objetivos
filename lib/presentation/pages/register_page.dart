@@ -28,7 +28,9 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   Future<void> _register() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
 
     setState(() {
       _loading = true;
@@ -38,7 +40,9 @@ class _RegisterPageState extends State<RegisterPage> {
     try {
       await _auth.signUp(
           _emailController.text.trim(), _passwordController.text);
-      if (!mounted) return;
+      if (!mounted) {
+        return;
+      }
 
       // Mostrar diálogo de éxito y volver al login
       showDialog(
@@ -99,7 +103,9 @@ class _RegisterPageState extends State<RegisterPage> {
                         decoration: const InputDecoration(labelText: 'Email'),
                         keyboardType: TextInputType.emailAddress,
                         validator: (v) {
-                          if (v == null || v.isEmpty) return 'Ingresa tu email';
+                          if (v == null || v.isEmpty) {
+                            return 'Ingresa tu email';
+                          }
                           if (!AllowedDomains.isEmailAllowed(v.trim())) {
                             return 'Dominio no permitido. Usa @llantasyrinesdelguadiana.com o @aceleremos.com';
                           }
@@ -113,10 +119,12 @@ class _RegisterPageState extends State<RegisterPage> {
                             const InputDecoration(labelText: 'Contraseña'),
                         obscureText: true,
                         validator: (v) {
-                          if (v == null || v.isEmpty)
+                          if (v == null || v.isEmpty) {
                             return 'Ingresa tu contraseña';
-                          if (v.length < 6)
+                          }
+                          if (v.length < 6) {
                             return 'La contraseña debe tener al menos 6 caracteres';
+                          }
                           return null;
                         },
                       ),
@@ -127,10 +135,12 @@ class _RegisterPageState extends State<RegisterPage> {
                             labelText: 'Confirmar Contraseña'),
                         obscureText: true,
                         validator: (v) {
-                          if (v == null || v.isEmpty)
+                          if (v == null || v.isEmpty) {
                             return 'Confirma tu contraseña';
-                          if (v != _passwordController.text)
+                          }
+                          if (v != _passwordController.text) {
                             return 'Las contraseñas no coinciden';
+                          }
                           return null;
                         },
                       ),
