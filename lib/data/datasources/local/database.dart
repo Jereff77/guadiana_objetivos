@@ -49,6 +49,22 @@ class LocalDatabase extends _$LocalDatabase {
           }
         },
       );
+  Future<List<String>> getUniqueWarehouses() async {
+    final query = selectOnly(localInventory, distinct: true)
+      ..addColumns([localInventory.warehouseId]);
+    final result =
+        await query.map((row) => row.read(localInventory.warehouseId)).get();
+    return result.whereType<String>().toList();
+  }
+
+  Future<bool> hasInventoryFor(String warehouseId) async {
+    final count = await (selectOnly(localInventory)
+          ..addColumns([localInventory.productId.count()])
+          ..where(localInventory.warehouseId.equals(warehouseId)))
+        .map((row) => row.read(localInventory.productId.count()))
+        .getSingle();
+    return (count ?? 0) > 0;
+  }
 }
 
 LazyDatabase _openConnection() {

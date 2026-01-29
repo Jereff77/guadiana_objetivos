@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/config/supabase_config.dart';
+import '../../data/datasources/local/database.dart';
+import '../../services/sync_service.dart';
 import 'home_page.dart';
 
 class WarehouseSelectPage extends StatefulWidget {
@@ -56,13 +59,31 @@ class _WarehouseSelectPageState extends State<WarehouseSelectPage> {
         });
       }
     } catch (e) {
-      setState(() {
-        _error = e.toString();
-      });
+      // Intentar cargar almacenes locales si hay error (offline)
+      try {
+        final localWarehouses =
+            await context.read<LocalDatabase>().getUniqueWarehouses();
+        if (localWarehouses.isNotEmpty) {
+          setState(() {
+            _warehouses = localWarehouses;
+            _error = null; // Limpiar error si encontramos locales
+          });
+        } else {
+          setState(() {
+            _error = e.toString();
+          });
+        }
+      } catch (localError) {
+        setState(() {
+          _error = e.toString();
+        });
+      }
     } finally {
-      setState(() {
-        _loading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _loading = false;
+        });
+      }
     }
   }
 
@@ -114,9 +135,32 @@ class _WarehouseSelectPageState extends State<WarehouseSelectPage> {
                         } catch (e) {
                           if (!context.mounted) return;
                           Navigator.of(context).pop(); // Cerrar diálogo
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Error al descargar: $e')),
-                          );
+
+                          // Verificar si tenemos datos locales
+                          final hasLocalData = await context
+                              .read<LocalDatabase>()
+                              .hasInventoryFor(w);
+
+                          if (hasLocalData) {
+                            if (!context.mounted) return;
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text(
+                                      'Sin conexión. Usando datos locales.')),
+                            );
+                            Navigator.of(context).pushReplacement(
+                              MaterialPageRoute(
+                                builder: (_) => HomePage(initialWarehouseId: w),
+                              ),
+                            );
+                          } else {
+                            if (!context.mounted) return;
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                  content: Text(
+                                      'Error al descargar y no hay datos locales: $e')),
+                            );
+                          }
                         }
                       },
                     );

@@ -23,31 +23,38 @@ class SyncService {
 
       final List<dynamic> data = response as List<dynamic>;
 
-      // 2. Guardar en base de datos local
-      await db.batch((batch) {
-        for (final item in data) {
-          batch.insert(
-            db.localInventory,
-            LocalInventoryCompanion(
-              productId: Value(item['ProductId']?.toString() ?? ''),
-              warehouseId: Value(item['Almacen']?.toString() ?? ''),
-              code: Value(item['Codigo']?.toString()),
-              description: Value(item['Descripcion']?.toString() ?? ''),
-              category: Value(item['Categoria']?.toString()),
-              brand: Value(item['Marca']?.toString()),
-              stock: Value(item['Existencia'] is int
-                  ? item['Existencia']
-                  : (item['Existencia'] as num?)?.toInt() ?? 0),
-              available: Value(item['Disponible'] is int
-                  ? item['Disponible']
-                  : (item['Disponible'] as num?)?.toInt() ?? 0),
-              notes: Value(item['Notas']?.toString()),
-              isSynced: const Value(true),
-              lastUpdated: Value(DateTime.now()),
-            ),
-            mode: InsertMode.insertOrReplace,
-          );
-        }
+      // 2. Guardar en base de datos local (Transacción para asegurar consistencia)
+      await db.transaction(() async {
+        // Eliminar datos anteriores del almacén para reflejar eliminaciones en el servidor
+        await (db.delete(db.localInventory)
+              ..where((t) => t.warehouseId.equals(warehouseId)))
+            .go();
+
+        await db.batch((batch) {
+          for (final item in data) {
+            batch.insert(
+              db.localInventory,
+              LocalInventoryCompanion(
+                productId: Value(item['ProductId']?.toString() ?? ''),
+                warehouseId: Value(item['Almacen']?.toString() ?? ''),
+                code: Value(item['Codigo']?.toString()),
+                description: Value(item['Descripcion']?.toString() ?? ''),
+                category: Value(item['Categoria']?.toString()),
+                brand: Value(item['Marca']?.toString()),
+                stock: Value(item['Existencia'] is int
+                    ? item['Existencia']
+                    : (item['Existencia'] as num?)?.toInt() ?? 0),
+                available: Value(item['Disponible'] is int
+                    ? item['Disponible']
+                    : (item['Disponible'] as num?)?.toInt() ?? 0),
+                notes: Value(item['Notas']?.toString()),
+                isSynced: const Value(true),
+                lastUpdated: Value(DateTime.now()),
+              ),
+              mode: InsertMode.insertOrReplace,
+            );
+          }
+        });
       });
     } catch (e) {
       throw Exception('Error al descargar inventario: $e');

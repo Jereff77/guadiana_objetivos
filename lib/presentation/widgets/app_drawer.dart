@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import '../../core/config/supabase_config.dart';
+import '../../data/datasources/local/database.dart';
 import '../../services/auth_service.dart';
 import '../../services/role_service.dart';
 import '../pages/login_page.dart';
@@ -19,7 +21,7 @@ class AppDrawer extends StatefulWidget {
 class _AppDrawerState extends State<AppDrawer> {
   final AuthService _auth = AuthService();
   final SupabaseClient _client = SupabaseConfig.client;
-  
+
   List<String> _warehouses = [];
   bool _loadingWarehouses = false;
   String? _selectedWarehouse;
@@ -43,7 +45,8 @@ class _AppDrawerState extends State<AppDrawer> {
             .map((e) => e!)
             .toList();
       } catch (_) {
-        final res = await _client.from('inventario').select('Almacen').order('Almacen');
+        final res =
+            await _client.from('inventario').select('Almacen').order('Almacen');
         allWarehouses = (res as List)
             .map((e) => e['Almacen'] as String?)
             .where((e) => (e ?? '').isNotEmpty)
@@ -53,11 +56,21 @@ class _AppDrawerState extends State<AppDrawer> {
       }
 
       // Filtrar por rol
-      final accessibleWarehouses = await RoleService.getAccessibleWarehouses(allWarehouses);
-      
+      final accessibleWarehouses =
+          await RoleService.getAccessibleWarehouses(allWarehouses);
+
       if (mounted) setState(() => _warehouses = accessibleWarehouses);
     } catch (e) {
       debugPrint('Error loading warehouses: $e');
+      // Intentar cargar almacenes locales (Offline)
+      try {
+        if (!mounted) return;
+        final localWarehouses =
+            await context.read<LocalDatabase>().getUniqueWarehouses();
+        if (mounted) setState(() => _warehouses = localWarehouses);
+      } catch (localError) {
+        debugPrint('Error loading local warehouses: $localError');
+      }
     } finally {
       if (mounted) setState(() => _loadingWarehouses = false);
     }
@@ -148,7 +161,8 @@ class _AppDrawerState extends State<AppDrawer> {
           ),
           ListTile(
             leading: const Icon(Icons.logout, color: Colors.red),
-            title: const Text('Cerrar Sesión', style: TextStyle(color: Colors.red)),
+            title: const Text('Cerrar Sesión',
+                style: TextStyle(color: Colors.red)),
             onTap: _logout,
           ),
           const SizedBox(height: 20),
