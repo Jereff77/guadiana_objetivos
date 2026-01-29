@@ -31,61 +31,78 @@ class _WarehouseSelectPageState extends State<WarehouseSelectPage> {
       _loading = true;
       _error = null;
     });
+
     try {
-      // Intentamos usar RPC primero (más eficiente)
+      List<String> remoteWarehouses = [];
       try {
+        // 1. Intentar RPC
         final res = await _client.rpc('get_unique_warehouses');
-        var names = (res as List)
+        remoteWarehouses = (res as List)
             .map((e) => e['Almacen'] as String?)
             .where((e) => (e ?? '').isNotEmpty)
             .map((e) => e!)
             .toList();
-
-        // Filtrar por rol
-        names = await RoleService.getAccessibleWarehouses(names);
-
-        setState(() {
-          _warehouses = names;
-        });
       } catch (_) {
-        // Fallback: si no existe la RPC, intentamos leer (limitado)
-        // Nota: Esto solo traerá los primeros 1000 registros, por lo que podría no mostrar todos los almacenes.
-        // Se recomienda encarecidamente crear la función RPC.
+        // 2. Fallback REST
         final res =
             await _client.from('inventario').select('Almacen').order('Almacen');
-        var names = (res as List)
+        remoteWarehouses = (res as List)
             .map((e) => e['Almacen'] as String?)
             .where((e) => (e ?? '').isNotEmpty)
             .map((e) => e!)
             .toSet()
             .toList();
+      }
 
-        // Filtrar por rol
-        names = await RoleService.getAccessibleWarehouses(names);
+      // 3. Filtrar por rol (puede requerir red adicional)
+      final accessible =
+          await RoleService.getAccessibleWarehouses(remoteWarehouses);
 
+      if (mounted) {
         setState(() {
-          _warehouses = names;
+          _warehouses = accessible;
         });
       }
+
+      // Si la lista está vacía después de todo, podría ser error de red en RoleService
+      // Lanzamos excepción para activar el fallback local
+      if (accessible.isEmpty) {
+        throw Exception(
+            'No se encontraron almacenes accesibles o error de conexión.');
+      }
     } catch (e) {
-      // Intentar cargar almacenes locales si hay error (offline)
+      // 4. Fallback final: Local Database (Offline)
+      debugPrint('Error cargando almacenes remotos: $e');
       try {
+        if (!mounted) return;
         final localWarehouses =
             await context.read<LocalDatabase>().getUniqueWarehouses();
-        if (localWarehouses.isNotEmpty) {
-          setState(() {
-            _warehouses = localWarehouses;
-            _error = null; // Limpiar error si encontramos locales
-          });
-        } else {
-          setState(() {
-            _error = e.toString();
-          });
+
+        if (mounted) {
+          if (localWarehouses.isNotEmpty) {
+            setState(() {
+              _warehouses = localWarehouses;
+              _error = null;
+            });
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Modo Offline: Mostrando almacenes descargados.'),
+                duration: Duration(seconds: 3),
+              ),
+            );
+          } else {
+            // Solo mostramos error si tampoco hay locales
+            setState(() {
+              _error = 'No se pudieron cargar almacenes. Verifica tu conexión.';
+            });
+          }
         }
       } catch (localError) {
-        setState(() {
-          _error = e.toString();
-        });
+        if (mounted) {
+          setState(() {
+            _error = 'Error crítico: $e';
+          });
+        }
       }
     } finally {
       if (mounted) {
