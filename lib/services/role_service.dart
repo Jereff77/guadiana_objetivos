@@ -7,7 +7,7 @@ enum UserRole {
 }
 
 class RoleService {
-  static final SupabaseClient _client = SupabaseConfig.client;
+  static SupabaseClient get _client => SupabaseConfig.client;
 
   /// Obtiene el rol del usuario actual.
   /// Por defecto retorna [UserRole.almacenista] si no se encuentra información.

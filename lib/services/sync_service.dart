@@ -5,7 +5,7 @@ import '../data/datasources/local/database.dart';
 
 class SyncService {
   final LocalDatabase db;
-  final SupabaseClient client = SupabaseConfig.client;
+  SupabaseClient get client => SupabaseConfig.client;
 
   SyncService(this.db);
 
