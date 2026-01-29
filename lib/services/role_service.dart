@@ -32,22 +32,22 @@ class RoleService {
       if (user.userMetadata?['role'] == 'auditor') {
         return UserRole.auditor;
       }
-      
+
       // Regla de negocio temporal por dominio (opcional)
       // if (user.email!.endsWith('@aceleremos.com')) return UserRole.auditor;
 
       return UserRole.almacenista;
     } catch (e) {
       // Si la tabla no existe o hay error, asumimos almacenista por seguridad
-      // O auditor para facilitar pruebas si se prefiere
-      return UserRole.auditor; // Default to Auditor for testing purposes in dev
+      return UserRole.almacenista;
     }
   }
 
   /// Obtiene la lista de almacenes permitidos para el usuario.
   /// Si es Auditor, retorna todos.
   /// Si es Almacenista, retorna solo los asignados.
-  static Future<List<String>> getAccessibleWarehouses(List<String> allWarehouses) async {
+  static Future<List<String>> getAccessibleWarehouses(
+      List<String> allWarehouses) async {
     final role = await getRole();
     if (role == UserRole.auditor) {
       return allWarehouses;
@@ -60,7 +60,7 @@ class RoleService {
       // Intentar obtener almacenes asignados desde 'profiles' o tabla 'user_warehouses'
       // Asumimos que 'profiles' tiene una columna 'assigned_warehouses' (array de texto)
       // O usamos una tabla de relación.
-      
+
       // Ejemplo con tabla profiles:
       /*
       final response = await _client
@@ -74,14 +74,13 @@ class RoleService {
       }
       */
 
-      // Por ahora, para que funcione sin migración de BD, 
+      // Por ahora, para que funcione sin migración de BD,
       // si es almacenista retornamos una lista vacía o todos (dependiendo de la política de error).
       // Para cumplir con el requerimiento "solo al almacen asignado",
       // retornamos solo el primero de la lista global como simulación si no hay datos.
-      
+
       // TODO: Implementar tabla real de asignaciones
-      return allWarehouses.take(1).toList(); 
-      
+      return allWarehouses.take(1).toList();
     } catch (e) {
       return [];
     }

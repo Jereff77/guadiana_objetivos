@@ -16,8 +16,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final SupabaseClient _client = SupabaseConfig.client;
-
   int _selectedIndex = 0;
   String? _selectedWarehouse;
   final GlobalKey<InventoryPageState> _inventoryKey = GlobalKey();

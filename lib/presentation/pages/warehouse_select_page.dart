@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/config/supabase_config.dart';
 import '../../data/datasources/local/database.dart';
+import '../../services/role_service.dart';
 import '../../services/sync_service.dart';
 import 'home_page.dart';
 
@@ -34,11 +35,15 @@ class _WarehouseSelectPageState extends State<WarehouseSelectPage> {
       // Intentamos usar RPC primero (más eficiente)
       try {
         final res = await _client.rpc('get_unique_warehouses');
-        final names = (res as List)
+        var names = (res as List)
             .map((e) => e['Almacen'] as String?)
             .where((e) => (e ?? '').isNotEmpty)
             .map((e) => e!)
             .toList();
+
+        // Filtrar por rol
+        names = await RoleService.getAccessibleWarehouses(names);
+
         setState(() {
           _warehouses = names;
         });
@@ -48,12 +53,16 @@ class _WarehouseSelectPageState extends State<WarehouseSelectPage> {
         // Se recomienda encarecidamente crear la función RPC.
         final res =
             await _client.from('inventario').select('Almacen').order('Almacen');
-        final names = (res as List)
+        var names = (res as List)
             .map((e) => e['Almacen'] as String?)
             .where((e) => (e ?? '').isNotEmpty)
             .map((e) => e!)
             .toSet()
             .toList();
+
+        // Filtrar por rol
+        names = await RoleService.getAccessibleWarehouses(names);
+
         setState(() {
           _warehouses = names;
         });
