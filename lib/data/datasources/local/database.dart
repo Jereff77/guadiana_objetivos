@@ -1,8 +1,5 @@
-import 'dart:io';
 import 'package:drift/drift.dart';
-import 'package:drift/native.dart';
-import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
+import 'connection/connection.dart';
 
 part 'database.g.dart';
 
@@ -27,7 +24,7 @@ class LocalInventory extends Table {
 
 @DriftDatabase(tables: [LocalInventory])
 class LocalDatabase extends _$LocalDatabase {
-  LocalDatabase() : super(_openConnection());
+  LocalDatabase() : super(connect());
 
   @override
   int get schemaVersion => 3;
@@ -65,12 +62,4 @@ class LocalDatabase extends _$LocalDatabase {
         .getSingle();
     return (count ?? 0) > 0;
   }
-}
-
-LazyDatabase _openConnection() {
-  return LazyDatabase(() async {
-    final dir = await getApplicationDocumentsDirectory();
-    final file = File(p.join(dir.path, 'guadiana_inventory_v3.sqlite'));
-    return NativeDatabase.createInBackground(file);
-  });
 }
