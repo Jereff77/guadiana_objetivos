@@ -125,7 +125,7 @@ class _HomePageState extends State<HomePage> {
     final Widget content;
     if (_selectedIndex == 0) {
       content = DashboardPage(warehouseId: _selectedWarehouse);
-    } else {
+    } else if (_selectedIndex == 1) {
       content = _selectedWarehouse != null
           ? InventoryPage(
               key: _inventoryKey, // Asignamos la key para acceder al estado
@@ -136,6 +136,20 @@ class _HomePageState extends State<HomePage> {
                 padding: EdgeInsets.all(16.0),
                 child: Text(
                   'Selecciona un almacén en el menú lateral para ver el inventario',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 16, color: Colors.grey),
+                ),
+              ),
+            );
+    } else {
+      // Mis inventarios
+      content = _selectedWarehouse != null
+          ? InventoryHistoryPage(warehouseId: _selectedWarehouse!)
+          : const Center(
+              child: Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Text(
+                  'Selecciona un almacén en el menú lateral para ver el historial',
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 16, color: Colors.grey),
                 ),
@@ -153,7 +167,11 @@ class _HomePageState extends State<HomePage> {
             : Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Inventario', style: TextStyle(fontSize: 16)),
+                  Text(
+                      _selectedIndex == 2
+                          ? 'Historial de Inventarios'
+                          : 'Inventario',
+                      style: const TextStyle(fontSize: 16)),
                   if (_selectedWarehouse != null)
                     Text(
                       _selectedWarehouse!,
@@ -209,17 +227,6 @@ class _HomePageState extends State<HomePage> {
               onPressed: () => _inventoryKey.currentState?.showFilterDialog(),
             ),
           ],
-          IconButton(
-            icon: const Icon(Icons.history),
-            tooltip: 'Historial de Inventarios',
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => const InventoryHistoryPage(),
-                ),
-              );
-            },
-          ),
         ],
       ),
       drawer: const AppDrawer(),
@@ -233,6 +240,10 @@ class _HomePageState extends State<HomePage> {
           BottomNavigationBarItem(
             icon: Icon(Icons.inventory),
             label: 'Inventario',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.history),
+            label: 'Mis inventarios',
           ),
         ],
         currentIndex: _selectedIndex,

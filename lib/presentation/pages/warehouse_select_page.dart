@@ -139,19 +139,6 @@ class _WarehouseSelectPageState extends State<WarehouseSelectPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Seleccionar Almacén'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.history),
-            tooltip: 'Historial de Inventarios',
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => const InventoryHistoryPage(),
-                ),
-              );
-            },
-          ),
-        ],
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())

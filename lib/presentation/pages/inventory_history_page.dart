@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/intl.dart';
+import '../../services/role_service.dart';
 import 'inventory_report_page.dart';
 
 class InventoryHistoryPage extends StatefulWidget {
-  const InventoryHistoryPage({super.key});
+  final String? warehouseId;
+  const InventoryHistoryPage({super.key, this.warehouseId});
 
   @override
   State<InventoryHistoryPage> createState() => _InventoryHistoryPageState();
@@ -24,12 +26,25 @@ class _InventoryHistoryPageState extends State<InventoryHistoryPage> {
   Future<void> _loadHistory() async {
     try {
       final client = Supabase.instance.client;
+      final user = client.auth.currentUser;
+      final role = await RoleService.getRole();
 
-      // Obtener sesiones ordenadas por fecha (más recientes primero)
-      final response = await client
-          .from('inventory_sessions')
-          .select()
-          .order('created_at', ascending: false);
+      var query = client.from('inventory_sessions').select();
+
+      // Filtro por almacén seleccionado
+      if (widget.warehouseId != null) {
+        query = query.eq('warehouse_id', widget.warehouseId!);
+      }
+
+      // Filtro por rol
+      if (role == UserRole.almacenista && user != null) {
+        // Almacenista solo ve sus propios inventarios
+        query = query.eq('created_by', user.id);
+      }
+      // Auditor ve todos (sin filtro adicional de created_by),
+      // pero respeta el filtro de warehouse_id si existe.
+
+      final response = await query.order('created_at', ascending: false);
 
       if (mounted) {
         setState(() {
