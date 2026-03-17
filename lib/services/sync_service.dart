@@ -80,9 +80,8 @@ class SyncService {
 
       final List<dynamic> remoteInventory = response as List<dynamic>;
 
-      // 1.1 Obtener conteos previos de la sesión (si existe)
+      // 5. Sincronizar conteos (si hay sesión)
       Map<String, Map<String, dynamic>> sessionCounts = {};
-      bool sessionCountsFetched = false;
       if (sessionId != null) {
         try {
           // Obtener rol del usuario para filtrar conteos
@@ -106,7 +105,6 @@ class SyncService {
               sessionCounts[item['product_id']] = item;
             }
           }
-          sessionCountsFetched = true;
         } catch (e) {
           // Si falla la carga de conteos, continuamos con el inventario base
           // pero logueamos el error (en producción usar logger)

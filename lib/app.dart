@@ -15,7 +15,6 @@ class GuadianaApp extends StatefulWidget {
 }
 
 class _GuadianaAppState extends State<GuadianaApp> {
-  bool _initialized = false;
   Object? _initError;
   late final LocalDatabase _database;
   late final SyncService _syncService;
@@ -38,7 +37,7 @@ class _GuadianaAppState extends State<GuadianaApp> {
     try {
       await SupabaseConfig.initialize();
       setState(() {
-        _initialized = true;
+        // Inicialización exitosa
       });
     } catch (e) {
       setState(() {

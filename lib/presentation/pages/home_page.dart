@@ -90,6 +90,8 @@ class _HomePageState extends State<HomePage> {
     );
 
     try {
+      // Obtener servicio antes de la llamada asíncrona para evitar usar context en gap
+      final syncService = context.read<SyncService>();
       final prefs = await SharedPreferences.getInstance();
       final sessionId = prefs.getString('current_session_id');
 
@@ -98,7 +100,7 @@ class _HomePageState extends State<HomePage> {
             'No hay sesión de inventario activa. Por favor reinicie la selección de almacén.');
       }
 
-      await context.read<SyncService>().syncUp(warehouseId, sessionId);
+      await syncService.syncUp(warehouseId, sessionId);
 
       if (!mounted) {
         return;

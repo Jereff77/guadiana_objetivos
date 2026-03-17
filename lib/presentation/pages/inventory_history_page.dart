@@ -15,9 +15,8 @@ class InventoryHistoryPage extends StatefulWidget {
 class _InventoryHistoryPageState extends State<InventoryHistoryPage> {
   bool _loading = true;
   List<Map<String, dynamic>> _sessions = [];
-  Map<String, Map<String, dynamic>> _userProfiles = {};
+  final Map<String, Map<String, dynamic>> _userProfiles = {};
   String? _error;
-  UserRole? _currentUserRole;
 
   // Filtros
   String? _selectedUserId;
@@ -31,17 +30,7 @@ class _InventoryHistoryPageState extends State<InventoryHistoryPage> {
   @override
   void initState() {
     super.initState();
-    _loadUserRole();
     _loadHistory();
-  }
-
-  Future<void> _loadUserRole() async {
-    final role = await RoleService.getRole();
-    if (mounted) {
-      setState(() {
-        _currentUserRole = role;
-      });
-    }
   }
 
   Future<void> _loadHistory() async {
@@ -52,24 +41,34 @@ class _InventoryHistoryPageState extends State<InventoryHistoryPage> {
 
     try {
       final client = Supabase.instance.client;
-      final user = client.auth.currentUser;
       final role = await RoleService.getRole();
 
       var query = client.from('inventory_sessions').select();
 
-      // Filtro por almacén seleccionado
-      if (widget.warehouseId != null) {
-        query = query.eq('warehouse_id', widget.warehouseId!);
+      // Filtro por rol y almacén
+      if (role == UserRole.almacenista) {
+        // Almacenista: Solo ve inventarios de su almacén asignado
+        final assignedWarehouse = await RoleService.getAssignedWarehouse();
+        if (assignedWarehouse != null) {
+          query = query.eq('warehouse_id', assignedWarehouse);
+        } else {
+          // Si no tiene almacén asignado (caso raro), intentar usar el actual
+          // o no mostrar nada si queremos ser estrictos.
+          // Por seguridad y UX, usamos el widget.warehouseId si existe.
+          if (widget.warehouseId != null) {
+            query = query.eq('warehouse_id', widget.warehouseId!);
+          }
+        }
+      } else {
+        // Auditor: Ve inventarios del almacén que está visualizando
+        if (widget.warehouseId != null) {
+          query = query.eq('warehouse_id', widget.warehouseId!);
+        }
       }
 
-      // Filtro por rol (Almacenista solo ve sus propios)
-      if (role == UserRole.almacenista && user != null) {
-        query = query.eq('created_by', user.id);
-      } else {
-        // Filtros de UI (Solo para Auditor o quien pueda ver todo)
-        if (_selectedUserId != null) {
-          query = query.eq('created_by', _selectedUserId!);
-        }
+      // Filtro de Usuario (aplica para todos si se selecciona)
+      if (_selectedUserId != null) {
+        query = query.eq('created_by', _selectedUserId!);
       }
 
       // Filtro de Estatus (aplica para todos los roles)
@@ -92,32 +91,20 @@ class _InventoryHistoryPageState extends State<InventoryHistoryPage> {
       final response = await query.order('created_at', ascending: false);
       final sessions = List<Map<String, dynamic>>.from(response);
 
-      // Cargar perfiles de usuarios
-      final userIds = sessions
-          .map((s) => s['created_by'] as String?)
-          .where((id) => id != null)
-          .toSet()
-          .toList();
+      // Cargar perfiles de usuarios usando RPC para obtener nombres correctos
+      try {
+        final creatorsResponse = await client.rpc('get_inventory_creators');
+        final creators = List<Map<String, dynamic>>.from(creatorsResponse);
 
-      if (userIds.isNotEmpty) {
-        try {
-          final profilesResponse = await client
-              .from('app_profiles')
-              .select()
-              .filter('id', 'in', userIds);
-
-          for (var p in profilesResponse) {
-            _userProfiles[p['id']] = p;
-          }
-
-          // Actualizar lista de usuarios disponibles para el filtro
-          // (Solo si no estamos filtrando por usuario ya, para no perder opciones)
-          if (_selectedUserId == null) {
-            _availableUsers = List<Map<String, dynamic>>.from(profilesResponse);
-          }
-        } catch (e) {
-          debugPrint('Error loading profiles: $e');
+        _userProfiles.clear();
+        for (var c in creators) {
+          _userProfiles[c['id']] = {'name': c['name']};
         }
+
+        // Actualizar lista de usuarios disponibles para el filtro
+        _availableUsers = creators;
+      } catch (e) {
+        debugPrint('Error loading creators: $e');
       }
 
       if (mounted) {
@@ -148,35 +135,30 @@ class _InventoryHistoryPageState extends State<InventoryHistoryPage> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Filtro de Usuario (solo para auditores)
-                  if (_currentUserRole == UserRole.auditor && _availableUsers.isNotEmpty) ...[
-                    const Text('Usuario:',
-                        style: TextStyle(fontWeight: FontWeight.bold)),
-                    DropdownButton<String>(
-                      isExpanded: true,
-                      value: _selectedUserId,
-                      hint: const Text('Todos los usuarios'),
-                      items: [
-                        const DropdownMenuItem(
-                          value: null,
-                          child: Text('Todos los usuarios'),
-                        ),
-                        ..._availableUsers.map((u) {
-                          final name = u['first_name'] != null
-                              ? '${u['first_name']} ${u['last_name'] ?? ''}'
-                              : (u['email'] ?? u['id']); // Fallback
-                          return DropdownMenuItem(
-                            value: u['id'] as String,
-                            child: Text(name),
-                          );
-                        }),
-                      ],
-                      onChanged: (val) {
-                        setStateDialog(() => _selectedUserId = val);
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                  ],
+                  // Filtro de Usuario
+                  const Text('Usuario:',
+                      style: TextStyle(fontWeight: FontWeight.bold)),
+                  DropdownButton<String>(
+                    isExpanded: true,
+                    value: _selectedUserId,
+                    hint: const Text('Todos los usuarios'),
+                    items: [
+                      const DropdownMenuItem(
+                        value: null,
+                        child: Text('Todos los usuarios'),
+                      ),
+                      ..._availableUsers.map((u) {
+                        return DropdownMenuItem(
+                          value: u['id'] as String,
+                          child: Text(u['name'] ?? 'Desconocido'),
+                        );
+                      }),
+                    ],
+                    onChanged: (val) {
+                      setStateDialog(() => _selectedUserId = val);
+                    },
+                  ),
+                  const SizedBox(height: 16),
 
                   // Filtro de Estatus
                   const Text('Estatus:',
@@ -190,8 +172,9 @@ class _InventoryHistoryPageState extends State<InventoryHistoryPage> {
                       DropdownMenuItem(value: 'closed', child: Text('Cerrado')),
                     ],
                     onChanged: (val) {
-                      if (val != null)
+                      if (val != null) {
                         setStateDialog(() => _selectedStatus = val);
+                      }
                     },
                   ),
                   const SizedBox(height: 16),
@@ -288,11 +271,7 @@ class _InventoryHistoryPageState extends State<InventoryHistoryPage> {
     if (userId == null) return 'Desconocido';
     final profile = _userProfiles[userId];
     if (profile != null) {
-      if (profile['first_name'] != null) {
-        return '${profile['first_name']} ${profile['last_name'] ?? ''}'.trim();
-      }
-      // Si no tiene nombre, intentamos mostrar email o ID truncado
-      return profile['email'] ?? 'Usuario ${userId.substring(0, 4)}';
+      return profile['name'] ?? 'Usuario ${userId.substring(0, 4)}';
     }
     return 'Usuario ${userId.substring(0, 4)}';
   }

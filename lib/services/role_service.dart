@@ -100,4 +100,26 @@ class RoleService {
       'updated_at': DateTime.now().toIso8601String(),
     }).eq('id', user.id);
   }
+
+  /// Obtiene el nombre del almacén asignado al usuario actual.
+  /// Retorna null si no tiene asignación.
+  static Future<String?> getAssignedWarehouse() async {
+    try {
+      final user = _client.auth.currentUser;
+      if (user == null) return null;
+
+      final response = await _client
+          .from('app_profiles')
+          .select('assigned_warehouse')
+          .eq('id', user.id)
+          .maybeSingle();
+
+      if (response != null && response['assigned_warehouse'] != null) {
+        return response['assigned_warehouse'].toString();
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
 }

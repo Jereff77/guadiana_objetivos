@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/config/supabase_config.dart';
 import '../../app.dart';
 
@@ -23,6 +22,13 @@ class _ConfigPageState extends State<ConfigPage> {
     super.initState();
     _loadSavedCredentials();
     _localError = widget.error;
+  }
+
+  @override
+  void dispose() {
+    _urlController.dispose();
+    _keyController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadSavedCredentials() async {
@@ -58,7 +64,9 @@ class _ConfigPageState extends State<ConfigPage> {
       await SupabaseConfig.saveCredentials(url, key);
 
       // Inicializar Supabase con las nuevas credenciales
-      await SupabaseConfig.initialize(url: url, anonKey: key);
+      SupabaseConfig.supabaseUrl = url;
+      SupabaseConfig.supabaseAnonKey = key;
+      await SupabaseConfig.initialize();
 
       if (mounted) {
         Navigator.of(context).pushReplacement(
@@ -102,7 +110,7 @@ class _ConfigPageState extends State<ConfigPage> {
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Colors.black.withValues(alpha: 0.1),
                     blurRadius: 10,
                     offset: const Offset(0, 5),
                   ),
@@ -113,9 +121,9 @@ class _ConfigPageState extends State<ConfigPage> {
                 child: Image.asset('assets/images/guadiana.png'),
               ),
             ),
-            
+
             const SizedBox(height: 40),
-            
+
             // Título
             const Text(
               'Configuración Requerida',
@@ -125,9 +133,9 @@ class _ConfigPageState extends State<ConfigPage> {
                 color: Color(0xFF004A93),
               ),
             ),
-            
+
             const SizedBox(height: 20),
-            
+
             // Subtítulo
             const Text(
               'Ingresa tus credenciales de Supabase',
@@ -136,9 +144,9 @@ class _ConfigPageState extends State<ConfigPage> {
                 color: Colors.grey,
               ),
             ),
-            
+
             const SizedBox(height: 40),
-            
+
             // Formulario
             Card(
               elevation: 4,
@@ -156,9 +164,9 @@ class _ConfigPageState extends State<ConfigPage> {
                       ),
                       keyboardType: TextInputType.url,
                     ),
-                    
+
                     const SizedBox(height: 20),
-                    
+
                     TextField(
                       controller: _keyController,
                       decoration: const InputDecoration(
@@ -168,9 +176,9 @@ class _ConfigPageState extends State<ConfigPage> {
                         border: OutlineInputBorder(),
                       ),
                       obscureText: true,
-                      maxLines: 3,
+                      maxLines: 1,
                     ),
-                    
+
                     if (_localError != null) ...[
                       const SizedBox(height: 20),
                       Container(
@@ -194,9 +202,9 @@ class _ConfigPageState extends State<ConfigPage> {
                         ),
                       ),
                     ],
-                    
+
                     const SizedBox(height: 30),
-                    
+
                     // Botón de guardar
                     SizedBox(
                       width: double.infinity,
@@ -219,10 +227,11 @@ class _ConfigPageState extends State<ConfigPage> {
                                     height: 20,
                                     child: CircularProgressIndicator(
                                       strokeWidth: 2,
-                                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                          Colors.white),
                                     ),
                                   ),
-                                  const SizedBox(width: 10),
+                                  SizedBox(width: 10),
                                   Text('Guardando...'),
                                 ],
                               )
@@ -236,9 +245,9 @@ class _ConfigPageState extends State<ConfigPage> {
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 40),
-            
+
             // Instrucciones
             Container(
               padding: const EdgeInsets.all(16),
@@ -246,19 +255,19 @@ class _ConfigPageState extends State<ConfigPage> {
                 color: Colors.grey[100],
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Column(
+              child: const Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     '📋 Instrucciones:',
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  const SizedBox(height: 8),
-                  const Text('1. Ve a tu proyecto de Supabase'),
-                  const Text('2. Copia la URL del proyecto'),
-                  const Text('3. Ve a Settings > API'),
-                  const Text('4. Copia la "anon public key"'),
-                  const Text('5. Pega ambos datos en los campos above'),
+                  SizedBox(height: 8),
+                  Text('1. Ve a tu proyecto de Supabase'),
+                  Text('2. Copia la URL del proyecto'),
+                  Text('3. Ve a Settings > API'),
+                  Text('4. Copia la "anon public key"'),
+                  Text('5. Pega ambos datos en los campos de arriba'),
                 ],
               ),
             ),

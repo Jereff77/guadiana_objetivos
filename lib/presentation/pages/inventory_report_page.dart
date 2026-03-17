@@ -146,9 +146,7 @@ class _InventoryReportPageState extends State<InventoryReportPage> {
                       'Físico', _totalPhysical.toString(), Colors.purple),
                   _buildStat(
                       'Diferencia',
-                      (_totalDiff > 0
-                          ? '+${_totalDiff}'
-                          : _totalDiff.toString()),
+                      (_totalDiff > 0 ? '+$_totalDiff' : _totalDiff.toString()),
                       _totalDiff == 0 ? Colors.green : Colors.red),
                 ],
               ),

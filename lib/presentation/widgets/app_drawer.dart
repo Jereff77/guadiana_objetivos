@@ -251,6 +251,7 @@ class _AppDrawerState extends State<AppDrawer> {
 
       // Descargar inventario para esta sesión
       // Usamos clearExistingCounts: true para asegurar que cargamos el estado limpio de esa sesión
+      if (!mounted) return;
       await context.read<SyncService>().downloadInventory(
             widget.warehouseId!,
             sessionId: sessionId,

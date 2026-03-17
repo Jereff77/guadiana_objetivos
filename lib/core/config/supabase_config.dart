@@ -18,7 +18,7 @@ class SupabaseConfig {
     }
 
     if (supabaseUrl.isEmpty || supabaseAnonKey.isEmpty) {
-      final errorMessage = '''
+      const errorMessage = '''
         ⚠️ CONFIGURACIÓN REQUERIDA ⚠️
         
         No se encontraron las credenciales de Supabase.

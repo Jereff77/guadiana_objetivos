@@ -166,6 +166,7 @@ class _WarehouseSelectPageState extends State<WarehouseSelectPage> {
                       onTap: () async {
                         // Verificar si es necesario asignar el almacén (Auto-asignación)
                         final role = await RoleService.getRole();
+                        if (!context.mounted) return;
                         final isAuditor = role == UserRole.auditor;
 
                         // Si es almacenista y estamos viendo la lista completa,
@@ -281,6 +282,7 @@ class _WarehouseSelectPageState extends State<WarehouseSelectPage> {
                               .read<LocalDatabase>()
                               .hasInventoryFor(w);
 
+                          if (!context.mounted) return;
                           if (hasLocalData) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
