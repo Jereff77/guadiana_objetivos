@@ -4,9 +4,8 @@ Repositorio principal del proyecto Guadiana para este cliente. Contiene la app d
 
 ## Estructura general
 
-- `inventarios/`: app Flutter principal de gestión de inventarios (antes estaba en la raíz).
+- `inventarios/`: app Flutter principal de gestión de inventarios (antes estaba en la raíz), incluyendo su documentación en `inventarios/documentos/`.
 - `procesos/`: proyectos adicionales relacionados con procesos del cliente (servicios, herramientas, automatizaciones, etc.).
-- `documentos/`: documentación funcional y técnica (por ejemplo la especificación de la app de inventarios).
 - `guadiana_objetivos/`: otros artefactos o proyectos históricos asociados.
 
 ## Apps y proyectos

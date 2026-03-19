@@ -22,6 +22,4 @@ flutter run
 - `android/`, `ios/`, `web/`, `linux/`, `macos/`, `windows/`: plataformas soportadas.
 - `assets/`, `img/`: recursos estáticos.
 - `tool/`: scripts (seed de base de datos, configuración de Supabase, etc.).
-
-La documentación funcional y técnica general está en `../documentos/` en la raíz del monorepo.
-
+ - `documentos/`: documentación funcional y técnica específica de la app de inventarios.
