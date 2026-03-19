@@ -6,7 +6,8 @@ part 'database.g.dart';
 class LocalInventory extends Table {
   TextColumn get productId => text()();
   TextColumn get warehouseId => text()();
-  TextColumn get code => text().nullable()(); // Added code column
+  TextColumn get code => text().nullable()(); // Código del producto
+  TextColumn get product => text().nullable()(); // Columna "Producto" del origen
   TextColumn get description => text()();
   TextColumn get category => text().nullable()();
   TextColumn get brand => text().nullable()();
@@ -29,7 +30,7 @@ class LocalDatabase extends _$LocalDatabase {
   LocalDatabase() : super(connect());
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -39,6 +40,9 @@ class LocalDatabase extends _$LocalDatabase {
         onUpgrade: (Migrator m, int from, int to) async {
           if (from < 4) {
             await m.addColumn(localInventory, localInventory.physicalStock);
+          }
+          if (from < 5) {
+            await m.addColumn(localInventory, localInventory.product);
           }
         },
       );

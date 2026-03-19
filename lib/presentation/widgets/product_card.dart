@@ -15,6 +15,8 @@ class ProductCard extends StatelessWidget {
     final systemQty = product['Existencia'] ?? 0;
     final physicalQty = product['ConteoFisico']; // Puede ser null
     final stockMin = product['StockMin'] ?? 0;
+    final code = product['Codigo'] ?? '';
+    final producto = product['Producto'] ?? '';
 
     return Card(
       child: Padding(
@@ -26,6 +28,20 @@ class ProductCard extends StatelessWidget {
               product['Descripcion'] ?? product['ProductId'] ?? '',
               style: Theme.of(context).textTheme.titleMedium,
             ),
+            if (producto.toString().isNotEmpty) ...[
+              const SizedBox(height: 4),
+              Text(
+                producto.toString(),
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            ],
+            if (code.toString().isNotEmpty) ...[
+              const SizedBox(height: 4),
+              Text(
+                'Código: $code',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ],
             const SizedBox(height: 8),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,

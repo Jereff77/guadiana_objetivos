@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:drift/drift.dart' as drift;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../data/datasources/local/database.dart';
 import '../widgets/product_card.dart';
 import '../widgets/inventory_count_dialog.dart';
@@ -24,7 +25,7 @@ class InventoryPage extends StatefulWidget {
 
 class InventoryPageState extends State<InventoryPage> {
   String _query = '';
-  String? _selectedCategory;
+  List<String> _selectedCategories = [];
   String? _selectedBrand;
   bool _loading = true;
   String? _error;
@@ -33,7 +34,12 @@ class InventoryPageState extends State<InventoryPage> {
   @override
   void initState() {
     super.initState();
-    reload();
+    _loadFiltersAndReload();
+  }
+
+  Future<void> _loadFiltersAndReload() async {
+    await _loadSavedFilters();
+    await reload();
   }
 
   Future<void> reload() async {
@@ -48,14 +54,22 @@ class InventoryPageState extends State<InventoryPage> {
       // ..where((t) => t.stock.isBiggerThanValue(0)); // Mostrar todos para permitir conteo
 
       if (_query.isNotEmpty) {
-        query.where((t) => t.description.like('%$_query%'));
+        final pattern = '%$_query%';
+        query.where(
+          (t) =>
+              t.description.like(pattern) |
+              t.code.like(pattern) |
+              t.product.like(pattern),
+        );
       }
-      if (_selectedCategory != null && _selectedCategory!.isNotEmpty) {
-        query.where((t) => t.category.equals(_selectedCategory!));
+      if (_selectedCategories.isNotEmpty) {
+        query.where((t) => t.category.isIn(_selectedCategories));
       }
       if (_selectedBrand != null && _selectedBrand!.isNotEmpty) {
         query.where((t) => t.brand.equals(_selectedBrand!));
       }
+
+      query.orderBy([(t) => drift.OrderingTerm(expression: t.description)]);
 
       final results = await query.get();
 
@@ -64,6 +78,7 @@ class InventoryPageState extends State<InventoryPage> {
             .map((item) => {
                   'ProductId': item.productId,
                   'Codigo': item.code,
+                  'Producto': item.product,
                   'Descripcion': item.description,
                   'Categoria': item.category,
                   'Marca': item.brand,
@@ -136,21 +151,43 @@ class InventoryPageState extends State<InventoryPage> {
   }
 
   Future<void> showFilterDialog() async {
-    final result = await showDialog<Map<String, String?>>(
+    final result = await showDialog<Map<String, dynamic>>(
       context: context,
       builder: (context) => FilterDialog(
         warehouseId: widget.warehouseId,
-        initialCategoryId: _selectedCategory,
+        initialCategoryIds: _selectedCategories,
         initialBrand: _selectedBrand,
       ),
     );
     if (result != null) {
       setState(() {
-        _selectedCategory = result['categoryId'];
-        _selectedBrand = result['brand'];
+        _selectedCategories =
+            (result['categoryIds'] as List<dynamic>? ?? []).cast<String>();
+        _selectedBrand = result['brand'] as String?;
       });
+      await _saveFilters();
       await reload();
     }
+  }
+
+  Future<void> _loadSavedFilters() async {
+    final prefs = await SharedPreferences.getInstance();
+    final keyPrefix = 'inventory_filters_${widget.warehouseId}';
+    final savedCategories =
+        prefs.getStringList('${keyPrefix}_categories') ?? <String>[];
+    final savedBrand = prefs.getString('${keyPrefix}_brand');
+    setState(() {
+      _selectedCategories = savedCategories;
+      _selectedBrand = savedBrand?.isNotEmpty == true ? savedBrand : null;
+    });
+  }
+
+  Future<void> _saveFilters() async {
+    final prefs = await SharedPreferences.getInstance();
+    final keyPrefix = 'inventory_filters_${widget.warehouseId}';
+    await prefs.setStringList('${keyPrefix}_categories', _selectedCategories);
+    await prefs.setString(
+        '${keyPrefix}_brand', _selectedBrand == null ? '' : _selectedBrand!);
   }
 
   void openReviewPage() {

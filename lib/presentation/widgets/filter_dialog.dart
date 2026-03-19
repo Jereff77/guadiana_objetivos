@@ -5,12 +5,12 @@ import '../../data/datasources/local/database.dart';
 
 class FilterDialog extends StatefulWidget {
   final String warehouseId;
-  final String? initialCategoryId;
+  final List<String>? initialCategoryIds;
   final String? initialBrand;
   const FilterDialog({
     super.key,
     required this.warehouseId,
-    this.initialCategoryId,
+    this.initialCategoryIds,
     this.initialBrand,
   });
 
@@ -23,14 +23,14 @@ class _FilterDialogState extends State<FilterDialog> {
   bool _loading = true;
   String? _error;
   List<String> _categories = [];
-  String? _selectedCategoryId;
+  List<String> _selectedCategoryIds = [];
   List<String> _brands = [];
   String? _selectedBrand;
 
   @override
   void initState() {
     super.initState();
-    _selectedCategoryId = widget.initialCategoryId;
+    _selectedCategoryIds = List<String>.from(widget.initialCategoryIds ?? []);
     _selectedBrand = widget.initialBrand;
     _loadData();
   }
@@ -102,8 +102,8 @@ class _FilterDialogState extends State<FilterDialog> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  DropdownSearch<String>(
-                    popupProps: const PopupProps.menu(
+                  DropdownSearch<String>.multiSelection(
+                    popupProps: const PopupPropsMultiSelection.menu(
                       showSearchBox: true,
                       searchFieldProps: TextFieldProps(
                         decoration: InputDecoration(
@@ -114,16 +114,16 @@ class _FilterDialogState extends State<FilterDialog> {
                       ),
                     ),
                     items: _categories,
-                    selectedItem: _selectedCategoryId,
+                    selectedItems: _selectedCategoryIds,
                     dropdownDecoratorProps: const DropDownDecoratorProps(
                       dropdownSearchDecoration: InputDecoration(
-                        labelText: "Categoría",
+                        labelText: "Categorías",
                         border: OutlineInputBorder(),
                       ),
                     ),
-                    onChanged: (value) {
+                    onChanged: (values) {
                       setState(() {
-                        _selectedCategoryId = value;
+                        _selectedCategoryIds = List<String>.from(values);
                       });
                     },
                     clearButtonProps: const ClearButtonProps(isVisible: true),
@@ -170,7 +170,7 @@ class _FilterDialogState extends State<FilterDialog> {
         ElevatedButton(
           onPressed: () {
             Navigator.of(context).pop({
-              'categoryId': _selectedCategoryId,
+              'categoryIds': _selectedCategoryIds,
               'brand': _selectedBrand,
             });
           },

@@ -26,6 +26,12 @@ class $LocalInventoryTable extends LocalInventory
   late final GeneratedColumn<String> code = GeneratedColumn<String>(
       'code', aliasedName, true,
       type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _productMeta =
+      const VerificationMeta('product');
+  @override
+  late final GeneratedColumn<String> product = GeneratedColumn<String>(
+      'product', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _descriptionMeta =
       const VerificationMeta('description');
   @override
@@ -90,6 +96,7 @@ class $LocalInventoryTable extends LocalInventory
         productId,
         warehouseId,
         code,
+        product,
         description,
         category,
         brand,
@@ -127,6 +134,10 @@ class $LocalInventoryTable extends LocalInventory
     if (data.containsKey('code')) {
       context.handle(
           _codeMeta, code.isAcceptableOrUnknown(data['code']!, _codeMeta));
+    }
+    if (data.containsKey('product')) {
+      context.handle(_productMeta,
+          product.isAcceptableOrUnknown(data['product']!, _productMeta));
     }
     if (data.containsKey('description')) {
       context.handle(
@@ -187,6 +198,8 @@ class $LocalInventoryTable extends LocalInventory
           .read(DriftSqlType.string, data['${effectivePrefix}warehouse_id'])!,
       code: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}code']),
+      product: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}product']),
       description: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}description'])!,
       category: attachedDatabase.typeMapping
@@ -219,6 +232,7 @@ class LocalInventoryData extends DataClass
   final String productId;
   final String warehouseId;
   final String? code;
+  final String? product;
   final String description;
   final String? category;
   final String? brand;
@@ -232,6 +246,7 @@ class LocalInventoryData extends DataClass
       {required this.productId,
       required this.warehouseId,
       this.code,
+      this.product,
       required this.description,
       this.category,
       this.brand,
@@ -248,6 +263,9 @@ class LocalInventoryData extends DataClass
     map['warehouse_id'] = Variable<String>(warehouseId);
     if (!nullToAbsent || code != null) {
       map['code'] = Variable<String>(code);
+    }
+    if (!nullToAbsent || product != null) {
+      map['product'] = Variable<String>(product);
     }
     map['description'] = Variable<String>(description);
     if (!nullToAbsent || category != null) {
@@ -276,6 +294,9 @@ class LocalInventoryData extends DataClass
       productId: Value(productId),
       warehouseId: Value(warehouseId),
       code: code == null && nullToAbsent ? const Value.absent() : Value(code),
+      product: product == null && nullToAbsent
+          ? const Value.absent()
+          : Value(product),
       description: Value(description),
       category: category == null && nullToAbsent
           ? const Value.absent()
@@ -303,6 +324,7 @@ class LocalInventoryData extends DataClass
       productId: serializer.fromJson<String>(json['productId']),
       warehouseId: serializer.fromJson<String>(json['warehouseId']),
       code: serializer.fromJson<String?>(json['code']),
+      product: serializer.fromJson<String?>(json['product']),
       description: serializer.fromJson<String>(json['description']),
       category: serializer.fromJson<String?>(json['category']),
       brand: serializer.fromJson<String?>(json['brand']),
@@ -321,6 +343,7 @@ class LocalInventoryData extends DataClass
       'productId': serializer.toJson<String>(productId),
       'warehouseId': serializer.toJson<String>(warehouseId),
       'code': serializer.toJson<String?>(code),
+      'product': serializer.toJson<String?>(product),
       'description': serializer.toJson<String>(description),
       'category': serializer.toJson<String?>(category),
       'brand': serializer.toJson<String?>(brand),
@@ -337,6 +360,7 @@ class LocalInventoryData extends DataClass
           {String? productId,
           String? warehouseId,
           Value<String?> code = const Value.absent(),
+          Value<String?> product = const Value.absent(),
           String? description,
           Value<String?> category = const Value.absent(),
           Value<String?> brand = const Value.absent(),
@@ -350,6 +374,7 @@ class LocalInventoryData extends DataClass
         productId: productId ?? this.productId,
         warehouseId: warehouseId ?? this.warehouseId,
         code: code.present ? code.value : this.code,
+        product: product.present ? product.value : this.product,
         description: description ?? this.description,
         category: category.present ? category.value : this.category,
         brand: brand.present ? brand.value : this.brand,
@@ -367,6 +392,7 @@ class LocalInventoryData extends DataClass
       warehouseId:
           data.warehouseId.present ? data.warehouseId.value : this.warehouseId,
       code: data.code.present ? data.code.value : this.code,
+      product: data.product.present ? data.product.value : this.product,
       description:
           data.description.present ? data.description.value : this.description,
       category: data.category.present ? data.category.value : this.category,
@@ -389,6 +415,7 @@ class LocalInventoryData extends DataClass
           ..write('productId: $productId, ')
           ..write('warehouseId: $warehouseId, ')
           ..write('code: $code, ')
+          ..write('product: $product, ')
           ..write('description: $description, ')
           ..write('category: $category, ')
           ..write('brand: $brand, ')
@@ -407,6 +434,7 @@ class LocalInventoryData extends DataClass
       productId,
       warehouseId,
       code,
+      product,
       description,
       category,
       brand,
@@ -423,6 +451,7 @@ class LocalInventoryData extends DataClass
           other.productId == this.productId &&
           other.warehouseId == this.warehouseId &&
           other.code == this.code &&
+          other.product == this.product &&
           other.description == this.description &&
           other.category == this.category &&
           other.brand == this.brand &&
@@ -438,6 +467,7 @@ class LocalInventoryCompanion extends UpdateCompanion<LocalInventoryData> {
   final Value<String> productId;
   final Value<String> warehouseId;
   final Value<String?> code;
+  final Value<String?> product;
   final Value<String> description;
   final Value<String?> category;
   final Value<String?> brand;
@@ -452,6 +482,7 @@ class LocalInventoryCompanion extends UpdateCompanion<LocalInventoryData> {
     this.productId = const Value.absent(),
     this.warehouseId = const Value.absent(),
     this.code = const Value.absent(),
+    this.product = const Value.absent(),
     this.description = const Value.absent(),
     this.category = const Value.absent(),
     this.brand = const Value.absent(),
@@ -467,6 +498,7 @@ class LocalInventoryCompanion extends UpdateCompanion<LocalInventoryData> {
     required String productId,
     required String warehouseId,
     this.code = const Value.absent(),
+    this.product = const Value.absent(),
     required String description,
     this.category = const Value.absent(),
     this.brand = const Value.absent(),
@@ -484,6 +516,7 @@ class LocalInventoryCompanion extends UpdateCompanion<LocalInventoryData> {
     Expression<String>? productId,
     Expression<String>? warehouseId,
     Expression<String>? code,
+    Expression<String>? product,
     Expression<String>? description,
     Expression<String>? category,
     Expression<String>? brand,
@@ -499,6 +532,7 @@ class LocalInventoryCompanion extends UpdateCompanion<LocalInventoryData> {
       if (productId != null) 'product_id': productId,
       if (warehouseId != null) 'warehouse_id': warehouseId,
       if (code != null) 'code': code,
+      if (product != null) 'product': product,
       if (description != null) 'description': description,
       if (category != null) 'category': category,
       if (brand != null) 'brand': brand,
@@ -516,6 +550,7 @@ class LocalInventoryCompanion extends UpdateCompanion<LocalInventoryData> {
       {Value<String>? productId,
       Value<String>? warehouseId,
       Value<String?>? code,
+      Value<String?>? product,
       Value<String>? description,
       Value<String?>? category,
       Value<String?>? brand,
@@ -530,6 +565,7 @@ class LocalInventoryCompanion extends UpdateCompanion<LocalInventoryData> {
       productId: productId ?? this.productId,
       warehouseId: warehouseId ?? this.warehouseId,
       code: code ?? this.code,
+      product: product ?? this.product,
       description: description ?? this.description,
       category: category ?? this.category,
       brand: brand ?? this.brand,
@@ -554,6 +590,9 @@ class LocalInventoryCompanion extends UpdateCompanion<LocalInventoryData> {
     }
     if (code.present) {
       map['code'] = Variable<String>(code.value);
+    }
+    if (product.present) {
+      map['product'] = Variable<String>(product.value);
     }
     if (description.present) {
       map['description'] = Variable<String>(description.value);
@@ -594,6 +633,7 @@ class LocalInventoryCompanion extends UpdateCompanion<LocalInventoryData> {
           ..write('productId: $productId, ')
           ..write('warehouseId: $warehouseId, ')
           ..write('code: $code, ')
+          ..write('product: $product, ')
           ..write('description: $description, ')
           ..write('category: $category, ')
           ..write('brand: $brand, ')
@@ -625,6 +665,7 @@ typedef $$LocalInventoryTableCreateCompanionBuilder = LocalInventoryCompanion
   required String productId,
   required String warehouseId,
   Value<String?> code,
+  Value<String?> product,
   required String description,
   Value<String?> category,
   Value<String?> brand,
@@ -641,6 +682,7 @@ typedef $$LocalInventoryTableUpdateCompanionBuilder = LocalInventoryCompanion
   Value<String> productId,
   Value<String> warehouseId,
   Value<String?> code,
+  Value<String?> product,
   Value<String> description,
   Value<String?> category,
   Value<String?> brand,
@@ -674,6 +716,7 @@ class $$LocalInventoryTableTableManager extends RootTableManager<
             Value<String> productId = const Value.absent(),
             Value<String> warehouseId = const Value.absent(),
             Value<String?> code = const Value.absent(),
+            Value<String?> product = const Value.absent(),
             Value<String> description = const Value.absent(),
             Value<String?> category = const Value.absent(),
             Value<String?> brand = const Value.absent(),
@@ -689,6 +732,7 @@ class $$LocalInventoryTableTableManager extends RootTableManager<
             productId: productId,
             warehouseId: warehouseId,
             code: code,
+            product: product,
             description: description,
             category: category,
             brand: brand,
@@ -704,6 +748,7 @@ class $$LocalInventoryTableTableManager extends RootTableManager<
             required String productId,
             required String warehouseId,
             Value<String?> code = const Value.absent(),
+            Value<String?> product = const Value.absent(),
             required String description,
             Value<String?> category = const Value.absent(),
             Value<String?> brand = const Value.absent(),
@@ -719,6 +764,7 @@ class $$LocalInventoryTableTableManager extends RootTableManager<
             productId: productId,
             warehouseId: warehouseId,
             code: code,
+            product: product,
             description: description,
             category: category,
             brand: brand,
@@ -748,6 +794,11 @@ class $$LocalInventoryTableFilterComposer
 
   ColumnFilters<String> get code => $state.composableBuilder(
       column: $state.table.code,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get product => $state.composableBuilder(
+      column: $state.table.product,
       builder: (column, joinBuilders) =>
           ColumnFilters(column, joinBuilders: joinBuilders));
 
@@ -812,6 +863,11 @@ class $$LocalInventoryTableOrderingComposer
 
   ColumnOrderings<String> get code => $state.composableBuilder(
       column: $state.table.code,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get product => $state.composableBuilder(
+      column: $state.table.product,
       builder: (column, joinBuilders) =>
           ColumnOrderings(column, joinBuilders: joinBuilders));
 

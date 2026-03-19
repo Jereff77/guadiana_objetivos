@@ -183,6 +183,7 @@ class SyncService {
                 productId: Value(productId),
                 warehouseId: Value(item['Almacen']?.toString() ?? ''),
                 code: Value(item['Codigo']?.toString()),
+                product: Value(item['Producto']?.toString()),
                 description: Value(item['Descripcion']?.toString() ?? ''),
                 category: Value(item['Categoria']?.toString()),
                 brand: Value(item['Marca']?.toString()),
