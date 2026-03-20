@@ -649,15 +649,317 @@ class LocalInventoryCompanion extends UpdateCompanion<LocalInventoryData> {
   }
 }
 
+class $InventoryNotesTable extends InventoryNotes
+    with TableInfo<$InventoryNotesTable, InventoryNote> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $InventoryNotesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _warehouseIdMeta =
+      const VerificationMeta('warehouseId');
+  @override
+  late final GeneratedColumn<String> warehouseId = GeneratedColumn<String>(
+      'warehouse_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _sessionIdMeta =
+      const VerificationMeta('sessionId');
+  @override
+  late final GeneratedColumn<String> sessionId = GeneratedColumn<String>(
+      'session_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _noteMeta = const VerificationMeta('note');
+  @override
+  late final GeneratedColumn<String> note = GeneratedColumn<String>(
+      'note', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _createdAtMeta =
+      const VerificationMeta('createdAt');
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+      'created_at', aliasedName, false,
+      type: DriftSqlType.dateTime,
+      requiredDuringInsert: false,
+      defaultValue: currentDateAndTime);
+  @override
+  List<GeneratedColumn> get $columns =>
+      [id, warehouseId, sessionId, note, createdAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'inventory_notes';
+  @override
+  VerificationContext validateIntegrity(Insertable<InventoryNote> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('warehouse_id')) {
+      context.handle(
+          _warehouseIdMeta,
+          warehouseId.isAcceptableOrUnknown(
+              data['warehouse_id']!, _warehouseIdMeta));
+    } else if (isInserting) {
+      context.missing(_warehouseIdMeta);
+    }
+    if (data.containsKey('session_id')) {
+      context.handle(_sessionIdMeta,
+          sessionId.isAcceptableOrUnknown(data['session_id']!, _sessionIdMeta));
+    } else if (isInserting) {
+      context.missing(_sessionIdMeta);
+    }
+    if (data.containsKey('note')) {
+      context.handle(
+          _noteMeta, note.isAcceptableOrUnknown(data['note']!, _noteMeta));
+    } else if (isInserting) {
+      context.missing(_noteMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(_createdAtMeta,
+          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  InventoryNote map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return InventoryNote(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      warehouseId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}warehouse_id'])!,
+      sessionId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}session_id'])!,
+      note: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}note'])!,
+      createdAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
+    );
+  }
+
+  @override
+  $InventoryNotesTable createAlias(String alias) {
+    return $InventoryNotesTable(attachedDatabase, alias);
+  }
+}
+
+class InventoryNote extends DataClass implements Insertable<InventoryNote> {
+  final int id;
+  final String warehouseId;
+  final String sessionId;
+  final String note;
+  final DateTime createdAt;
+  const InventoryNote(
+      {required this.id,
+      required this.warehouseId,
+      required this.sessionId,
+      required this.note,
+      required this.createdAt});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['warehouse_id'] = Variable<String>(warehouseId);
+    map['session_id'] = Variable<String>(sessionId);
+    map['note'] = Variable<String>(note);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  InventoryNotesCompanion toCompanion(bool nullToAbsent) {
+    return InventoryNotesCompanion(
+      id: Value(id),
+      warehouseId: Value(warehouseId),
+      sessionId: Value(sessionId),
+      note: Value(note),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory InventoryNote.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return InventoryNote(
+      id: serializer.fromJson<int>(json['id']),
+      warehouseId: serializer.fromJson<String>(json['warehouseId']),
+      sessionId: serializer.fromJson<String>(json['sessionId']),
+      note: serializer.fromJson<String>(json['note']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'warehouseId': serializer.toJson<String>(warehouseId),
+      'sessionId': serializer.toJson<String>(sessionId),
+      'note': serializer.toJson<String>(note),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  InventoryNote copyWith(
+          {int? id,
+          String? warehouseId,
+          String? sessionId,
+          String? note,
+          DateTime? createdAt}) =>
+      InventoryNote(
+        id: id ?? this.id,
+        warehouseId: warehouseId ?? this.warehouseId,
+        sessionId: sessionId ?? this.sessionId,
+        note: note ?? this.note,
+        createdAt: createdAt ?? this.createdAt,
+      );
+  InventoryNote copyWithCompanion(InventoryNotesCompanion data) {
+    return InventoryNote(
+      id: data.id.present ? data.id.value : this.id,
+      warehouseId:
+          data.warehouseId.present ? data.warehouseId.value : this.warehouseId,
+      sessionId: data.sessionId.present ? data.sessionId.value : this.sessionId,
+      note: data.note.present ? data.note.value : this.note,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('InventoryNote(')
+          ..write('id: $id, ')
+          ..write('warehouseId: $warehouseId, ')
+          ..write('sessionId: $sessionId, ')
+          ..write('note: $note, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, warehouseId, sessionId, note, createdAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is InventoryNote &&
+          other.id == this.id &&
+          other.warehouseId == this.warehouseId &&
+          other.sessionId == this.sessionId &&
+          other.note == this.note &&
+          other.createdAt == this.createdAt);
+}
+
+class InventoryNotesCompanion extends UpdateCompanion<InventoryNote> {
+  final Value<int> id;
+  final Value<String> warehouseId;
+  final Value<String> sessionId;
+  final Value<String> note;
+  final Value<DateTime> createdAt;
+  const InventoryNotesCompanion({
+    this.id = const Value.absent(),
+    this.warehouseId = const Value.absent(),
+    this.sessionId = const Value.absent(),
+    this.note = const Value.absent(),
+    this.createdAt = const Value.absent(),
+  });
+  InventoryNotesCompanion.insert({
+    this.id = const Value.absent(),
+    required String warehouseId,
+    required String sessionId,
+    required String note,
+    this.createdAt = const Value.absent(),
+  })  : warehouseId = Value(warehouseId),
+        sessionId = Value(sessionId),
+        note = Value(note);
+  static Insertable<InventoryNote> custom({
+    Expression<int>? id,
+    Expression<String>? warehouseId,
+    Expression<String>? sessionId,
+    Expression<String>? note,
+    Expression<DateTime>? createdAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (warehouseId != null) 'warehouse_id': warehouseId,
+      if (sessionId != null) 'session_id': sessionId,
+      if (note != null) 'note': note,
+      if (createdAt != null) 'created_at': createdAt,
+    });
+  }
+
+  InventoryNotesCompanion copyWith(
+      {Value<int>? id,
+      Value<String>? warehouseId,
+      Value<String>? sessionId,
+      Value<String>? note,
+      Value<DateTime>? createdAt}) {
+    return InventoryNotesCompanion(
+      id: id ?? this.id,
+      warehouseId: warehouseId ?? this.warehouseId,
+      sessionId: sessionId ?? this.sessionId,
+      note: note ?? this.note,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (warehouseId.present) {
+      map['warehouse_id'] = Variable<String>(warehouseId.value);
+    }
+    if (sessionId.present) {
+      map['session_id'] = Variable<String>(sessionId.value);
+    }
+    if (note.present) {
+      map['note'] = Variable<String>(note.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('InventoryNotesCompanion(')
+          ..write('id: $id, ')
+          ..write('warehouseId: $warehouseId, ')
+          ..write('sessionId: $sessionId, ')
+          ..write('note: $note, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$LocalDatabase extends GeneratedDatabase {
   _$LocalDatabase(QueryExecutor e) : super(e);
   $LocalDatabaseManager get managers => $LocalDatabaseManager(this);
   late final $LocalInventoryTable localInventory = $LocalInventoryTable(this);
+  late final $InventoryNotesTable inventoryNotes = $InventoryNotesTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
-  List<DatabaseSchemaEntity> get allSchemaEntities => [localInventory];
+  List<DatabaseSchemaEntity> get allSchemaEntities =>
+      [localInventory, inventoryNotes];
 }
 
 typedef $$LocalInventoryTableCreateCompanionBuilder = LocalInventoryCompanion
@@ -917,9 +1219,134 @@ class $$LocalInventoryTableOrderingComposer
           ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
+typedef $$InventoryNotesTableCreateCompanionBuilder = InventoryNotesCompanion
+    Function({
+  Value<int> id,
+  required String warehouseId,
+  required String sessionId,
+  required String note,
+  Value<DateTime> createdAt,
+});
+typedef $$InventoryNotesTableUpdateCompanionBuilder = InventoryNotesCompanion
+    Function({
+  Value<int> id,
+  Value<String> warehouseId,
+  Value<String> sessionId,
+  Value<String> note,
+  Value<DateTime> createdAt,
+});
+
+class $$InventoryNotesTableTableManager extends RootTableManager<
+    _$LocalDatabase,
+    $InventoryNotesTable,
+    InventoryNote,
+    $$InventoryNotesTableFilterComposer,
+    $$InventoryNotesTableOrderingComposer,
+    $$InventoryNotesTableCreateCompanionBuilder,
+    $$InventoryNotesTableUpdateCompanionBuilder> {
+  $$InventoryNotesTableTableManager(
+      _$LocalDatabase db, $InventoryNotesTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          filteringComposer:
+              $$InventoryNotesTableFilterComposer(ComposerState(db, table)),
+          orderingComposer:
+              $$InventoryNotesTableOrderingComposer(ComposerState(db, table)),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String> warehouseId = const Value.absent(),
+            Value<String> sessionId = const Value.absent(),
+            Value<String> note = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+          }) =>
+              InventoryNotesCompanion(
+            id: id,
+            warehouseId: warehouseId,
+            sessionId: sessionId,
+            note: note,
+            createdAt: createdAt,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            required String warehouseId,
+            required String sessionId,
+            required String note,
+            Value<DateTime> createdAt = const Value.absent(),
+          }) =>
+              InventoryNotesCompanion.insert(
+            id: id,
+            warehouseId: warehouseId,
+            sessionId: sessionId,
+            note: note,
+            createdAt: createdAt,
+          ),
+        ));
+}
+
+class $$InventoryNotesTableFilterComposer
+    extends FilterComposer<_$LocalDatabase, $InventoryNotesTable> {
+  $$InventoryNotesTableFilterComposer(super.$state);
+  ColumnFilters<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get warehouseId => $state.composableBuilder(
+      column: $state.table.warehouseId,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get sessionId => $state.composableBuilder(
+      column: $state.table.sessionId,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get note => $state.composableBuilder(
+      column: $state.table.note,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<DateTime> get createdAt => $state.composableBuilder(
+      column: $state.table.createdAt,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+}
+
+class $$InventoryNotesTableOrderingComposer
+    extends OrderingComposer<_$LocalDatabase, $InventoryNotesTable> {
+  $$InventoryNotesTableOrderingComposer(super.$state);
+  ColumnOrderings<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get warehouseId => $state.composableBuilder(
+      column: $state.table.warehouseId,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get sessionId => $state.composableBuilder(
+      column: $state.table.sessionId,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get note => $state.composableBuilder(
+      column: $state.table.note,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<DateTime> get createdAt => $state.composableBuilder(
+      column: $state.table.createdAt,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+}
+
 class $LocalDatabaseManager {
   final _$LocalDatabase _db;
   $LocalDatabaseManager(this._db);
   $$LocalInventoryTableTableManager get localInventory =>
       $$LocalInventoryTableTableManager(_db, _db.localInventory);
+  $$InventoryNotesTableTableManager get inventoryNotes =>
+      $$InventoryNotesTableTableManager(_db, _db.inventoryNotes);
 }

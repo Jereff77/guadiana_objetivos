@@ -1,6 +1,10 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../core/config/supabase_config.dart';
 import '../../core/utils/auth_error_mapper.dart';
 import '../../services/auth_service.dart';
+import 'reset_password_page.dart';
 
 class ForgotPasswordPage extends StatefulWidget {
   const ForgotPasswordPage({super.key});
@@ -16,6 +20,29 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   bool _loading = false;
   String? _message;
   String? _error;
+  StreamSubscription<AuthState>? _authSub;
+
+  @override
+  void initState() {
+    super.initState();
+    _authSub =
+        SupabaseConfig.client.auth.onAuthStateChange.listen((authState) {
+      if (!mounted) return;
+      if (authState.event == AuthChangeEvent.passwordRecovery &&
+          authState.session != null) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const ResetPasswordPage()),
+        );
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _authSub?.cancel();
+    _emailController.dispose();
+    super.dispose();
+  }
 
   Future<void> _resetPassword() async {
     if (!_formKey.currentState!.validate()) return;

@@ -27,6 +27,7 @@ class InventoryPageState extends State<InventoryPage> {
   String _query = '';
   List<String> _selectedCategories = [];
   String? _selectedBrand;
+  bool _showZeroInventory = false;
   bool _loading = true;
   String? _error;
   List<Map<String, dynamic>> _items = [];
@@ -51,7 +52,10 @@ class InventoryPageState extends State<InventoryPage> {
       final db = context.read<LocalDatabase>();
       var query = db.select(db.localInventory)
         ..where((t) => t.warehouseId.equals(widget.warehouseId));
-      // ..where((t) => t.stock.isBiggerThanValue(0)); // Mostrar todos para permitir conteo
+
+      if (!_showZeroInventory) {
+        query.where((t) => t.stock.isBiggerThanValue(0));
+      }
 
       if (_query.isNotEmpty) {
         final pattern = '%$_query%';
@@ -157,6 +161,8 @@ class InventoryPageState extends State<InventoryPage> {
         warehouseId: widget.warehouseId,
         initialCategoryIds: _selectedCategories,
         initialBrand: _selectedBrand,
+        showZeroOption: true,
+        initialShowZeroInventory: _showZeroInventory,
       ),
     );
     if (result != null) {
@@ -164,6 +170,7 @@ class InventoryPageState extends State<InventoryPage> {
         _selectedCategories =
             (result['categoryIds'] as List<dynamic>? ?? []).cast<String>();
         _selectedBrand = result['brand'] as String?;
+        _showZeroInventory = result['showZeroInventory'] as bool? ?? false;
       });
       await _saveFilters();
       await reload();
@@ -179,6 +186,8 @@ class InventoryPageState extends State<InventoryPage> {
     setState(() {
       _selectedCategories = savedCategories;
       _selectedBrand = savedBrand?.isNotEmpty == true ? savedBrand : null;
+      _showZeroInventory =
+          prefs.getBool('${keyPrefix}_showZeroInventory') ?? false;
     });
   }
 
@@ -188,6 +197,8 @@ class InventoryPageState extends State<InventoryPage> {
     await prefs.setStringList('${keyPrefix}_categories', _selectedCategories);
     await prefs.setString(
         '${keyPrefix}_brand', _selectedBrand == null ? '' : _selectedBrand!);
+    await prefs.setBool(
+        '${keyPrefix}_showZeroInventory', _showZeroInventory);
   }
 
   void openReviewPage() {

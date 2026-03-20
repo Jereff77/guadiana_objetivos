@@ -25,12 +25,21 @@ class LocalInventory extends Table {
   Set<Column> get primaryKey => {productId, warehouseId};
 }
 
-@DriftDatabase(tables: [LocalInventory])
+class InventoryNotes extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get warehouseId => text()();
+  TextColumn get sessionId => text()();
+  TextColumn get note => text()();
+  DateTimeColumn get createdAt =>
+      dateTime().withDefault(currentDateAndTime)();
+}
+
+@DriftDatabase(tables: [LocalInventory, InventoryNotes])
 class LocalDatabase extends _$LocalDatabase {
   LocalDatabase() : super(connect());
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -43,6 +52,9 @@ class LocalDatabase extends _$LocalDatabase {
           }
           if (from < 5) {
             await m.addColumn(localInventory, localInventory.product);
+          }
+          if (from < 6) {
+            await m.createTable(inventoryNotes);
           }
         },
       );

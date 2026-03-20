@@ -44,7 +44,10 @@ class SupabaseConfig {
     }
     
     try {
-      await Supabase.initialize(url: supabaseUrl, anonKey: supabaseAnonKey);
+      await Supabase.initialize(
+        url: supabaseUrl,
+        anonKey: supabaseAnonKey,
+      );
     } catch (e) {
       throw Exception(
         'Error al conectar con Supabase: $e\n\n'
@@ -82,7 +85,10 @@ class SupabaseConfig {
     if (saved['url'] != null && saved['key'] != null && saved['url']!.isNotEmpty && saved['key']!.isNotEmpty) {
       supabaseUrl = saved['url']!;
       supabaseAnonKey = saved['key']!;
-      await Supabase.initialize(url: supabaseUrl, anonKey: supabaseAnonKey);
+      await Supabase.initialize(
+        url: supabaseUrl,
+        anonKey: supabaseAnonKey,
+      );
     } else {
       await initialize();
     }

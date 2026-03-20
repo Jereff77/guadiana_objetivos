@@ -7,11 +7,15 @@ class FilterDialog extends StatefulWidget {
   final String warehouseId;
   final List<String>? initialCategoryIds;
   final String? initialBrand;
+  final bool showZeroOption;
+  final bool initialShowZeroInventory;
   const FilterDialog({
     super.key,
     required this.warehouseId,
     this.initialCategoryIds,
     this.initialBrand,
+    this.showZeroOption = false,
+    this.initialShowZeroInventory = false,
   });
 
   @override
@@ -26,12 +30,14 @@ class _FilterDialogState extends State<FilterDialog> {
   List<String> _selectedCategoryIds = [];
   List<String> _brands = [];
   String? _selectedBrand;
+  bool _showZeroInventory = false;
 
   @override
   void initState() {
     super.initState();
     _selectedCategoryIds = List<String>.from(widget.initialCategoryIds ?? []);
     _selectedBrand = widget.initialBrand;
+    _showZeroInventory = widget.initialShowZeroInventory;
     _loadData();
   }
 
@@ -155,6 +161,20 @@ class _FilterDialogState extends State<FilterDialog> {
                     },
                     clearButtonProps: const ClearButtonProps(isVisible: true),
                   ),
+                  if (widget.showZeroOption) ...[
+                    const SizedBox(height: 12),
+                    CheckboxListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: const Text('Mostrar inventarios en 0'),
+                      value: _showZeroInventory,
+                      onChanged: (val) {
+                        setState(() {
+                          _showZeroInventory = val ?? false;
+                        });
+                      },
+                      controlAffinity: ListTileControlAffinity.leading,
+                    ),
+                  ],
                   if (_error != null) ...[
                     const SizedBox(height: 8),
                     Text(_error!, style: const TextStyle(color: Colors.red)),
@@ -172,6 +192,7 @@ class _FilterDialogState extends State<FilterDialog> {
             Navigator.of(context).pop({
               'categoryIds': _selectedCategoryIds,
               'brand': _selectedBrand,
+              'showZeroInventory': _showZeroInventory,
             });
           },
           child: const Text('Aplicar'),

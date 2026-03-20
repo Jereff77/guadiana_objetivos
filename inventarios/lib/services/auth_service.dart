@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../core/config/supabase_config.dart';
 
@@ -28,7 +29,12 @@ class AuthService {
   }
 
   Future<void> resetPassword(String email) async {
-    await _client.auth.resetPasswordForEmail(email);
+    await _client.auth.resetPasswordForEmail(
+      email,
+      redirectTo: kIsWeb
+          ? null
+          : 'guadiana-inventarios://password-reset-callback/',
+    );
   }
 
   Future<void> signOut() async {

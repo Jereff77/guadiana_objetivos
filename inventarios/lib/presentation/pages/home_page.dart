@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../services/sync_service.dart';
 import '../widgets/app_drawer.dart';
+import '../widgets/inventory_notes_dialog.dart';
 import 'dashboard_page.dart';
 import 'inventory_page.dart';
 import 'inventory_history_page.dart';
@@ -128,6 +129,37 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  Future<void> _openInventoryNotes() async {
+    if (_selectedWarehouse == null) {
+      return;
+    }
+    final prefs = await SharedPreferences.getInstance();
+    final sessionId = prefs.getString('current_session_id');
+    if (sessionId == null) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No hay sesión de inventario activa.'),
+        ),
+      );
+      return;
+    }
+
+    if (!mounted) {
+      return;
+    }
+
+    await showDialog(
+      context: context,
+      builder: (context) => InventoryNotesDialog(
+        warehouseId: _selectedWarehouse!,
+        sessionId: sessionId,
+      ),
+    );
+  }
+
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
@@ -236,6 +268,11 @@ class _HomePageState extends State<HomePage> {
                 tooltip: 'Sincronizar ($_pendingCount pendientes)',
                 onPressed: _sync,
               ),
+            IconButton(
+              icon: const Icon(Icons.note_alt_outlined),
+              tooltip: 'Observaciones de inventario',
+              onPressed: _openInventoryNotes,
+            ),
             IconButton(
               icon: const Icon(Icons.list_alt),
               tooltip: 'Ver Inventariados',
