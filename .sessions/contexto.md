@@ -248,3 +248,60 @@ Aplicación web Next.js 14 para gestión de checklists de Guadiana. Stack: Next.
 #### Resultado:
 **FASE 4 COMPLETA AL 100%** — T-401, T-402, T-403, T-404 implementadas y confirmadas sin errores TypeScript.
 Próxima fase: **Fase 5** (T-501 a T-504) — Pruebas, optimización, auditoría RLS y despliegue.
+
+---
+
+### Claude Sonnet 4.6 – Sesión 2026-03-20 (T-501 a T-504 – Fase 5 completa)
+
+#### Rol: Orquestador IA
+- **Solicitud del usuario**: Continuar con la siguiente tarea de mayor prioridad (Fase 5) hasta completar el PRD.
+- **Análisis realizado**: Las 4 tareas de Fase 5 fueron implementadas secuencialmente. T-501 requería infraestructura de testing (Jest), T-502 era mejoras al build, T-503 requería consulta a Supabase via MCP para auditoría real, T-504 era documentación.
+- **Decisión de agentes**: Trabajo directo en todas las tareas.
+
+#### Estado del Proyecto (FINAL)
+- ✅ **Fase 1 completa** (T-101 a T-106)
+- ✅ **Fase 2 completa** (T-201 a T-207)
+- ✅ **Fase 3 completa** (T-301 a T-304)
+- ✅ **Fase 4 completa** (T-401 a T-404)
+- ✅ **Fase 5 completa** (T-501 a T-504)
+- 🎉 **MVP COMPLETO AL 100%**
+
+#### Tareas Realizadas:
+
+1. **T-501: Pruebas de integración** (Jest + Testing Library)
+   - jest.config.ts, jest.setup.ts, @types/jest en tsconfig
+   - 4 suites / 37 tests / 0 fallos
+   - Archivos: src/lib/__tests__/utils.test.ts, supabase-client.test.ts, src/__tests__/csv-helpers.test.ts, src/components/resultados/__tests__/runs-table.test.tsx
+
+2. **T-502: Optimización rendimiento y SEO**
+   - next.config.ts: output standalone, security headers HTTP, caché assets estáticos, avif/webp
+   - Metadata SEO en root layout (title template, robots noindex, viewport themeColor #004B8D)
+   - generateMetadata estática en 5 páginas, dinámica en /formularios/[id]/editar y /resultados/[id]
+   - Fix ESLint: <a> → <Link> en resultados/page.tsx
+   - Build producción: 0 errores, 0 warnings, 14 rutas
+
+3. **T-503: Auditoría RLS**
+   - Bug encontrado y corregido: app_profiles sin política SELECT para admin_global
+   - Migración aplicada: rls_fix_app_profiles_admin_select (2 nuevas políticas)
+   - Reporte generado: Specs/rls-audit-report.md
+
+4. **T-504: Despliegue y capacitación**
+   - Specs/deployment-guide.md: proceso Hostinger Node.js + PM2, script deploy.sh
+   - Guía de capacitación para módulos Formularios, Asignaciones y Resultados
+
+#### Archivos Creados/Modificados:
+- `web/jest.config.ts`, `web/jest.setup.ts`
+- `web/src/lib/__tests__/utils.test.ts`, `supabase-client.test.ts`
+- `web/src/__tests__/csv-helpers.test.ts`
+- `web/src/components/resultados/__tests__/runs-table.test.tsx`
+- `web/next.config.ts` (standalone + headers + imágenes)
+- `web/src/app/layout.tsx` (metadata SEO completa)
+- 7 páginas del dashboard (metadata estática/dinámica)
+- `Specs/rls-audit-report.md`
+- `Specs/deployment-guide.md`
+- `Specs/web-development-tasks.md` (todas las tareas marcadas ✓)
+- `Specs/progreso.txt` (Fase 5 completa)
+- `progress.txt` (Fase 5 ✅ 100%)
+
+#### Resultado:
+**MVP COMPLETO AL 100%** — Las 5 fases y las 24 tareas del PRD están implementadas, probadas y documentadas.
