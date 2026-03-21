@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -33,88 +33,28 @@ const navItems = [
 ]
 
 const settingsItems = [
-  { title: 'Configuración', href: '/configuracion', icon: Settings },
+  { title: 'Configuraci\u00f3n', href: '/configuracion', icon: Settings },
 ]
 
 export function AppSidebar() {
   const pathname = usePathname()
 
   return (
-    <Sidebar>
-      <SidebarHeader className="border-b border-sidebar-border px-4 py-3">
-        <div className="flex items-center gap-2">
+    <Sidebar collapsible="icon">
+      <SidebarHeader className="border-b border-sidebar-border px-2 py-3 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:py-3">
+        <div className="flex items-center gap-2 overflow-hidden group-data-[collapsible=icon]:justify-center">
           <div
-            className="flex h-8 w-8 items-center justify-center rounded-md text-white font-bold text-sm"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-white font-bold text-sm"
             style={{ backgroundColor: '#004B8D' }}
           >
             G
           </div>
-          <div className="flex flex-col">
-            <span className="text-sm font-semibold leading-tight">Guadiana</span>
-            <span className="text-xs text-muted-foreground leading-tight">Checklists</span>
+          <div className="flex flex-col overflow-hidden group-data-[collapsible=icon]:hidden">
+            <span className="text-sm font-semibold leading-tight truncate">Guadiana</span>
+            <span className="text-xs text-muted-foreground leading-tight truncate">Checklists</span>
           </div>
         </div>
       </SidebarHeader>
-
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Principal</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {navItems.map((item) => (
-                <SidebarMenuItem key={item.href}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={pathname === item.href || pathname.startsWith(item.href + '/')}
-                  >
-                    <Link
-                      href={item.href}
-                      className={cn(
-                        'flex items-center gap-2',
-                        (pathname === item.href || pathname.startsWith(item.href + '/')) &&
-                          'font-medium'
-                      )}
-                    >
-                      <item.icon className="h-4 w-4" />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        <SidebarGroup>
-          <SidebarGroupLabel>Sistema</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {settingsItems.map((item) => (
-                <SidebarMenuItem key={item.href}>
-                  <SidebarMenuButton asChild isActive={pathname === item.href}>
-                    <Link href={item.href} className="flex items-center gap-2">
-                      <item.icon className="h-4 w-4" />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
-
-      <SidebarFooter className="border-t border-sidebar-border px-2 py-2">
-        <form action={logout}>
-          <SidebarMenuButton
-            type="submit"
-            className="w-full text-muted-foreground hover:text-destructive"
-          >
-            <LogOut className="h-4 w-4" />
-            <span>Cerrar sesión</span>
-          </SidebarMenuButton>
-        </form>
-      </SidebarFooter>
     </Sidebar>
   )
 }

@@ -155,3 +155,59 @@ Plataforma web (Next.js 15) + App móvil Flutter para gestionar checklists y enc
 - `web/src/components/editor/` — Editor dos paneles con DnD y auto-save
 - `web/src/hooks/use-auto-save.ts` — Hook de guardado global
 - `web/package.json` — date-fns, @dnd-kit/*
+
+---
+
+### Claude Sonnet 4.6 - Sesión 2026-03-20 (Quinta)
+
+#### Rol: Orquestador IA
+- **Solicitud del usuario**: Continuar desde Fase 2 completa, ejecutar Fases 3, 4 y 5.
+- **Decisión de agentes**: Trabajo directo — nextjs-developer + backend-supabase-developer según necesidad.
+
+#### Tareas Realizadas:
+1. **T-301: Flujo de publicación y versionamiento** — publish/archive/restore/delete en Server Actions. `createNewVersion` copia estructura completa (secciones→preguntas→opciones) con version+1. Botón "Crear nueva versión" en editor y listado.
+2. **T-302/T-303: Módulo de Asignaciones + Vigencia/Frecuencia** — Página /asignaciones con tabla filtrable. Dialog con selector de formulario publicado, tipo (rol/usuario), frecuencia (Una vez/Diario/Semanal/Mensual), fecha inicio/fin. Server Actions: createAssignment, toggleAssignment, deleteAssignment.
+3. **T-304: Vista previa simulando App Móvil** — Página /formularios/[id]/vista-previa con phone frame CSS (iPhone 375px). Renderiza todos los tipos de pregunta interactivos.
+4. **T-401: Visor de Ejecuciones** — Página /resultados con filtros GET (estado, fecha desde/hasta). Tabla con respondente desde app_profiles.
+5. **T-402: Detalle de Ejecución** — Respuestas agrupadas por sección. AnswerValue polimórfico. "Acción a seguir" resaltada en naranja.
+6. **T-403: Exportación CSV** — API route GET /api/resultados/export. CSV UTF-8+BOM, escape RFC 4180. Botón "Exportar CSV".
+7. **T-404: Estadísticas KPI** — Página /resultados/estadisticas con recharts. 4 KPI cards + BarChart + LineChart + BarChart horizontal por sucursal con semáforo de color.
+8. **T-501: Pruebas de integración** — Jest 30 + @testing-library/react 16. 4 suites / 37 tests / 0 fallos.
+9. **T-502: Optimización rendimiento y SEO** — next.config.ts standalone+compress+security headers. Metadata SEO en todas las páginas. Build: 14 rutas, 0 errores.
+10. **T-503: Auditoría RLS** — 8 tablas verificadas vía MCP. Bug corregido: app_profiles sin política admin → migración rls_fix_app_profiles_admin_select aplicada.
+11. **T-504: Despliegue y capacitación** — Guías completas en Specs/deployment-guide.md.
+
+#### Estado Final MVP: ✅ TODAS LAS FASES COMPLETADAS (5/5)
+
+#### Archivos Clave:
+- `web/src/app/(dashboard)/asignaciones/` — Módulo completo de asignaciones
+- `web/src/app/(dashboard)/resultados/` — Visor, detalle, estadísticas
+- `web/src/app/api/resultados/export/` — API exportación CSV
+- `web/supabase/migrations/` — Migración RLS fix app_profiles
+- `Specs/deployment-guide.md`, `Specs/rls-audit-report.md`
+
+---
+
+### Claude Sonnet 4.6 - Sesión 2026-03-21
+
+#### Rol: Orquestador IA
+- **Solicitud del usuario**: (1) Verificar fix del bug "crear formulario" con Playwright. (2) Cambiar sidebar para que colapse a solo iconos en lugar de ocultarse. (3) Al reportar problemas visuales con el colapso, se decidió quitar el colapso por completo — el sidebar queda fijo.
+- **Decisión de agentes**: Trabajo directo con Playwright MCP.
+
+#### Tareas Realizadas:
+1. **Fix sidebar collapsible** — Cambiado `collapsible="icon"` → `collapsible="none"` en `app-sidebar.tsx`. Sidebar fijo, sin posibilidad de colapsar.
+2. **Quitar SidebarTrigger** — Eliminado el botón "Toggle Sidebar" del `header.tsx` (import + JSX eliminados). Header queda más limpio.
+
+#### Problema encontrado y descartado:
+- Se intentó implementar modo icono (`collapsible="icon"`) pero el HMR de Windows (chokidar) no detectaba cambios en el archivo, por lo que el dev server seguía compilando código antiguo. Se requería reiniciar el servidor en cada cambio.
+- **Decisión del usuario**: Quitar la funcionalidad de colapso por completo — no es prioritaria.
+
+#### Archivos Modificados:
+- `web/src/components/layout/app-sidebar.tsx`: `collapsible="none"` (sidebar siempre visible)
+- `web/src/components/layout/header.tsx`: Eliminado SidebarTrigger e import
+
+#### Estado Actual:
+| Tarea | Estado |
+|-------|--------|
+| Fases 1-5 MVP | ✅ Completadas (Claude Sonnet 4.6) |
+| Sidebar fijo sin toggle | ✅ Completado (Claude Sonnet 4.6) - 2026-03-21 |
