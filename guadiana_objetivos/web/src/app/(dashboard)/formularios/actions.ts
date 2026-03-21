@@ -35,6 +35,25 @@ export async function publishSurvey(id: string) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
+  // Validación de integridad: debe tener al menos 1 sección con 1 pregunta
+  const { data: sections } = await supabase
+    .from('form_sections')
+    .select('id')
+    .eq('survey_id', id)
+
+  if (!sections || sections.length === 0) {
+    return { error: 'El formulario debe tener al menos una sección antes de publicarse.' }
+  }
+
+  const { data: questions } = await supabase
+    .from('form_questions')
+    .select('id')
+    .in('section_id', sections.map((s) => s.id))
+
+  if (!questions || questions.length === 0) {
+    return { error: 'El formulario debe tener al menos una pregunta antes de publicarse.' }
+  }
+
   const { error } = await supabase
     .from('form_surveys')
     .update({ status: 'published', updated_by: user.id })

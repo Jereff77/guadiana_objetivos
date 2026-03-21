@@ -2,13 +2,14 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, Send, Save } from 'lucide-react'
+import { ArrowLeft, Send, CheckCircle, Loader2, AlertCircle, Clock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { SectionsPanel } from '@/components/editor/sections-panel'
 import { PropertiesPanel } from '@/components/editor/properties-panel'
 import { publishSurvey } from '@/app/(dashboard)/formularios/actions'
+import { useEditorSaveStatus, type SaveStatus } from '@/hooks/use-auto-save'
 
 type SurveyStatus = 'draft' | 'published' | 'archived'
 
@@ -67,6 +68,32 @@ const statusLabels: Record<SurveyStatus, string> = {
   archived: 'Archivado',
 }
 
+function SaveIndicator({ status }: { status: SaveStatus }) {
+  if (status === 'idle') return null
+  return (
+    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+      {status === 'saving' && (
+        <>
+          <Loader2 className="h-3 w-3 animate-spin" />
+          <span>Guardando…</span>
+        </>
+      )}
+      {status === 'saved' && (
+        <>
+          <CheckCircle className="h-3 w-3 text-green-600" />
+          <span className="text-green-600">Guardado</span>
+        </>
+      )}
+      {status === 'error' && (
+        <>
+          <AlertCircle className="h-3 w-3 text-destructive" />
+          <span className="text-destructive">Error al guardar</span>
+        </>
+      )}
+    </div>
+  )
+}
+
 export function EditorClient({
   survey,
   initialSections,
@@ -78,10 +105,16 @@ export function EditorClient({
   const [options, setOptions] = useState<QuestionOption[]>(initialOptions)
   const [selected, setSelected] = useState<SelectedElement>({ kind: 'survey' })
   const [publishing, setPublishing] = useState(false)
+  const [publishError, setPublishError] = useState<string | null>(null)
+  const { status: saveStatus, onSaveStart, onSaveEnd } = useEditorSaveStatus()
 
   async function handlePublish() {
     setPublishing(true)
-    await publishSurvey(survey.id)
+    setPublishError(null)
+    const result = await publishSurvey(survey.id)
+    if (result?.error) {
+      setPublishError(result.error)
+    }
     setPublishing(false)
   }
 
@@ -102,11 +135,14 @@ export function EditorClient({
           </Badge>
           <span className="text-xs text-muted-foreground shrink-0">v{survey.version}</span>
         </div>
+        <SaveIndicator status={saveStatus} />
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" disabled>
-            <Save className="h-4 w-4 mr-2" />
-            Guardado
-          </Button>
+          {saveStatus === 'idle' && (
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <Clock className="h-3 w-3" />
+              <span>Auto-guardado activo</span>
+            </div>
+          )}
           {survey.status === 'draft' && (
             <Button
               size="sm"
@@ -120,6 +156,14 @@ export function EditorClient({
           )}
         </div>
       </header>
+
+      {/* Validation error */}
+      {publishError && (
+        <div className="flex items-center gap-2 bg-destructive/10 border-b border-destructive/20 px-4 py-2 text-sm text-destructive">
+          <AlertCircle className="h-4 w-4 shrink-0" />
+          {publishError}
+        </div>
+      )}
 
       {/* Two-panel layout */}
       <div className="flex flex-1 overflow-hidden">
@@ -148,6 +192,8 @@ export function EditorClient({
             onSectionsChange={setSections}
             onQuestionsChange={setQuestions}
             onOptionsChange={setOptions}
+            onSaveStart={onSaveStart}
+            onSaveEnd={onSaveEnd}
           />
         </div>
       </div>

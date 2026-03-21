@@ -26,6 +26,8 @@ interface PropertiesPanelProps {
   onSectionsChange: (sections: Section[]) => void
   onQuestionsChange: (questions: Question[]) => void
   onOptionsChange: (options: QuestionOption[]) => void
+  onSaveStart: () => void
+  onSaveEnd: (success: boolean) => void
 }
 
 export function PropertiesPanel({
@@ -38,6 +40,8 @@ export function PropertiesPanel({
   onSectionsChange,
   onQuestionsChange,
   onOptionsChange,
+  onSaveStart,
+  onSaveEnd,
 }: PropertiesPanelProps) {
   const selectedSection =
     selected.kind === 'section'
@@ -66,7 +70,11 @@ export function PropertiesPanel({
       <ScrollArea className="flex-1">
         <div className="p-4">
           {selected.kind === 'survey' && (
-            <SurveyProperties survey={survey} />
+            <SurveyProperties
+              survey={survey}
+              onSaveStart={onSaveStart}
+              onSaveEnd={onSaveEnd}
+            />
           )}
           {selected.kind === 'section' && selectedSection && (
             <SectionProperties
@@ -75,6 +83,8 @@ export function PropertiesPanel({
               questions={questions}
               onSectionsChange={onSectionsChange}
               onQuestionsChange={onQuestionsChange}
+              onSaveStart={onSaveStart}
+              onSaveEnd={onSaveEnd}
             />
           )}
           {selected.kind === 'question' && selectedQuestion && (
@@ -84,6 +94,8 @@ export function PropertiesPanel({
               options={questionOptions}
               questions={questions}
               onQuestionsChange={onQuestionsChange}
+              onSaveStart={onSaveStart}
+              onSaveEnd={onSaveEnd}
               onOptionsChange={(newOptions) => {
                 const otherOptions = options.filter(
                   (o) => o.question_id !== selectedQuestion.id

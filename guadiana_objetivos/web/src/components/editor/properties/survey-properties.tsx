@@ -1,10 +1,9 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useEffect, useState } from 'react'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { Button } from '@/components/ui/button'
 import { updateSurveyMeta } from '@/app/(dashboard)/formularios/[id]/editar/section-actions'
 
 interface SurveyPropertiesProps {
@@ -14,22 +13,35 @@ interface SurveyPropertiesProps {
     description: string | null
     category: string | null
   }
+  onSaveStart: () => void
+  onSaveEnd: (success: boolean) => void
 }
 
-export function SurveyProperties({ survey }: SurveyPropertiesProps) {
+export function SurveyProperties({ survey, onSaveStart, onSaveEnd }: SurveyPropertiesProps) {
   const [name, setName] = useState(survey.name)
   const [description, setDescription] = useState(survey.description ?? '')
   const [category, setCategory] = useState(survey.category ?? '')
-  const [isPending, startTransition] = useTransition()
-  const [saved, setSaved] = useState(false)
 
-  function handleSave() {
-    startTransition(async () => {
-      await updateSurveyMeta(survey.id, { name, description, category })
-      setSaved(true)
-      setTimeout(() => setSaved(false), 2000)
-    })
-  }
+  // Auto-save con debounce
+  useEffect(() => {
+    const timer = setTimeout(async () => {
+      if (
+        name === survey.name &&
+        description === (survey.description ?? '') &&
+        category === (survey.category ?? '')
+      ) return
+
+      onSaveStart()
+      try {
+        await updateSurveyMeta(survey.id, { name, description, category })
+        onSaveEnd(true)
+      } catch {
+        onSaveEnd(false)
+      }
+    }, 800)
+    return () => clearTimeout(timer)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [name, description, category])
 
   return (
     <div className="space-y-4">
@@ -61,14 +73,7 @@ export function SurveyProperties({ survey }: SurveyPropertiesProps) {
           placeholder="Ej. Auditoría, Ventas, Operaciones…"
         />
       </div>
-      <Button
-        size="sm"
-        onClick={handleSave}
-        disabled={isPending}
-        style={{ backgroundColor: '#004B8D' }}
-      >
-        {saved ? '¡Guardado!' : isPending ? 'Guardando…' : 'Guardar'}
-      </Button>
+      <p className="text-xs text-muted-foreground">Los cambios se guardan automáticamente.</p>
     </div>
   )
 }

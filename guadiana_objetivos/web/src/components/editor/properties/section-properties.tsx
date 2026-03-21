@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useEffect, useState, useTransition } from 'react'
 import { Trash2, Plus } from 'lucide-react'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
@@ -18,18 +18,18 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import {
-  updateSection,
-  deleteSection,
-  createQuestion,
-} from '@/app/(dashboard)/formularios/[id]/editar/section-actions'
-import type { Section, Question } from '@/app/(dashboard)/formularios/[id]/editar/editor-client'
-import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import {
+  updateSection,
+  deleteSection,
+  createQuestion,
+} from '@/app/(dashboard)/formularios/[id]/editar/section-actions'
+import type { Section, Question } from '@/app/(dashboard)/formularios/[id]/editar/editor-client'
 
 const QUESTION_TYPES = [
   { value: 'boolean', label: 'Sí / No' },
@@ -47,6 +47,8 @@ interface SectionPropertiesProps {
   questions: Question[]
   onSectionsChange: (sections: Section[]) => void
   onQuestionsChange: (questions: Question[]) => void
+  onSaveStart: () => void
+  onSaveEnd: (success: boolean) => void
 }
 
 export function SectionProperties({
@@ -55,26 +57,43 @@ export function SectionProperties({
   questions,
   onSectionsChange,
   onQuestionsChange,
+  onSaveStart,
+  onSaveEnd,
 }: SectionPropertiesProps) {
   const [title, setTitle] = useState(section.title)
   const [desc, setDesc] = useState(section.description ?? '')
   const [newQuestionType, setNewQuestionType] = useState('boolean')
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [isPending, startTransition] = useTransition()
-  const [saved, setSaved] = useState(false)
 
   const sectionQuestions = questions.filter((q) => q.section_id === section.id)
 
-  function handleSave() {
-    startTransition(async () => {
-      await updateSection(section.id, { title, description: desc })
-      onSectionsChange(
-        sections.map((s) => s.id === section.id ? { ...s, title, description: desc } : s)
-      )
-      setSaved(true)
-      setTimeout(() => setSaved(false), 2000)
-    })
-  }
+  // Reset fields when section changes
+  useEffect(() => {
+    setTitle(section.title)
+    setDesc(section.description ?? '')
+  }, [section.id, section.title, section.description])
+
+  // Auto-save con debounce
+  useEffect(() => {
+    const timer = setTimeout(async () => {
+      if (title === section.title && desc === (section.description ?? '')) return
+      onSaveStart()
+      try {
+        await updateSection(section.id, { title, description: desc })
+        onSectionsChange(
+          sections.map((s) =>
+            s.id === section.id ? { ...s, title, description: desc } : s
+          )
+        )
+        onSaveEnd(true)
+      } catch {
+        onSaveEnd(false)
+      }
+    }, 800)
+    return () => clearTimeout(timer)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [title, desc])
 
   function handleAddQuestion() {
     startTransition(async () => {
@@ -115,14 +134,7 @@ export function SectionProperties({
           rows={2}
         />
       </div>
-      <Button
-        size="sm"
-        onClick={handleSave}
-        disabled={isPending}
-        style={{ backgroundColor: '#004B8D' }}
-      >
-        {saved ? '¡Guardado!' : isPending ? 'Guardando…' : 'Guardar sección'}
-      </Button>
+      <p className="text-xs text-muted-foreground">Los cambios se guardan automáticamente.</p>
 
       <Separator />
 

@@ -96,7 +96,14 @@
        - Actualización optimista del estado local antes de persistir en Supabase
        - PointerSensor con activationConstraint distance:5 para click vs drag
        - TypeScript: 0 errores | ESLint: 0 warnings | Build: exitoso ✓
-- [ ] **[T-206]** Desarrollar sistema de guardado automático y validación de integridad del formulario.
+- [x] **[T-206]** Desarrollar sistema de guardado automático y validación de integridad del formulario.
+       - useEditorSaveStatus hook: tracking global de saves (saving/saved/error) con counter de operaciones
+       - Auto-save con debounce 800ms en SurveyProperties, SectionProperties, QuestionProperties
+       - SaveIndicator en top bar del editor (Loader2 / CheckCircle / AlertCircle)
+       - Reset de campos al cambiar elemento seleccionado (useEffect on [section.id], [question.id])
+       - Validación antes de publicar: mínimo 1 sección con 1 pregunta (server-side en publishSurvey)
+       - Banner de error de publicación con mensaje descriptivo
+       - TypeScript: 0 errores | ESLint: 0 warnings | Build: exitoso ✓
 - [ ] **[T-207]** Implementar configuración de puntajes por respuesta (Lógica de KPIs).
 
 ## Fase 3-5: Pendiente

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useEffect, useState, useTransition } from 'react'
 import { Trash2, Plus, X } from 'lucide-react'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
@@ -49,14 +49,20 @@ interface QuestionPropertiesProps {
   questions: Question[]
   onQuestionsChange: (questions: Question[]) => void
   onOptionsChange: (options: QuestionOption[]) => void
+  onSaveStart: () => void
+  onSaveEnd: (success: boolean) => void
 }
 
 export function QuestionProperties({
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  surveyId: _surveyId,
   question,
   options,
   questions,
   onQuestionsChange,
   onOptionsChange,
+  onSaveStart,
+  onSaveEnd,
 }: QuestionPropertiesProps) {
   const [label, setLabel] = useState(question.label)
   const [helpText, setHelpText] = useState(question.help_text ?? '')
@@ -64,20 +70,39 @@ export function QuestionProperties({
   const [newOptionLabel, setNewOptionLabel] = useState('')
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [isPending, startTransition] = useTransition()
-  const [saved, setSaved] = useState(false)
 
-  function handleSave() {
-    startTransition(async () => {
-      await updateQuestion(question.id, { label, help_text: helpText, required })
-      onQuestionsChange(
-        questions.map((q) =>
-          q.id === question.id ? { ...q, label, help_text: helpText, required } : q
+  // Reset when question changes
+  useEffect(() => {
+    setLabel(question.label)
+    setHelpText(question.help_text ?? '')
+    setRequired(question.required)
+  }, [question.id, question.label, question.help_text, question.required])
+
+  // Auto-save con debounce
+  useEffect(() => {
+    const timer = setTimeout(async () => {
+      if (
+        label === question.label &&
+        helpText === (question.help_text ?? '') &&
+        required === question.required
+      ) return
+
+      onSaveStart()
+      try {
+        await updateQuestion(question.id, { label, help_text: helpText, required })
+        onQuestionsChange(
+          questions.map((q) =>
+            q.id === question.id ? { ...q, label, help_text: helpText, required } : q
+          )
         )
-      )
-      setSaved(true)
-      setTimeout(() => setSaved(false), 2000)
-    })
-  }
+        onSaveEnd(true)
+      } catch {
+        onSaveEnd(false)
+      }
+    }, 800)
+    return () => clearTimeout(timer)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [label, helpText, required])
 
   function handleAddOption() {
     if (!newOptionLabel.trim()) return
@@ -148,14 +173,7 @@ export function QuestionProperties({
         </Label>
       </div>
 
-      <Button
-        size="sm"
-        onClick={handleSave}
-        disabled={isPending}
-        style={{ backgroundColor: '#004B8D' }}
-      >
-        {saved ? '¡Guardado!' : isPending ? 'Guardando…' : 'Guardar pregunta'}
-      </Button>
+      <p className="text-xs text-muted-foreground">Los cambios se guardan automáticamente.</p>
 
       {/* Options for choice questions */}
       {REQUIRES_OPTIONS(question.type) && (
