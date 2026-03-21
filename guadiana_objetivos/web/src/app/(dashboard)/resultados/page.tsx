@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
-import { Download } from 'lucide-react'
+import Link from 'next/link'
+import { Download, BarChart2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { Header } from '@/components/layout/header'
 import { RunsTable } from '@/components/resultados/runs-table'
@@ -87,6 +88,15 @@ export default async function ResultadosPage({ searchParams }: PageProps) {
               Limpiar
             </a>
           )}
+
+          {/* Estadísticas – T-404 */}
+          <Link
+            href="/resultados/estadisticas"
+            className="h-9 flex items-center gap-2 rounded-md border px-4 text-sm font-medium text-muted-foreground hover:bg-muted transition-colors"
+          >
+            <BarChart2 className="h-4 w-4" />
+            Estadísticas
+          </Link>
 
           {/* Exportar CSV – T-403 */}
           <a

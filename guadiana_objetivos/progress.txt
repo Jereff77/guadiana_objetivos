@@ -54,7 +54,13 @@
         • CSV con BOM UTF-8 para compatibilidad Excel, escape RFC 4180
         • Columnas: ID Ejecución, Formulario, Respondente, Estado, Inicio, Completado, Sección, Pregunta, Tipo, Respuesta, Comentario
         • Botón "Exportar CSV" con ícono Download en la página de resultados
-- [ ] T-404: Gráficas básicas de cumplimiento y KPIs
+- [x] T-404: Gráficas básicas de cumplimiento y KPIs
+        • Página /resultados/estadisticas con recharts (sin dependencias pesadas)
+        • 4 KPI cards: Total, Completadas, En progreso, % Cumplimiento (con color semáforo)
+        • BarChart: ejecuciones por formulario (completadas vs en progreso)
+        • LineChart: tendencia semanal (últimas 12 semanas)
+        • BarChart horizontal: % cumplimiento por sucursal (color semáforo ≥80/≥50/<50)
+        • Botón "Estadísticas" con ícono BarChart2 en la lista de resultados
 
 ## Fase 5 – Pulido y Entrega (MVP) ❌ 0%
 - [ ] T-501: Pruebas de integración Web + Supabase
