@@ -13,7 +13,14 @@
        - Build de producción exitoso ✓
        - 0 vulnerabilidades npm ✓
 
-- [ ] **[T-102]** Configurar cliente de Supabase y variables de entorno.
+- [x] **[T-102]** Configurar cliente de Supabase y variables de entorno.
+       - src/lib/supabase/client.ts — cliente browser (createBrowserClient)
+       - src/lib/supabase/server.ts — cliente server SSR (createServerClient + cookies)
+       - src/types/database.types.ts — placeholder de tipos DB (se completará en T-105)
+       - .env.local con NEXT_PUBLIC_SUPABASE_URL configurada
+       - TypeScript: 0 errores | ESLint: 0 warnings ✓
+
+- [ ] **[T-103]** Implementar sistema de diseño base (colores corporativos, tipografía, componentes UI básicos con Shadcn/UI).
 - [ ] **[T-103]** Implementar sistema de diseño base (colores corporativos, tipografía, componentes UI básicos con Shadcn/UI).
 - [ ] **[T-104]** Configurar Supabase Auth (Login/Logout) y Middleware para rutas protegidas.
 - [ ] **[T-105]** Crear esquema de base de datos en Supabase (Tablas `form_*` y `resp_*` según especificación).
