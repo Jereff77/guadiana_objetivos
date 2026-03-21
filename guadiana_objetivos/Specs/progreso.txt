@@ -114,4 +114,72 @@
 
 ## Fase 2: COMPLETADA ✅
 
-## Fase 3-5: Pendiente
+## Fase 3: Asignaciones y Publicación
+
+- [x] **[T-301]** Flujo de publicación (cambio de estado + versionamiento).
+       - publish/archive/restore/delete implementados en Server Actions
+       - Acción `createNewVersion` que copia estructura completa (secciones → preguntas → opciones) con version+1
+       - Botón "Crear nueva versión" en editor para formularios publicados
+       - Opción "Crear nueva versión" en menú de acciones del listado
+       - TypeScript: 0 errores ✓
+
+- [x] **[T-302]** Módulo de Asignaciones (asignar por rol o usuario específico).
+       - Página /asignaciones con tabla filtrable por estado (activa/inactiva)
+       - Server Actions: createAssignment, toggleAssignment, deleteAssignment
+       - Dialog de creación con selector de formulario publicado, tipo de asignación (Por rol / Usuario específico)
+       - Menú de acciones por fila: activar/desactivar y eliminar con confirmación (AlertDialog)
+       - TypeScript: 0 errores ✓
+
+- [x] **[T-303]** Selector de vigencia y frecuencia.
+       - Selector de frecuencia: Una vez / Diario / Semanal / Mensual
+       - Inputs de fecha inicio y fecha fin integrados en el dialog de asignación
+       - TypeScript: 0 errores ✓
+
+- [x] **[T-304]** Vista previa del formulario simulando la App Móvil.
+       - Página /formularios/[id]/vista-previa con phone frame CSS (iPhone 375px, bezel oscuro, status bar)
+       - Renderiza por tipo: Boolean (botones Sí/No), Single/Multiple choice interactivos, Text, Number, Date
+       - Botón "Vista previa" con ícono Eye en barra superior del editor
+       - Muestra secciones, preguntas requeridas (*), help_text y botón "Enviar" naranja corporativo
+       - TypeScript: 0 errores ✓
+
+## Fase 3: COMPLETADA ✅
+
+## Fase 4: Dashboard de Resultados y Reportes
+
+- [x] **[T-401]** Visor de Ejecuciones (lista filtrable).
+       - Página /resultados con filtros GET: estado, fecha desde/hasta
+       - Tabla: formulario, respondente (nombre desde app_profiles), estado badge, fechas inicio/fin, link a detalle
+       - Server-side filtering vía URL search params, sin JS requerido
+       - TypeScript: 0 errores ✓
+
+- [x] **[T-402]** Vista de Detalle de Ejecución.
+       - Página /resultados/[id] con metadatos del run (respondente, estado, inicio, completado)
+       - Respuestas agrupadas por sección, ordenadas por order
+       - Componente AnswerValue polimórfico: bool badge, opción label, texto, número, fecha, No aplica
+       - "Acción a seguir" resaltada en naranja cuando answer.comment existe
+       - TypeScript: 0 errores ✓
+
+- [x] **[T-403]** Exportación a Excel/CSV de resultados filtrados.
+       - API route GET /api/resultados/export con mismos filtros (estado, desde, hasta)
+       - CSV UTF-8 + BOM para compatibilidad Excel, escape RFC 4180
+       - Columnas: ID Ejecución, Formulario, Respondente, Estado, Inicio, Completado, Sección, Pregunta, Tipo, Respuesta, Comentario
+       - Botón "Exportar CSV" con ícono Download en la lista de resultados
+       - TypeScript: 0 errores ✓
+
+- [x] **[T-404]** Gráficas básicas de cumplimiento y KPIs (Promedios por sucursal).
+       - Página /resultados/estadisticas con recharts (instalado como dependencia)
+       - 4 KPI cards: Total ejecuciones, Completadas, En progreso, % Cumplimiento (semáforo de color)
+       - BarChart agrupado: ejecuciones por formulario (completadas vs en progreso)
+       - LineChart: tendencia semanal (últimas 12 semanas)
+       - BarChart horizontal: % cumplimiento por sucursal (azul ≥80% / naranja ≥50% / rojo <50%)
+       - Botón "Estadísticas" con ícono BarChart2 en la lista de resultados
+       - TypeScript: 0 errores ✓
+
+## Fase 4: COMPLETADA ✅
+
+## Fase 5: Pulido y Entrega (MVP)
+
+- [ ] **[T-501]** Realizar pruebas de integración entre Web y Supabase.
+- [ ] **[T-502]** Optimización de rendimiento y SEO básico para la plataforma.
+- [ ] **[T-503]** Auditoría de seguridad de políticas RLS.
+- [ ] **[T-504]** Despliegue inicial y capacitación para administradores.

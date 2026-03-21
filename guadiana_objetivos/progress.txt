@@ -18,7 +18,7 @@
 - [x] T-206: Auto-save con debounce y validación de integridad antes de publicar
 - [x] T-207: Configuración de puntajes por respuesta (Lógica de KPIs)
 
-## Fase 3 – Asignaciones y Publicación 🔄 25%
+## Fase 3 – Asignaciones y Publicación ✅ 100%
 - [x] T-301: Flujo de publicación (cambio de estado + versionamiento)
         • publish/archive/restore/delete implementados
         • Acción `createNewVersion` que copia estructura completa (secciones, preguntas, opciones)
@@ -38,7 +38,7 @@
         • Botón "Vista previa" con ícono Eye agregado al editor (barra superior)
         • Muestra secciones, preguntas requeridas, help_text y botón "Enviar" naranja corporativo
 
-## Fase 4 – Dashboard de Resultados y Reportes 🔄 25%
+## Fase 4 – Dashboard de Resultados y Reportes ✅ 100%
 - [x] T-401: Visor de Ejecuciones (lista filtrable)
         • Página /resultados con filtros GET: estado, fecha desde/hasta
         • Tabla: formulario, respondente (nombre desde app_profiles), estado badge,
