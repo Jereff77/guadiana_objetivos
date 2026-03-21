@@ -67,9 +67,28 @@
        - date-fns instalado para formateo de fechas en español
        - TypeScript: 0 errores | ESLint: 0 warnings | Build: exitoso ✓
 
-- [ ] **[T-202]** Crear interfaz del Editor de Formularios (Layout de paneles).
-- [ ] **[T-203]** Implementar gestión de Secciones (Crear, editar, reordenar).
-- [ ] **[T-204]** Desarrollar componentes de Preguntas (Boolean, Única, Múltiple, Texto, Número, Fecha).
+- [x] **[T-202]** Crear interfaz del Editor de Formularios (Layout de paneles).
+       - Ruta /formularios/[id]/editar con Server Component (carga survey + secciones + preguntas + opciones)
+       - Layout dos paneles: SectionsPanel (izq, 288px) + PropertiesPanel (der, flex-1)
+       - EditorClient con estado local para secciones, preguntas y opciones (sin re-fetch)
+       - Top bar con nombre, badge de estado, versión y botón "Publicar"
+       - scroll-area y textarea instalados (Shadcn)
+       - TypeScript: 0 errores | ESLint: 0 warnings | Build: exitoso ✓
+
+- [x] **[T-203]** Implementar gestión de Secciones (Crear, editar, reordenar).
+       - SectionsPanel: árbol colapsable de secciones + preguntas con contadores
+       - Server Actions: createSection, updateSection, deleteSection, reorderSections
+       - SectionProperties: editar título/descripción, agregar pregunta por tipo, eliminar con confirmación
+       - Creación optimista (state local, sin reload)
+       - TypeScript: 0 errores ✓
+
+- [x] **[T-204]** Desarrollar componentes de Preguntas (Boolean, Única, Múltiple, Texto, Número, Fecha).
+       - 7 tipos soportados: boolean, single_choice, multiple_choice, text_short, text_long, number, date
+       - QuestionProperties: editar label, texto de ayuda, obligatoriedad, opciones de respuesta
+       - Server Actions: createQuestion, updateQuestion, deleteQuestion, createOption, deleteOption
+       - Gestión de opciones inline para tipos choice (agregar/eliminar)
+       - Labels por defecto según tipo al crear
+       - TypeScript: 0 errores ✓
 - [ ] **[T-205]** Implementar funcionalidad de reordenamiento (Drag & Drop) para preguntas y secciones.
 - [ ] **[T-206]** Desarrollar sistema de guardado automático y validación de integridad del formulario.
 - [ ] **[T-207]** Implementar configuración de puntajes por respuesta (Lógica de KPIs).
