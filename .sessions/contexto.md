@@ -187,3 +187,64 @@ Aplicación web Next.js 14 para gestión de checklists de Guadiana. Stack: Next.
 
 #### Resultado:
 **FASE 3 COMPLETA AL 100%** — T-301, T-302, T-303, T-304 implementadas y confirmadas.
+
+---
+
+### Claude Sonnet 4.6 – Sesión 2026-03-20 (T-401 a T-404)
+
+#### Rol: Orquestador IA
+- **Solicitud del usuario**: Continuar con siguiente tarea de mayor prioridad hasta completar Fase 4.
+- **Análisis realizado**: Fase 4 tenía T-401 a T-404 pendientes. Se implementaron todas en esta sesión.
+- **Decisión de agentes**: Trabajo directo.
+
+#### Estado del Proyecto (actualizado)
+- ✅ **Fase 1 completa** (T-101 a T-106)
+- ✅ **Fase 2 completa** (T-201 a T-207)
+- ✅ **Fase 3 completa** (T-301 a T-304)
+- ✅ **Fase 4 completa** (T-401 a T-404) — completada en esta sesión
+- ❌ Fase 5 pendiente (T-501 a T-504)
+
+#### Tareas Realizadas:
+1. **T-401: Visor de Ejecuciones** (Herramientas: Write)
+   - `/resultados/page.tsx`: filtros GET (estado, desde, hasta), tabla con badge de estado, link a detalle
+   - `/components/resultados/runs-table.tsx`: componente tabla con union type para form_surveys
+
+2. **T-402: Vista Detalle de Ejecución** (Herramientas: Write)
+   - `/resultados/[id]/page.tsx`: multi-join (run → answers → questions → sections → options → profile)
+   - Componente AnswerValue polimórfico, "Acción a seguir" en naranja cuando existe comment
+
+3. **T-403: Exportación CSV** (Herramientas: Write, Edit)
+   - `/api/resultados/export/route.ts`: GET handler, CSV UTF-8 + BOM, columnas completas
+   - Botón "Exportar CSV" con ícono Download en la lista de resultados
+   - Fix TypeScript: `runSurveyName(run: { form_surveys: unknown })` con cast explícito
+
+4. **T-404: Gráficas KPIs** (Herramientas: Write, Bash)
+   - `/resultados/estadisticas/page.tsx`: server component con agregaciones JS (no SQL)
+   - `/components/resultados/kpi-charts.tsx`: componentes recharts 'use client' (FormCompletionChart, WeeklyTrendChart, BranchComplianceChart, KpiCard)
+   - Color semáforo: azul ≥80%, naranja ≥50%, rojo <50%
+   - Instalación de recharts via npm
+
+5. **Recuperación de contraseña** (sesión anterior)
+   - `/forgot-password/`: acción + página con estado sent
+   - `/auth/reset-password/`: acción + página con toggle visibilidad
+   - `/auth/callback/`: PKCE handler
+   - Supabase URL y ANON_KEY reales configurados en `.env.local`
+
+#### Errores Encontrados y Soluciones:
+- **TS2339 form_surveys**: Supabase infiere FK join como array, pero en runtime puede ser objeto. Solución: union type + Array.isArray() guard
+- **TS2322 recharts Tooltip formatter**: Parámetros tipados como `ValueType | undefined`, no `number`. Solución: quitar anotación de tipo explícita
+- **Supabase URL incorrecta**: Usé `get_project_url` MCP para confirmar URL correcta (`mhdswebflviruafdlkvb.supabase.co`)
+
+#### Archivos Creados/Modificados:
+- `web/src/app/(dashboard)/resultados/page.tsx`
+- `web/src/components/resultados/runs-table.tsx`
+- `web/src/app/(dashboard)/resultados/[id]/page.tsx`
+- `web/src/app/api/resultados/export/route.ts`
+- `web/src/app/(dashboard)/resultados/estadisticas/page.tsx`
+- `web/src/components/resultados/kpi-charts.tsx`
+- `web/package.json` + `package-lock.json` (recharts)
+- `guadiana_objetivos/progress.txt` (Fase 4 completada al 100%)
+
+#### Resultado:
+**FASE 4 COMPLETA AL 100%** — T-401, T-402, T-403, T-404 implementadas y confirmadas sin errores TypeScript.
+Próxima fase: **Fase 5** (T-501 a T-504) — Pruebas, optimización, auditoría RLS y despliegue.
