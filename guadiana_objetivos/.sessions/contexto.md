@@ -18,10 +18,10 @@ Plataforma web (Next.js 15) + App móvil Flutter para gestionar checklists y enc
 | Tarea | Estado |
 |-------|--------|
 | T-101 Init Next.js | ✅ Completado (Claude Sonnet 4.6) [Agente: nextjs-developer] |
-| T-102 Config Supabase | ❌ Pendiente |
-| T-103 Design System | ❌ Pendiente |
-| T-104 Auth + Middleware | ❌ Pendiente |
-| T-105 DB Schema | ❌ Pendiente |
+| T-102 Config Supabase | ✅ Completado (Claude Sonnet 4.6) [Agente: nextjs-developer] |
+| T-103 Design System | ✅ Completado (Claude Sonnet 4.6) [Agente: nextjs-developer] |
+| T-104 Auth + Middleware | ✅ Completado (Claude Sonnet 4.6) [Agente: nextjs-developer] |
+| T-105 DB Schema | ✅ Completado (Claude Sonnet 4.6) [Agente: directo + MCP Supabase] |
 | T-106 RLS Policies | ❌ Pendiente |
 
 ---
@@ -77,3 +77,32 @@ Plataforma web (Next.js 15) + App móvil Flutter para gestionar checklists y enc
 - `guadiana_objetivos/web/src/lib/utils.ts`: Función cn() para Shadcn
 - `guadiana_objetivos/web/src/middleware.ts`: Middleware placeholder (T-104)
 - `guadiana_objetivos/Specs/progreso.txt`: Actualizado con T-101 completado
+
+---
+
+### Claude Sonnet 4.6 - Sesión 2026-03-20 (Segunda)
+
+#### Rol: Orquestador IA
+- **Solicitud del usuario**: Ejecutar tarea de mayor prioridad (T-105 DB Schema), usar MCP Supabase, resolver issues, actualizar progreso, confirmar cambios.
+- **Análisis realizado**: T-101 a T-104 ya completados (confirmado por git log). BD Supabase no tenía tablas form_* ni resp_*. Migración SQL y tipos TypeScript ya preparados localmente.
+- **Decisión de agentes**: Trabajo directo con MCP supaGuadianaObj — no se necesitó agente especializado.
+
+#### Tareas Realizadas:
+1. **T-105: Crear esquema de base de datos en Supabase** (Herramientas: MCP Supabase, Bash, Edit)
+   - Verificado: BD solo tenía tablas okcar_ e inventario del sistema anterior
+   - Migración `create_checklists_schema` aplicada vía MCP apply_migration
+   - 7 tablas creadas: profiles, form_surveys, form_sections, form_questions, form_question_options, form_assignments, resp_survey_runs, resp_answers
+   - Triggers: handle_new_user() (auto-perfil) + update_updated_at()
+   - database.types.ts regenerado con generate_typescript_types (88KB, tipos completos)
+   - TypeScript: 0 errores | ESLint: 0 warnings ✓
+
+#### Agentes Especializados Utilizados:
+- **Ninguno**: Tarea ejecutada directamente con herramientas MCP Supabase + CLI
+
+#### Errores Encontrados y Soluciones:
+- **Ninguno**: La migración aplicó sin errores.
+
+#### Archivos Modificados/Creados:
+- `guadiana_objetivos/web/supabase/migrations/20260320000001_create_checklists_schema.sql`: Migración SQL completa
+- `guadiana_objetivos/web/src/types/database.types.ts`: Tipos regenerados desde Supabase (88KB)
+- `guadiana_objetivos/Specs/progreso.txt`: T-105 marcado como completado

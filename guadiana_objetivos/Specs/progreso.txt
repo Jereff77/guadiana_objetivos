@@ -44,6 +44,14 @@
        - Trigger `update_updated_at()` para timestamps automáticos
        - database.types.ts regenerado con tipos oficiales de Supabase
        - TypeScript: 0 errores | ESLint: 0 warnings ✓
-- [ ] **[T-106]** Implementar Políticas de Seguridad (RLS) para roles Admin y Jefe de Sucursal.
+- [x] **[T-106]** Implementar Políticas de Seguridad (RLS) para roles Admin y Jefe de Sucursal.
+       - RLS habilitado en las 8 tablas: profiles, form_surveys, form_sections, form_questions, form_question_options, form_assignments, resp_survey_runs, resp_answers
+       - 30 políticas aplicadas en total
+       - Helpers SECURITY DEFINER: current_user_role() y current_user_branch()
+       - Roles cubiertos: admin_global (acceso total), jefe_sucursal (su sucursal), auditor (lectura total), asesor/operario (solo sus propios datos)
+       - Migración guardada: 20260320000002_rls_checklists_policies.sql
+       - TypeScript: 0 errores | ESLint: 0 warnings ✓
+
+## Fase 1: COMPLETADA ✅
 
 ## Fase 2-5: Pendiente
