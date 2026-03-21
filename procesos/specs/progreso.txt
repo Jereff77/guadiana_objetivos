@@ -5,4 +5,8 @@ FASE 1 – M-101 · Inicializar proyecto Flutter
 - Se revisó la estructura de Supabase usando el MCP supaGuadianaObj:
   - Tablas clave para inventarios y sesiones: users, app_profiles, inventory_sessions, conteo_inventario, inventario, user_warehouses, sync_logs, okcar_*.
 - Se intentó ejecutar pruebas de la web (npm test --runTestsByPath src/__tests__/csv-helpers.test.ts) pero falló porque el binario jest no está disponible en PATH en este entorno.
-- Aún no se ha creado el proyecto Flutter físico; por ahora la fase se mantiene en planificación dentro de la carpeta procesos sin modificar código fuera de esta ruta.
+- Se creó la estructura básica de la app Flutter dentro de procesos en procesos/flutter_app:
+  - pubspec.yaml con dependencias principales (flutter, supabase_flutter, flutter_riverpod, go_router, flutter_secure_storage, intl).
+  - analysis_options.yaml incluyendo flutter_lints.
+  - .gitignore específico para el proyecto Flutter.
+  - lib/main.dart con MaterialApp, tema base con colores corporativos y pantalla inicial placeholder.
