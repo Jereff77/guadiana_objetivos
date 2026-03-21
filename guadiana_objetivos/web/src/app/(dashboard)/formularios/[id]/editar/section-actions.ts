@@ -102,6 +102,15 @@ export async function createQuestion(sectionId: string, type: string, order: num
     .single()
 
   if (error) return { error: error.message }
+
+  // Para preguntas booleanas: crear opciones Sí/No con puntajes por defecto
+  if (type === 'boolean') {
+    await supabase.from('form_question_options').insert([
+      { question_id: data.id, label: 'Sí', value: 'yes', score: 1, order: 0, is_default: false },
+      { question_id: data.id, label: 'No', value: 'no', score: 0, order: 1, is_default: false },
+    ])
+  }
+
   return { question: data }
 }
 

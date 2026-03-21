@@ -23,14 +23,66 @@ import {
   deleteQuestion,
   createOption,
   deleteOption,
+  updateOption,
 } from '@/app/(dashboard)/formularios/[id]/editar/section-actions'
 import type {
   Question,
   QuestionOption,
 } from '@/app/(dashboard)/formularios/[id]/editar/editor-client'
 
-const OPTION_TYPES = ['single_choice', 'multiple_choice']
+// ── OptionRow component ───────────────────────────────────────────────────────
+
+interface OptionRowProps {
+  option: QuestionOption
+  canDelete: boolean
+  disabled: boolean
+  onDelete: () => void
+  onScoreChange: (score: number | null) => void
+}
+
+function OptionRow({ option, canDelete, disabled, onDelete, onScoreChange }: OptionRowProps) {
+  const [scoreInput, setScoreInput] = useState(option.score?.toString() ?? '')
+
+  function handleScoreBlur() {
+    const parsed = scoreInput === '' ? null : parseFloat(scoreInput)
+    if (!isNaN(parsed ?? 0) || parsed === null) {
+      onScoreChange(parsed)
+    }
+  }
+
+  return (
+    <div className="flex items-center gap-2">
+      <span className="flex-1 text-sm bg-muted rounded px-2 py-1 truncate">{option.label}</span>
+      <input
+        type="number"
+        value={scoreInput}
+        onChange={(e) => setScoreInput(e.target.value)}
+        onBlur={handleScoreBlur}
+        placeholder="0"
+        className="w-14 h-7 text-xs text-right bg-muted rounded px-2 border-0 focus:outline-none focus:ring-1 focus:ring-ring"
+        disabled={disabled}
+        step="0.5"
+      />
+      {canDelete && (
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-6 w-6 text-muted-foreground hover:text-destructive shrink-0"
+          onClick={onDelete}
+          disabled={disabled}
+        >
+          <X className="h-3 w-3" />
+        </Button>
+      )}
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+const OPTION_TYPES = ['single_choice', 'multiple_choice', 'boolean']
 const REQUIRES_OPTIONS = (type: string) => OPTION_TYPES.includes(type)
+const CAN_ADD_OPTIONS = (type: string) => ['single_choice', 'multiple_choice'].includes(type)
 
 const typeLabels: Record<string, string> = {
   boolean: 'Sí / No',
@@ -175,52 +227,65 @@ export function QuestionProperties({
 
       <p className="text-xs text-muted-foreground">Los cambios se guardan automáticamente.</p>
 
-      {/* Options for choice questions */}
+      {/* Options for choice/boolean questions */}
       {REQUIRES_OPTIONS(question.type) && (
         <>
           <Separator />
           <div className="space-y-3">
-            <p className="text-sm font-medium">Opciones de respuesta</p>
-            <div className="space-y-1">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-medium">Opciones de respuesta</p>
+              <span className="text-xs text-muted-foreground">Puntaje</span>
+            </div>
+            <div className="space-y-1.5">
               {options.map((opt) => (
-                <div key={opt.id} className="flex items-center gap-2">
-                  <span className="flex-1 text-sm bg-muted rounded px-2 py-1">{opt.label}</span>
-                  {opt.score !== null && (
-                    <span className="text-xs text-muted-foreground shrink-0">{opt.score} pts</span>
-                  )}
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6 text-muted-foreground hover:text-destructive shrink-0"
-                    onClick={() => handleDeleteOption(opt.id)}
-                    disabled={isPending}
-                  >
-                    <X className="h-3 w-3" />
-                  </Button>
-                </div>
+                <OptionRow
+                  key={opt.id}
+                  option={opt}
+                  canDelete={CAN_ADD_OPTIONS(question.type)}
+                  onDelete={() => handleDeleteOption(opt.id)}
+                  onScoreChange={(score) => {
+                    startTransition(async () => {
+                      await updateOption(opt.id, { label: opt.label, score })
+                      onOptionsChange(
+                        options.map((o) => o.id === opt.id ? { ...o, score } : o)
+                      )
+                    })
+                  }}
+                  disabled={isPending}
+                />
               ))}
             </div>
-            <div className="flex gap-2">
-              <Input
-                value={newOptionLabel}
-                onChange={(e) => setNewOptionLabel(e.target.value)}
-                placeholder="Nueva opción…"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault()
-                    handleAddOption()
-                  }
-                }}
-              />
-              <Button
-                size="sm"
-                onClick={handleAddOption}
-                disabled={isPending || !newOptionLabel.trim()}
-                style={{ backgroundColor: '#FF8F1C' }}
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
-            </div>
+            {CAN_ADD_OPTIONS(question.type) && (
+              <div className="flex gap-2">
+                <Input
+                  value={newOptionLabel}
+                  onChange={(e) => setNewOptionLabel(e.target.value)}
+                  placeholder="Nueva opción…"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault()
+                      handleAddOption()
+                    }
+                  }}
+                />
+                <Button
+                  size="sm"
+                  onClick={handleAddOption}
+                  disabled={isPending || !newOptionLabel.trim()}
+                  style={{ backgroundColor: '#FF8F1C' }}
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
+            {options.length > 0 && (
+              <p className="text-xs text-muted-foreground">
+                Puntaje máximo:{' '}
+                <strong>
+                  {options.reduce((sum, o) => sum + (o.score ?? 0), 0)} pts
+                </strong>
+              </p>
+            )}
           </div>
         </>
       )}

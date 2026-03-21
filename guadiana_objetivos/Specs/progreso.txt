@@ -104,6 +104,14 @@
        - Validación antes de publicar: mínimo 1 sección con 1 pregunta (server-side en publishSurvey)
        - Banner de error de publicación con mensaje descriptivo
        - TypeScript: 0 errores | ESLint: 0 warnings | Build: exitoso ✓
-- [ ] **[T-207]** Implementar configuración de puntajes por respuesta (Lógica de KPIs).
+- [x] **[T-207]** Implementar configuración de puntajes por respuesta (Lógica de KPIs).
+       - OptionRow component: campo de puntaje editable inline por opción (input numérico con step 0.5)
+       - Preguntas booleanas: auto-creación de opciones "Sí" (score: 1) y "No" (score: 0) al crear
+       - updateOption Server Action para persistir cambios de score en Supabase
+       - Puntaje máximo calculado y mostrado en tiempo real (sum de scores)
+       - Opciones de preguntas booleanas: fijas (sin botón eliminar), choice: editables + eliminables
+       - TypeScript: 0 errores | ESLint: 0 warnings | Build: exitoso ✓
+
+## Fase 2: COMPLETADA ✅
 
 ## Fase 3-5: Pendiente
