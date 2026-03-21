@@ -89,7 +89,13 @@
        - Gestión de opciones inline para tipos choice (agregar/eliminar)
        - Labels por defecto según tipo al crear
        - TypeScript: 0 errores ✓
-- [ ] **[T-205]** Implementar funcionalidad de reordenamiento (Drag & Drop) para preguntas y secciones.
+- [x] **[T-205]** Implementar funcionalidad de reordenamiento (Drag & Drop) para preguntas y secciones.
+       - @dnd-kit/core, @dnd-kit/sortable, @dnd-kit/utilities instalados
+       - Secciones arrastrables con SortableContext + DndContext (persiste con reorderSections)
+       - Preguntas arrastrables dentro de cada sección (persiste con reorderQuestions)
+       - Actualización optimista del estado local antes de persistir en Supabase
+       - PointerSensor con activationConstraint distance:5 para click vs drag
+       - TypeScript: 0 errores | ESLint: 0 warnings | Build: exitoso ✓
 - [ ] **[T-206]** Desarrollar sistema de guardado automático y validación de integridad del formulario.
 - [ ] **[T-207]** Implementar configuración de puntajes por respuesta (Lógica de KPIs).
 
