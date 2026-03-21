@@ -1,20 +1,19 @@
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SupabaseConfig {
-  static String supabaseUrl = const String.fromEnvironment('SUPABASE_URL', defaultValue: '');
-  static String supabaseAnonKey = const String.fromEnvironment('SUPABASE_ANON_KEY', defaultValue: '');
+  static String supabaseUrl = const String.fromEnvironment('SUPABASE_URL',
+      defaultValue: 'https://hjlngwcsqxasyszxiisj.supabase.co');
+  static String supabaseAnonKey = const String.fromEnvironment(
+      'SUPABASE_ANON_KEY',
+      defaultValue:
+          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhqbG5nd2NzcXhhc3lzenhpaXNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYwNjMzMTIsImV4cCI6MjA4MTYzOTMxMn0.yM5uBuVbTrsESTdBm3zlPOpmGK3JVedheku5VfinqVo');
 
   static Future<void> initialize() async {
+    // Intentar cargar desde variables de entorno de compilación
     if (supabaseUrl.isEmpty || supabaseAnonKey.isEmpty) {
-      try {
-        await dotenv.load(fileName: ".env");
-        supabaseUrl = dotenv.env['SUPABASE_URL'] ?? '';
-        supabaseAnonKey = dotenv.env['SUPABASE_ANON_KEY'] ?? '';
-      } catch (e) {
-        // Ignorar error si no existe .env, se manejará en la validación siguiente
-      }
+      // Si no están definidas, el flujo continuará para permitir
+      // la configuración manual en la app o fallará con el mensaje de error.
     }
 
     if (supabaseUrl.isEmpty || supabaseAnonKey.isEmpty) {
@@ -39,20 +38,18 @@ class SupabaseConfig {
         4️⃣ APK de prueba:
            Para probar sin configuración, genera un APK release
       ''';
-      
+
       throw Exception(errorMessage);
     }
-    
+
     try {
       await Supabase.initialize(
         url: supabaseUrl,
         anonKey: supabaseAnonKey,
       );
     } catch (e) {
-      throw Exception(
-        'Error al conectar con Supabase: $e\n\n'
-        'Verifica que las credenciales sean correctas y tengas conexión a internet.'
-      );
+      throw Exception('Error al conectar con Supabase: $e\n\n'
+          'Verifica que las credenciales sean correctas y tengas conexión a internet.');
     }
   }
 
@@ -82,7 +79,10 @@ class SupabaseConfig {
   /// Inicializa con credenciales guardadas localmente
   static Future<void> initializeWithSavedCredentials() async {
     final saved = await loadSavedCredentials();
-    if (saved['url'] != null && saved['key'] != null && saved['url']!.isNotEmpty && saved['key']!.isNotEmpty) {
+    if (saved['url'] != null &&
+        saved['key'] != null &&
+        saved['url']!.isNotEmpty &&
+        saved['key']!.isNotEmpty) {
       supabaseUrl = saved['url']!;
       supabaseAnonKey = saved['key']!;
       await Supabase.initialize(
