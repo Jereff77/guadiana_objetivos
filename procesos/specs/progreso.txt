@@ -1,0 +1,8 @@
+FASE 1 – M-101 · Inicializar proyecto Flutter
+
+- PRD revisado: flutter-app-prd.md se considera completo para iniciar la fase.
+- Plan de tareas confirmado según flutter-app-tasks.md (M-101 a M-105).
+- Se revisó la estructura de Supabase usando el MCP supaGuadianaObj:
+  - Tablas clave para inventarios y sesiones: users, app_profiles, inventory_sessions, conteo_inventario, inventario, user_warehouses, sync_logs, okcar_*.
+- Se intentó ejecutar pruebas de la web (npm test --runTestsByPath src/__tests__/csv-helpers.test.ts) pero falló porque el binario jest no está disponible en PATH en este entorno.
+- Aún no se ha creado el proyecto Flutter físico; por ahora la fase se mantiene en planificación dentro de la carpeta procesos sin modificar código fuera de esta ruta.

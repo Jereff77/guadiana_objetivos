@@ -1,14 +1,17 @@
-# Contexto del Proyecto - Guadiana Checklists Web
+# Contexto del Proyecto - Guadiana Checklists Web y App Flutter Inventarios
 
 ## Información de Sesión
-- **IA Utilizada**: Claude Sonnet 4.6
-- **Fecha**: 2026-03-20
-- **Herramientas**: Claude Code CLI
+- **IA Utilizada**: GPT-5.1 (Trae)
+- **Fecha**: 2026-03-21
+- **Herramientas**: Trae IDE, MCP Supabase `supaGuadianaObj`
 - **Agentes Especializados Utilizados**: Ninguno
-- **Rol**: Orquestador IA
+- **Rol**: Orquestador IA (web + mobile)
 
 ## Resumen del Proyecto
-Aplicación web Next.js 14 para gestión de checklists de Guadiana. Stack: Next.js 14 + TypeScript + Tailwind CSS v3 + Shadcn/UI + Supabase (auth + database). Desplegado en Hostinger Node.js con output standalone. El proyecto web reside en `guadiana_objetivos/web/`.
+Aplicación web Next.js 14 para gestión de checklists de Guadiana y una app móvil Flutter para inventarios/auditorías conectadas al mismo Supabase.
+
+- **Web**: Next.js 14 + TypeScript + Tailwind CSS + Shadcn/UI + Supabase (auth + database). Reside en `guadiana_objetivos/web/`.
+- **Mobile (Inventarios / Checklists)**: Flutter + Supabase, apoyada en tablas `users`, `app_profiles`, `inventory_sessions`, `conteo_inventario`, `inventario`, `user_warehouses`, `sync_logs`, vistas `okcar_*`.
 
 ## Estado Actual del Proyecto
 
