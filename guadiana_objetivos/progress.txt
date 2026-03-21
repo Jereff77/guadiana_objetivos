@@ -24,8 +24,14 @@
         • Acción `createNewVersion` que copia estructura completa (secciones, preguntas, opciones)
         • Botón "Crear nueva versión" en editor para formularios publicados
         • Opción "Crear nueva versión" en menú de acciones del listado
-- [ ] T-302: Módulo de Asignaciones (asignar a sucursales, roles o usuarios)
-- [ ] T-303: Selector de vigencia y frecuencia para asignaciones
+- [x] T-302: Módulo de Asignaciones (asignar por rol o usuario específico)
+        • Página /asignaciones con tabla filtrable por estado (activa/inactiva)
+        • Server actions: createAssignment, toggleAssignment, deleteAssignment
+        • Dialog de creación con selector de formulario publicado, tipo de asignación
+        • Menú de acciones por fila: activar/desactivar y eliminar con confirmación
+- [x] T-303: Selector de vigencia y frecuencia
+        • Selector de frecuencia: Una vez / Diario / Semanal / Mensual
+        • Inputs de fecha inicio y fecha fin integrados en el dialog de asignación
 - [ ] T-304: Vista previa del formulario simulando la App Móvil
 
 ## Fase 4 – Dashboard de Resultados y Reportes ❌ 0%

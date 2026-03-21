@@ -120,3 +120,37 @@ Aplicación web Next.js 14 para gestión de checklists de Guadiana. Stack: Next.
 
 #### Próxima tarea:
 - **T-302**: Módulo de Asignaciones — asignar formularios a sucursales, roles o usuarios, usando tabla `form_assignments` ya existente en Supabase
+
+---
+
+### Claude Sonnet 4.6 – Sesión 2026-03-20 (T-302/T-303)
+
+#### Rol: Orquestador IA
+- **Solicitud del usuario**: Continuar con la siguiente tarea de mayor prioridad.
+- **Análisis realizado**: T-302 (Asignaciones) y T-303 (Vigencia/Frecuencia) se implementaron juntos ya que T-303 es parte del formulario de T-302. Tabla `form_assignments` ya existía en Supabase con todos los campos necesarios.
+- **Decisión de agentes**: Trabajo directo.
+
+#### Estado del Proyecto (actualizado)
+- ✅ T-302: Módulo de Asignaciones (Claude Sonnet 4.6) [directo]
+- ✅ T-303: Selector de vigencia y frecuencia (Claude Sonnet 4.6) [directo]
+- 🔄 T-304: Vista previa del formulario — PENDIENTE
+
+#### Tareas Realizadas:
+1. **4 archivos nuevos** (Herramientas: Write)
+   - `src/app/(dashboard)/asignaciones/actions.ts`: createAssignment, toggleAssignment, deleteAssignment
+   - `src/app/(dashboard)/asignaciones/page.tsx`: página server con fetch paralelo (assignments + surveys + profiles)
+   - `src/components/asignaciones/create-assignment-dialog.tsx`: dialog con toggle Por rol / Usuario, frecuencia y fechas de vigencia
+   - `src/components/asignaciones/assignments-table.tsx`: tabla con Badge activa/inactiva, dropdown acciones (activar/desactivar/eliminar + confirm)
+
+2. **Verificaciones** (Herramientas: Bash tsc, mcp__ide__getDiagnostics)
+   - `tsc --noEmit`: Sin errores
+   - Panel de Problemas IDE: Sin warnings ni críticos
+
+#### Archivos Creados:
+- `web/src/app/(dashboard)/asignaciones/actions.ts`
+- `web/src/app/(dashboard)/asignaciones/page.tsx`
+- `web/src/components/asignaciones/create-assignment-dialog.tsx`
+- `web/src/components/asignaciones/assignments-table.tsx`
+
+#### Próxima tarea:
+- **T-304**: Vista previa del formulario simulando la App Móvil
