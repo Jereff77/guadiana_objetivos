@@ -54,7 +54,7 @@ Este documento detalla las tareas necesarias para el desarrollo de la plataforma
 
 - [x] **[T-501]** Realizar pruebas de integración entre Web y Supabase.
 - [x] **[T-502]** Optimización de rendimiento y SEO básico para la plataforma.
-- [ ] **[T-503]** Auditoría de seguridad de políticas RLS.
+- [x] **[T-503]** Auditoría de seguridad de políticas RLS.
 - [ ] **[T-504]** Despliegue inicial y capacitación para administradores.
 
 ---

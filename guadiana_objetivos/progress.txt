@@ -79,5 +79,11 @@
         • generateMetadata dinámica en /formularios/[id]/editar y /resultados/[id]
         • Corrección ESLint: <a href="/resultados"> → <Link>, variables no usadas eliminadas
         • Build de producción: 0 errores, 0 warnings, 14 rutas generadas
-- [ ] T-503: Auditoría de seguridad RLS
+- [x] T-503: Auditoría de seguridad RLS
+        • Verificación via MCP Supabase: las 8 tablas del módulo tienen RLS habilitado ✓
+        • Helpers current_user_role() y current_user_branch() con SECURITY DEFINER ✓
+        • Bug corregido: app_profiles sin política para admin_global/auditor causaba que
+          /resultados mostrara IDs truncados en lugar de nombres de respondentes
+        • Migración aplicada: rls_fix_app_profiles_admin_select (2 nuevas políticas)
+        • Reporte completo generado en Specs/rls-audit-report.md
 - [ ] T-504: Despliegue inicial y capacitación

@@ -192,5 +192,10 @@
        - generateMetadata estática en 5 páginas; dinámica en /formularios/[id]/editar y /resultados/[id]
        - ESLint: 0 errores (fix <a> → <Link>, variables no usadas eliminadas)
        - Build de producción: ✓ 14 rutas, 0 errores, 0 warnings
-- [ ] **[T-503]** Auditoría de seguridad de políticas RLS.
+- [x] **[T-503]** Auditoría de seguridad de políticas RLS.
+       - 8 tablas del módulo auditadas via MCP Supabase: todas con RLS habilitado ✓
+       - Helpers current_user_role() y current_user_branch() con SECURITY DEFINER + STABLE ✓
+       - Bug encontrado y corregido: app_profiles solo tenía política "own" sin acceso admin
+         → Migración rls_fix_app_profiles_admin_select aplicada (admin puede leer/actualizar perfiles)
+       - Reporte detallado: Specs/rls-audit-report.md (hallazgos, matrices de políticas, recomendaciones)
 - [ ] **[T-504]** Despliegue inicial y capacitación para administradores.
