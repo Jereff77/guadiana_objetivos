@@ -198,4 +198,7 @@
        - Bug encontrado y corregido: app_profiles solo tenía política "own" sin acceso admin
          → Migración rls_fix_app_profiles_admin_select aplicada (admin puede leer/actualizar perfiles)
        - Reporte detallado: Specs/rls-audit-report.md (hallazgos, matrices de políticas, recomendaciones)
-- [ ] **[T-504]** Despliegue inicial y capacitación para administradores.
+- [x] **[T-504]** Despliegue inicial y capacitación para administradores.
+       - Guía completa en Specs/deployment-guide.md
+       - Sección deploy: requisitos servidor, variables de entorno, build standalone, PM2, script deploy.sh, verificación post-deploy
+       - Sección capacitación: módulos Formularios (tipos, puntajes, publicar, versiones), Asignaciones (frecuencia, vigencia), Resultados (filtros, exportar, estadísticas)

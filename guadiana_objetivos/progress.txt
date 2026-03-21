@@ -62,7 +62,7 @@
         • BarChart horizontal: % cumplimiento por sucursal (color semáforo ≥80/≥50/<50)
         • Botón "Estadísticas" con ícono BarChart2 en la lista de resultados
 
-## Fase 5 – Pulido y Entrega (MVP) 🔄 25%
+## Fase 5 – Pulido y Entrega (MVP) ✅ 100%
 - [x] T-501: Pruebas de integración Web + Supabase
         • Jest + @testing-library/react configurados con jest.config.ts y jest.setup.ts
         • 4 suites / 37 tests — 0 fallos
@@ -86,4 +86,15 @@
           /resultados mostrara IDs truncados en lugar de nombres de respondentes
         • Migración aplicada: rls_fix_app_profiles_admin_select (2 nuevas políticas)
         • Reporte completo generado en Specs/rls-audit-report.md
-- [ ] T-504: Despliegue inicial y capacitación
+- [x] T-504: Despliegue inicial y capacitación
+        • Guía completa en Specs/deployment-guide.md:
+          - Requisitos servidor (Node.js 18+, RAM 512MB)
+          - Variables de entorno de producción
+          - Configuración Supabase Auth (Site URL, Redirect URLs)
+          - Proceso de build standalone + subida a Hostinger
+          - Script deploy.sh con PM2
+          - Verificación post-deploy
+        • Guía de capacitación para administradores:
+          - Módulo Formularios (crear, tipos, puntajes, publicar, versiones)
+          - Módulo Asignaciones (crear, frecuencia, vigencia, activar/desactivar)
+          - Módulo Resultados (filtros, detalle, exportar CSV, estadísticas KPI)
