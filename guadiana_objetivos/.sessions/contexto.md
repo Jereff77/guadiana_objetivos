@@ -130,3 +130,28 @@ Plataforma web (Next.js 15) + App móvil Flutter para gestionar checklists y enc
 #### Archivos Modificados/Creados:
 - `guadiana_objetivos/web/supabase/migrations/20260320000002_rls_checklists_policies.sql`: Migración RLS completa
 - `guadiana_objetivos/Specs/progreso.txt`: Fase 1 marcada como completada
+
+---
+
+### Claude Sonnet 4.6 - Sesión 2026-03-20 (Cuarta)
+
+#### Rol: Orquestador IA
+- **Solicitud del usuario**: Continuar desde Fase 1 completa, ejecutar toda la Fase 2 hasta completar.
+- **Análisis realizado**: T-201 a T-207 pendientes. Se trabajó una tarea a la vez, con pruebas completas tras cada una.
+- **Decisión de agentes**: Trabajo directo — no se necesitaron agentes especializados.
+
+#### Tareas Realizadas:
+1. **T-201: Dashboard de formularios** — Página /formularios con tabs, tabla responsive, Server Actions CRUD, CreateSurveyDialog, SurveyActionsMenu con AlertDialog. date-fns instalado.
+2. **T-202/T-203/T-204: Editor de formularios + Secciones + Preguntas** — Layout dos paneles, 7 tipos de pregunta, SectionsPanel árbol colapsable, PropertiesPanel con sub-paneles por tipo, Server Actions CRUD completo para secciones/preguntas/opciones. scroll-area + textarea (Shadcn).
+3. **T-205: Drag & Drop** — @dnd-kit instalado, SortableSection + SortableQuestion, actualización optimista + persist en Supabase con reorderSections/reorderQuestions.
+4. **T-206: Auto-save** — useEditorSaveStatus hook, debounce 800ms en los 3 paneles de propiedades, SaveIndicator en top bar, validación server-side antes de publicar (1 sección + 1 pregunta mínimo).
+5. **T-207: KPIs / Puntajes** — OptionRow con score editable inline, opciones Sí(1)/No(0) auto-creadas para boolean, updateOption Server Action, puntaje máximo en tiempo real.
+
+#### Estado Final Fase 2: ✅ COMPLETADA (7/7 tareas)
+
+#### Archivos Clave Creados/Modificados:
+- `web/src/app/(dashboard)/formularios/` — Dashboard y editor completo
+- `web/src/components/formularios/` — Dialog crear, tabla, menú acciones
+- `web/src/components/editor/` — Editor dos paneles con DnD y auto-save
+- `web/src/hooks/use-auto-save.ts` — Hook de guardado global
+- `web/package.json` — date-fns, @dnd-kit/*
