@@ -36,7 +36,14 @@
        - Botón "Cerrar sesión" en AppSidebar conectado a Server Action
        - Redirecciones: unauthenticated → /login | authenticated → /dashboard
        - TypeScript: 0 errores | ESLint: 0 warnings | Build: exitoso ✓
-- [ ] **[T-105]** Crear esquema de base de datos en Supabase (Tablas `form_*` y `resp_*` según especificación).
+- [x] **[T-105]** Crear esquema de base de datos en Supabase (Tablas `form_*` y `resp_*` según especificación).
+       - Migración aplicada: `create_checklists_schema` (7 tablas + 2 triggers)
+       - Tablas creadas: profiles, form_surveys, form_sections, form_questions, form_question_options, form_assignments, resp_survey_runs, resp_answers
+       - Índices de rendimiento en todas las tablas clave
+       - Trigger `handle_new_user()` para auto-crear perfil al registrar usuario
+       - Trigger `update_updated_at()` para timestamps automáticos
+       - database.types.ts regenerado con tipos oficiales de Supabase
+       - TypeScript: 0 errores | ESLint: 0 warnings ✓
 - [ ] **[T-106]** Implementar Políticas de Seguridad (RLS) para roles Admin y Jefe de Sucursal.
 
 ## Fase 2-5: Pendiente
