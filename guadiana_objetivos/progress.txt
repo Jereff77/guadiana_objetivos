@@ -1,0 +1,41 @@
+# Progreso – Plataforma Web Guadiana Checklists
+Última actualización: 2026-03-20
+
+## Fase 1 – Fundaciones y Configuración Inicial ✅ 100%
+- [x] T-101: Proyecto Next.js 14+ con TypeScript y Tailwind CSS inicializado en `guadiana_objetivos/web/`
+- [x] T-102: Cliente Supabase configurado (`src/lib/supabase/client.ts` y `server.ts`)
+- [x] T-103: Sistema de diseño base (colores corporativos #004B8D / #FF8F1C, Shadcn/UI)
+- [x] T-104: Supabase Auth + Middleware para rutas protegidas (`src/middleware.ts`)
+- [x] T-105: Esquema DB en Supabase (tablas `form_*` y `resp_*` confirmadas)
+- [x] T-106: RLS habilitado en todas las tablas de formularios y respuestas
+
+## Fase 2 – Constructor de Formularios (Core) ✅ 100%
+- [x] T-201: Dashboard de formularios con tabs Borradores / Publicados / Archivados
+- [x] T-202: Editor de Formularios (layout de paneles izquierdo/derecho)
+- [x] T-203: Gestión de Secciones (crear, editar, reordenar)
+- [x] T-204: Componentes de Preguntas (Boolean, Única, Múltiple, Texto, Número, Fecha)
+- [x] T-205: Drag & Drop para secciones y preguntas con @dnd-kit
+- [x] T-206: Auto-save con debounce y validación de integridad antes de publicar
+- [x] T-207: Configuración de puntajes por respuesta (Lógica de KPIs)
+
+## Fase 3 – Asignaciones y Publicación 🔄 25%
+- [x] T-301: Flujo de publicación (cambio de estado + versionamiento)
+        • publish/archive/restore/delete implementados
+        • Acción `createNewVersion` que copia estructura completa (secciones, preguntas, opciones)
+        • Botón "Crear nueva versión" en editor para formularios publicados
+        • Opción "Crear nueva versión" en menú de acciones del listado
+- [ ] T-302: Módulo de Asignaciones (asignar a sucursales, roles o usuarios)
+- [ ] T-303: Selector de vigencia y frecuencia para asignaciones
+- [ ] T-304: Vista previa del formulario simulando la App Móvil
+
+## Fase 4 – Dashboard de Resultados y Reportes ❌ 0%
+- [ ] T-401: Visor de Ejecuciones (lista filtrable)
+- [ ] T-402: Vista de Detalle de Ejecución
+- [ ] T-403: Exportación a Excel/CSV
+- [ ] T-404: Gráficas básicas de cumplimiento y KPIs
+
+## Fase 5 – Pulido y Entrega (MVP) ❌ 0%
+- [ ] T-501: Pruebas de integración Web + Supabase
+- [ ] T-502: Optimización de rendimiento y SEO básico
+- [ ] T-503: Auditoría de seguridad RLS
+- [ ] T-504: Despliegue inicial y capacitación

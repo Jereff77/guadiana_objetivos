@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { MoreHorizontal, Pencil, Send, Archive, RotateCcw, Trash2 } from 'lucide-react'
+import { MoreHorizontal, Pencil, Send, Archive, RotateCcw, Trash2, Copy } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -26,6 +26,7 @@ import {
   archiveSurvey,
   restoreSurvey,
   deleteSurvey,
+  createNewVersion,
 } from '@/app/(dashboard)/formularios/actions'
 
 type SurveyStatus = 'draft' | 'published' | 'archived'
@@ -65,6 +66,12 @@ export function SurveyActionsMenu({ id, status }: SurveyActionsMenuProps) {
     setDeleteOpen(false)
   }
 
+  async function handleCreateNewVersion() {
+    setPending(true)
+    await createNewVersion(id)
+    setPending(false)
+  }
+
   return (
     <>
       <DropdownMenu>
@@ -85,6 +92,12 @@ export function SurveyActionsMenu({ id, status }: SurveyActionsMenuProps) {
             <DropdownMenuItem onClick={handlePublish}>
               <Send className="h-4 w-4 mr-2" />
               Publicar
+            </DropdownMenuItem>
+          )}
+          {status === 'published' && (
+            <DropdownMenuItem onClick={handleCreateNewVersion}>
+              <Copy className="h-4 w-4 mr-2" />
+              Crear nueva versión
             </DropdownMenuItem>
           )}
           {status === 'published' && (

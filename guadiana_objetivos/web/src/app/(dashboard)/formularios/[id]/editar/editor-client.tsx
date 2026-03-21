@@ -2,13 +2,13 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, Send, CheckCircle, Loader2, AlertCircle, Clock } from 'lucide-react'
+import { ArrowLeft, Send, CheckCircle, Loader2, AlertCircle, Clock, Copy } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { SectionsPanel } from '@/components/editor/sections-panel'
 import { PropertiesPanel } from '@/components/editor/properties-panel'
-import { publishSurvey } from '@/app/(dashboard)/formularios/actions'
+import { publishSurvey, createNewVersion } from '@/app/(dashboard)/formularios/actions'
 import { useEditorSaveStatus, type SaveStatus } from '@/hooks/use-auto-save'
 
 type SurveyStatus = 'draft' | 'published' | 'archived'
@@ -106,6 +106,7 @@ export function EditorClient({
   const [selected, setSelected] = useState<SelectedElement>({ kind: 'survey' })
   const [publishing, setPublishing] = useState(false)
   const [publishError, setPublishError] = useState<string | null>(null)
+  const [creatingVersion, setCreatingVersion] = useState(false)
   const { status: saveStatus, onSaveStart, onSaveEnd } = useEditorSaveStatus()
 
   async function handlePublish() {
@@ -116,6 +117,12 @@ export function EditorClient({
       setPublishError(result.error)
     }
     setPublishing(false)
+  }
+
+  async function handleCreateNewVersion() {
+    setCreatingVersion(true)
+    await createNewVersion(survey.id)
+    setCreatingVersion(false)
   }
 
   return (
@@ -152,6 +159,17 @@ export function EditorClient({
             >
               <Send className="h-4 w-4 mr-2" />
               {publishing ? 'Publicando…' : 'Publicar'}
+            </Button>
+          )}
+          {survey.status === 'published' && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleCreateNewVersion}
+              disabled={creatingVersion}
+            >
+              <Copy className="h-4 w-4 mr-2" />
+              {creatingVersion ? 'Creando versión…' : 'Crear nueva versión'}
             </Button>
           )}
         </div>
