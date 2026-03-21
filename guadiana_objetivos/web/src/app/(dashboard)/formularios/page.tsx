@@ -1,6 +1,9 @@
+import type { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { Header } from '@/components/layout/header'
+
+export const metadata: Metadata = { title: 'Formularios' }
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent } from '@/components/ui/card'
 import { SurveysTable } from '@/components/formularios/surveys-table'

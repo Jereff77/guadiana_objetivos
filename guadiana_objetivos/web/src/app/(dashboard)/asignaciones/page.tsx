@@ -1,6 +1,9 @@
+import type { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { Header } from '@/components/layout/header'
+
+export const metadata: Metadata = { title: 'Asignaciones' }
 import { AssignmentsTable } from '@/components/asignaciones/assignments-table'
 import { CreateAssignmentDialog } from '@/components/asignaciones/create-assignment-dialog'
 

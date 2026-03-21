@@ -70,6 +70,14 @@
         • Suite 2: supabase-client.test.ts — inicialización del cliente con env vars (mocked)
         • Suite 3: csv-helpers.test.ts — escapeCell, toRow, formatAnswer (13 casos)
         • Suite 4: runs-table.test.tsx — render, fallback de perfil, badges, links (9 casos)
-- [ ] T-502: Optimización de rendimiento y SEO básico
+- [x] T-502: Optimización de rendimiento y SEO básico
+        • next.config.ts: output standalone, compress, security headers (X-Frame-Options, CSP, etc.), caché inmutable para _next/static, no-store para API routes
+        • Optimización de imágenes: avif/webp, minimumCacheTTL
+        • Inter font con display:swap (evita FOIT) y variable CSS
+        • Metadata SEO completa en root layout: title template, description, keywords, robots noindex, viewport themeColor
+        • Metadata estática en todas las páginas del dashboard (Formularios, Asignaciones, Resultados, Estadísticas, Dashboard)
+        • generateMetadata dinámica en /formularios/[id]/editar y /resultados/[id]
+        • Corrección ESLint: <a href="/resultados"> → <Link>, variables no usadas eliminadas
+        • Build de producción: 0 errores, 0 warnings, 14 rutas generadas
 - [ ] T-503: Auditoría de seguridad RLS
 - [ ] T-504: Despliegue inicial y capacitación

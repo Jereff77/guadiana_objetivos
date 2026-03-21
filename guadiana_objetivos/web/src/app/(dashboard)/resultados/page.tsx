@@ -1,5 +1,8 @@
+import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+
+export const metadata: Metadata = { title: 'Resultados' }
 import { Download, BarChart2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { Header } from '@/components/layout/header'
@@ -81,12 +84,12 @@ export default async function ResultadosPage({ searchParams }: PageProps) {
           </button>
 
           {hasFilters && (
-            <a
+            <Link
               href="/resultados"
               className="h-9 flex items-center rounded-md border px-4 text-sm font-medium text-muted-foreground hover:bg-muted transition-colors"
             >
               Limpiar
-            </a>
+            </Link>
           )}
 
           {/* Estadísticas – T-404 */}

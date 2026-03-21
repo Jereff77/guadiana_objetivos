@@ -1,4 +1,7 @@
+import type { Metadata } from 'next'
 import { Header } from '@/components/layout/header'
+
+export const metadata: Metadata = { title: 'Dashboard' }
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 

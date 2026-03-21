@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
@@ -8,6 +9,19 @@ import { Separator } from '@/components/ui/separator'
 
 interface PageProps {
   params: Promise<{ id: string }>
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { id } = await params
+  const supabase = await createClient()
+  const { data } = await supabase
+    .from('resp_survey_runs')
+    .select('form_surveys(name)')
+    .eq('id', id)
+    .single()
+  const fs = data?.form_surveys as { name?: string }[] | { name?: string } | null | undefined
+  const name = Array.isArray(fs) ? fs[0]?.name : fs?.name
+  return { title: name ? `Detalle · ${name}` : 'Detalle de Ejecución' }
 }
 
 const STATUS_LABELS: Record<string, { label: string; variant: 'default' | 'secondary' | 'outline' }> = {
@@ -126,7 +140,6 @@ export default async function RunDetailPage({ params }: PageProps) {
     .single()
 
   // ── Maps ─────────────────────────────────────────────────────────────────────
-  const questionMap = new Map((questions ?? []).map((q) => [q.id, q]))
   const optionMap   = new Map((options ?? []).map((o) => [o.id, o.label]))
   const answerMap   = new Map((answers ?? []).map((a) => [a.question_id, a]))
 

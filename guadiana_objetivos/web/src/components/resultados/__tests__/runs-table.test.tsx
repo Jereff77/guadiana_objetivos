@@ -2,7 +2,7 @@
  * T-501: Prueba de integración – Componente RunsTable
  */
 import React from 'react'
-import { render, screen, within } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { RunsTable } from '../runs-table'
 
 type Profile = { id: string; first_name: string | null; last_name: string | null }

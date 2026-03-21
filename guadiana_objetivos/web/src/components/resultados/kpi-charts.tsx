@@ -41,7 +41,6 @@ export type BranchStat = {
 
 const BLUE   = '#004B8D'
 const ORANGE = '#FF8F1C'
-const MUTED  = '#94a3b8'
 
 // ── Completion Bar Chart ───────────────────────────────────────────────────────
 

@@ -1,9 +1,17 @@
+import type { Metadata } from 'next'
 import { notFound, redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { EditorClient } from './editor-client'
 
 interface PageProps {
   params: Promise<{ id: string }>
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { id } = await params
+  const supabase = await createClient()
+  const { data } = await supabase.from('form_surveys').select('name').eq('id', id).single()
+  return { title: data?.name ? `Editar · ${data.name}` : 'Editor de Formulario' }
 }
 
 export default async function EditorPage({ params }: PageProps) {

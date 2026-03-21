@@ -53,7 +53,7 @@ Este documento detalla las tareas necesarias para el desarrollo de la plataforma
 *Aseguramiento de calidad y despliegue final.*
 
 - [x] **[T-501]** Realizar pruebas de integración entre Web y Supabase.
-- [ ] **[T-502]** Optimización de rendimiento y SEO básico para la plataforma.
+- [x] **[T-502]** Optimización de rendimiento y SEO básico para la plataforma.
 - [ ] **[T-503]** Auditoría de seguridad de políticas RLS.
 - [ ] **[T-504]** Despliegue inicial y capacitación para administradores.
 

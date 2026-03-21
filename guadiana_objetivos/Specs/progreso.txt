@@ -185,6 +185,12 @@
        - 4 suites / 37 tests / 0 fallos
        - Cubre: cn() utility, Supabase browser client (mocked), CSV helpers (escapeCell/toRow/formatAnswer), componente RunsTable
        - Scripts npm: test, test:watch, test:ci (con coverage)
-- [ ] **[T-502]** Optimización de rendimiento y SEO básico para la plataforma.
+- [x] **[T-502]** Optimización de rendimiento y SEO básico para la plataforma.
+       - next.config.ts: output standalone, compress, security headers (X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy), caché agresiva para assets estáticos
+       - Inter font con display:swap para evitar FOIT
+       - Metadata SEO completa: title template, robots noindex (app interna), viewport themeColor #004B8D
+       - generateMetadata estática en 5 páginas; dinámica en /formularios/[id]/editar y /resultados/[id]
+       - ESLint: 0 errores (fix <a> → <Link>, variables no usadas eliminadas)
+       - Build de producción: ✓ 14 rutas, 0 errores, 0 warnings
 - [ ] **[T-503]** Auditoría de seguridad de políticas RLS.
 - [ ] **[T-504]** Despliegue inicial y capacitación para administradores.

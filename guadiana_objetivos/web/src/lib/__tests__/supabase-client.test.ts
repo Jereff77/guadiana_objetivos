@@ -7,7 +7,7 @@
 
 // Supabase SSR depends on cookies in server context; mock for unit scope
 jest.mock('@supabase/ssr', () => ({
-  createBrowserClient: jest.fn((_url: string, _key: string) => ({
+  createBrowserClient: jest.fn(() => ({
     auth: {
       getUser: jest.fn().mockResolvedValue({ data: { user: null }, error: null }),
       getSession: jest.fn().mockResolvedValue({ data: { session: null }, error: null }),
