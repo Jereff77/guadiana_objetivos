@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'core/supabase/supabase_client.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await SupabaseManager.initialize();
   runApp(const GuadianaApp());
 }
 
@@ -29,4 +32,3 @@ class GuadianaApp extends StatelessWidget {
     );
   }
 }
-

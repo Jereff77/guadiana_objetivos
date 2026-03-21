@@ -10,3 +10,15 @@ FASE 1 – M-101 · Inicializar proyecto Flutter
   - analysis_options.yaml incluyendo flutter_lints.
   - .gitignore específico para el proyecto Flutter.
   - lib/main.dart con MaterialApp, tema base con colores corporativos y pantalla inicial placeholder.
+
+FASE 1 – M-102 · Configurar cliente Supabase
+
+- Se creó lib/core/supabase/supabase_client.dart con SupabaseManager:
+  - Lee SUPABASE_URL y SUPABASE_ANON_KEY desde --dart-define usando String.fromEnvironment.
+  - Inicializa SupabaseFlutter una sola vez (patrón singleton) y expone SupabaseClient.
+  - Incluye método testConnection() que hace un SELECT sencillo sobre inventory_sessions.
+- Se actualizó lib/main.dart:
+  - main() ahora es async.
+  - Llama a WidgetsFlutterBinding.ensureInitialized() y luego a SupabaseManager.initialize() antes de runApp.
+- Se intentó ejecutar flutter test en procesos/flutter_app:
+  - Falló con mensaje “Test directory \"test\" not found.” porque aún no se han creado pruebas unitarias para esta app.
