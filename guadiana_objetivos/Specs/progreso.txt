@@ -1,0 +1,22 @@
+## Progreso - Plataforma Web Guadiana Checklists
+Última actualización: 2026-03-20
+
+## Fase 1: Fundaciones y Configuración Inicial
+
+- [x] **[T-101]** Inicializar proyecto Next.js 15 con TypeScript y Tailwind CSS dentro de `web/`.
+       - Next.js 15.5.14 (actualizado desde 14.2.29 por vulnerabilidades de seguridad)
+       - TypeScript strict mode habilitado
+       - Tailwind CSS con colores corporativos: brand-blue (#004B8D), brand-orange (#FF8F1C)
+       - Shadcn/UI configurado (components.json, utils.ts, globals.css con variables CSS)
+       - Estructura App Router: layout raíz, página /dashboard, página /login, middleware placeholder
+       - ESLint configurado — 0 warnings, 0 errores
+       - Build de producción exitoso ✓
+       - 0 vulnerabilidades npm ✓
+
+- [ ] **[T-102]** Configurar cliente de Supabase y variables de entorno.
+- [ ] **[T-103]** Implementar sistema de diseño base (colores corporativos, tipografía, componentes UI básicos con Shadcn/UI).
+- [ ] **[T-104]** Configurar Supabase Auth (Login/Logout) y Middleware para rutas protegidas.
+- [ ] **[T-105]** Crear esquema de base de datos en Supabase (Tablas `form_*` y `resp_*` según especificación).
+- [ ] **[T-106]** Implementar Políticas de Seguridad (RLS) para roles Admin y Jefe de Sucursal.
+
+## Fase 2-5: Pendiente
