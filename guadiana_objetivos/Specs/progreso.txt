@@ -54,4 +54,24 @@
 
 ## Fase 1: COMPLETADA ✅
 
-## Fase 2-5: Pendiente
+## Fase 2: Constructor de Formularios (Core)
+
+- [x] **[T-201]** Desarrollar Dashboard de formularios (Lista de borradores, publicados y archivados).
+       - Página /formularios con Server Component (datos reales de Supabase)
+       - Tabs: Borradores / Publicados / Archivados con contador de items
+       - Tabla responsive con columnas: nombre, descripción, categoría, estado, versión, fecha
+       - Server Actions: createSurvey, publishSurvey, archiveSurvey, restoreSurvey, deleteSurvey
+       - CreateSurveyDialog (Client Component) con validación
+       - SurveyActionsMenu con confirmación de eliminación (AlertDialog)
+       - Header actualizado para soportar prop `action` (slot para botón "Nuevo formulario")
+       - date-fns instalado para formateo de fechas en español
+       - TypeScript: 0 errores | ESLint: 0 warnings | Build: exitoso ✓
+
+- [ ] **[T-202]** Crear interfaz del Editor de Formularios (Layout de paneles).
+- [ ] **[T-203]** Implementar gestión de Secciones (Crear, editar, reordenar).
+- [ ] **[T-204]** Desarrollar componentes de Preguntas (Boolean, Única, Múltiple, Texto, Número, Fecha).
+- [ ] **[T-205]** Implementar funcionalidad de reordenamiento (Drag & Drop) para preguntas y secciones.
+- [ ] **[T-206]** Desarrollar sistema de guardado automático y validación de integridad del formulario.
+- [ ] **[T-207]** Implementar configuración de puntajes por respuesta (Lógica de KPIs).
+
+## Fase 3-5: Pendiente
