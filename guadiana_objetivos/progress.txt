@@ -38,8 +38,12 @@
         • Botón "Vista previa" con ícono Eye agregado al editor (barra superior)
         • Muestra secciones, preguntas requeridas, help_text y botón "Enviar" naranja corporativo
 
-## Fase 4 – Dashboard de Resultados y Reportes ❌ 0%
-- [ ] T-401: Visor de Ejecuciones (lista filtrable)
+## Fase 4 – Dashboard de Resultados y Reportes 🔄 25%
+- [x] T-401: Visor de Ejecuciones (lista filtrable)
+        • Página /resultados con filtros GET: estado, fecha desde/hasta
+        • Tabla: formulario, respondente (nombre desde app_profiles), estado badge,
+          fechas inicio/fin, link a detalle
+        • Server-side filtering vía URL search params, sin JS requerido
 - [ ] T-402: Vista de Detalle de Ejecución
 - [ ] T-403: Exportación a Excel/CSV
 - [ ] T-404: Gráficas básicas de cumplimiento y KPIs
