@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, Send, CheckCircle, Loader2, AlertCircle, Clock, Copy } from 'lucide-react'
+import { ArrowLeft, Send, CheckCircle, Loader2, AlertCircle, Clock, Copy, Eye } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
@@ -150,6 +150,12 @@ export function EditorClient({
               <span>Auto-guardado activo</span>
             </div>
           )}
+          <Link href={`/formularios/${survey.id}/vista-previa`}>
+            <Button size="sm" variant="outline">
+              <Eye className="h-4 w-4 mr-2" />
+              Vista previa
+            </Button>
+          </Link>
           {survey.status === 'draft' && (
             <Button
               size="sm"

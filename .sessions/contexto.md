@@ -154,3 +154,36 @@ Aplicación web Next.js 14 para gestión de checklists de Guadiana. Stack: Next.
 
 #### Próxima tarea:
 - **T-304**: Vista previa del formulario simulando la App Móvil
+
+---
+
+### Claude Sonnet 4.6 – Sesión 2026-03-20 (T-304)
+
+#### Rol: Orquestador IA
+- **Solicitud del usuario**: Continuar con siguiente tarea.
+- **Análisis realizado**: T-304 última tarea de Fase 3. Implementada como página separada con phone frame CSS.
+- **Decisión de agentes**: Trabajo directo.
+
+#### Estado del Proyecto (actualizado)
+- ✅ **Fase 1 completa** (T-101 a T-106)
+- ✅ **Fase 2 completa** (T-201 a T-207)
+- ✅ **Fase 3 completa** (T-301 a T-304)
+- ❌ Fase 4 pendiente (T-401 a T-404)
+- ❌ Fase 5 pendiente (T-501 a T-504)
+
+#### Tareas Realizadas:
+1. **T-304: Vista previa** (Herramientas: Write, Edit)
+   - `src/app/(dashboard)/formularios/[id]/vista-previa/page.tsx`: server component, misma lógica de fetch que el editor
+   - `src/app/(dashboard)/formularios/[id]/vista-previa/preview-client.tsx`: phone frame CSS (375px), status bar, app header, renderizado por tipo (Boolean/SingleChoice/MultipleChoice/Text/Number/Date), botón Enviar naranja, disclaimer
+   - `editor-client.tsx`: botón "Vista previa" con ícono Eye en barra superior del editor
+
+2. **Verificaciones** (Herramientas: Bash tsc, mcp__ide__getDiagnostics)
+   - Sin errores TypeScript ni warnings IDE
+
+#### Archivos Modificados/Creados:
+- `web/src/app/(dashboard)/formularios/[id]/vista-previa/page.tsx`: nuevo
+- `web/src/app/(dashboard)/formularios/[id]/vista-previa/preview-client.tsx`: nuevo
+- `web/src/app/(dashboard)/formularios/[id]/editar/editor-client.tsx`: botón Vista previa agregado
+
+#### Resultado:
+**FASE 3 COMPLETA AL 100%** — T-301, T-302, T-303, T-304 implementadas y confirmadas.

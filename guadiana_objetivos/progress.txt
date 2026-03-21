@@ -32,7 +32,11 @@
 - [x] T-303: Selector de vigencia y frecuencia
         • Selector de frecuencia: Una vez / Diario / Semanal / Mensual
         • Inputs de fecha inicio y fecha fin integrados en el dialog de asignación
-- [ ] T-304: Vista previa del formulario simulando la App Móvil
+- [x] T-304: Vista previa del formulario simulando la App Móvil
+        • Página /formularios/[id]/vista-previa con phone frame CSS (iPhone 375px)
+        • Renderiza: Boolean (botones Sí/No), Single/Multiple choice interactivos, Text, Number, Date
+        • Botón "Vista previa" con ícono Eye agregado al editor (barra superior)
+        • Muestra secciones, preguntas requeridas, help_text y botón "Enviar" naranja corporativo
 
 ## Fase 4 – Dashboard de Resultados y Reportes ❌ 0%
 - [ ] T-401: Visor de Ejecuciones (lista filtrable)
