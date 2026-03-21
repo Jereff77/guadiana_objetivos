@@ -179,7 +179,12 @@
 
 ## Fase 5: Pulido y Entrega (MVP)
 
-- [ ] **[T-501]** Realizar pruebas de integración entre Web y Supabase.
+- [x] **[T-501]** Realizar pruebas de integración entre Web y Supabase.
+       - Jest 30 + @testing-library/react 16 configurados (jest.config.ts, jest.setup.ts)
+       - @types/jest agregado al tsconfig; 0 errores TypeScript en archivos de test
+       - 4 suites / 37 tests / 0 fallos
+       - Cubre: cn() utility, Supabase browser client (mocked), CSV helpers (escapeCell/toRow/formatAnswer), componente RunsTable
+       - Scripts npm: test, test:watch, test:ci (con coverage)
 - [ ] **[T-502]** Optimización de rendimiento y SEO básico para la plataforma.
 - [ ] **[T-503]** Auditoría de seguridad de políticas RLS.
 - [ ] **[T-504]** Despliegue inicial y capacitación para administradores.

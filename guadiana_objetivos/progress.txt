@@ -62,8 +62,14 @@
         • BarChart horizontal: % cumplimiento por sucursal (color semáforo ≥80/≥50/<50)
         • Botón "Estadísticas" con ícono BarChart2 en la lista de resultados
 
-## Fase 5 – Pulido y Entrega (MVP) ❌ 0%
-- [ ] T-501: Pruebas de integración Web + Supabase
+## Fase 5 – Pulido y Entrega (MVP) 🔄 25%
+- [x] T-501: Pruebas de integración Web + Supabase
+        • Jest + @testing-library/react configurados con jest.config.ts y jest.setup.ts
+        • 4 suites / 37 tests — 0 fallos
+        • Suite 1: utils.test.ts — cn() merge y resolución de conflictos Tailwind
+        • Suite 2: supabase-client.test.ts — inicialización del cliente con env vars (mocked)
+        • Suite 3: csv-helpers.test.ts — escapeCell, toRow, formatAnswer (13 casos)
+        • Suite 4: runs-table.test.tsx — render, fallback de perfil, badges, links (9 casos)
 - [ ] T-502: Optimización de rendimiento y SEO básico
 - [ ] T-503: Auditoría de seguridad RLS
 - [ ] T-504: Despliegue inicial y capacitación
