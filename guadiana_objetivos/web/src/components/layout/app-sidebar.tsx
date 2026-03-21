@@ -8,7 +8,9 @@ import {
   ClipboardList,
   BarChart3,
   Settings,
+  LogOut,
 } from 'lucide-react'
+import { logout } from '@/app/(auth)/login/actions'
 import {
   Sidebar,
   SidebarContent,
@@ -102,10 +104,16 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-sidebar-border px-4 py-3">
-        <p className="text-xs text-muted-foreground">
-          Llantas y Rines del Guadiana
-        </p>
+      <SidebarFooter className="border-t border-sidebar-border px-2 py-2">
+        <form action={logout}>
+          <SidebarMenuButton
+            type="submit"
+            className="w-full text-muted-foreground hover:text-destructive"
+          >
+            <LogOut className="h-4 w-4" />
+            <span>Cerrar sesión</span>
+          </SidebarMenuButton>
+        </form>
       </SidebarFooter>
     </Sidebar>
   )

@@ -1,51 +1,83 @@
-export default function LoginPage() {
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
+import { login } from './actions'
+
+interface LoginPageProps {
+  searchParams: Promise<{ error?: string }>
+}
+
+export default async function LoginPage({ searchParams }: LoginPageProps) {
+  const params = await searchParams
+  const hasError = params.error === 'invalid_credentials'
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="w-full max-w-md">
-        {/* Card */}
-        <div className="bg-white rounded-lg shadow-md p-8">
-          {/* Header con color corporativo */}
-          <div className="text-center mb-6">
-            <div
-              className="inline-flex items-center justify-center w-16 h-16 rounded-full mb-4"
-              style={{ backgroundColor: '#004B8D' }}
-            >
-              <span className="text-white text-2xl font-bold">G</span>
-            </div>
-            <h1 className="text-2xl font-bold text-gray-900">Guadiana Checklists</h1>
-            <p className="text-sm text-gray-500 mt-1">Plataforma de gestión de checklists</p>
-          </div>
-
-          {/* Placeholder content */}
+    <div className="flex min-h-screen items-center justify-center bg-gray-50">
+      <div className="w-full max-w-md px-4">
+        {/* Logo */}
+        <div className="flex flex-col items-center mb-8">
           <div
-            className="text-center py-6 rounded-md"
-            style={{ backgroundColor: '#FF8F1C', opacity: 0.1 }}
-          />
-          <div className="text-center py-6 rounded-md border-2 border-dashed border-gray-200">
-            <p className="text-gray-400 font-medium">Login - Coming Soon</p>
-            <p className="text-gray-300 text-sm mt-1">Implementación pendiente en T-104</p>
+            className="flex h-14 w-14 items-center justify-center rounded-xl text-white font-bold text-xl mb-3"
+            style={{ backgroundColor: '#004B8D' }}
+          >
+            G
           </div>
-
-          <div className="mt-6">
-            <button
-              type="button"
-              disabled
-              className="w-full py-2 px-4 rounded-md text-white font-medium cursor-not-allowed opacity-60"
-              style={{ backgroundColor: '#004B8D' }}
-            >
-              Iniciar sesión
-            </button>
-          </div>
-
-          <div className="mt-4 text-center">
-            <span
-              className="text-xs font-semibold px-2 py-1 rounded"
-              style={{ backgroundColor: '#FF8F1C', color: '#fff' }}
-            >
-              MVP
-            </span>
-          </div>
+          <h1 className="text-xl font-bold text-gray-900">Guadiana Checklists</h1>
+          <p className="text-sm text-gray-500 mt-1">Llantas y Rines del Guadiana</p>
         </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Iniciar sesión</CardTitle>
+            <CardDescription>Ingresa tus credenciales para acceder a la plataforma</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form action={login} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Correo electrónico</Label>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  placeholder="admin@guadiana.com"
+                  required
+                  autoComplete="email"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="password">Contraseña</Label>
+                <Input
+                  id="password"
+                  name="password"
+                  type="password"
+                  placeholder="••••••••"
+                  required
+                  autoComplete="current-password"
+                />
+              </div>
+
+              {hasError && (
+                <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md px-3 py-2">
+                  Credenciales incorrectas. Verifica tu correo y contraseña.
+                </p>
+              )}
+
+              <Button
+                type="submit"
+                className="w-full text-white"
+                style={{ backgroundColor: '#004B8D' }}
+              >
+                Entrar
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+
+        <p className="text-center text-xs text-gray-400 mt-6">
+          Plataforma de gestión interna — uso exclusivo de personal autorizado
+        </p>
       </div>
     </div>
   )

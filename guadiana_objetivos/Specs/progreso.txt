@@ -28,7 +28,14 @@
        - Corrección de rutas de importación incorrectas generadas por Shadcn (sidebar.tsx)
        - TypeScript: 0 errores | ESLint: 0 warnings | Build: exitoso ✓
 
-- [ ] **[T-104]** Configurar Supabase Auth (Login/Logout) y Middleware para rutas protegidas.
+- [x] **[T-104]** Configurar Supabase Auth (Login/Logout) y Middleware para rutas protegidas.
+       - Middleware real con getUser() para refresh de sesión y protección de rutas
+       - Server Actions: login (signInWithPassword) y logout (signOut) con revalidatePath + redirect
+       - Página /login con formulario funcional (email + password) y manejo de errores
+       - Ruta /auth/callback para intercambio OAuth code → session
+       - Botón "Cerrar sesión" en AppSidebar conectado a Server Action
+       - Redirecciones: unauthenticated → /login | authenticated → /dashboard
+       - TypeScript: 0 errores | ESLint: 0 warnings | Build: exitoso ✓
 - [ ] **[T-105]** Crear esquema de base de datos en Supabase (Tablas `form_*` y `resp_*` según especificación).
 - [ ] **[T-106]** Implementar Políticas de Seguridad (RLS) para roles Admin y Jefe de Sucursal.
 
