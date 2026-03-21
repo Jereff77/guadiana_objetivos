@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation'
+import { Download } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { Header } from '@/components/layout/header'
 import { RunsTable } from '@/components/resultados/runs-table'
@@ -86,6 +87,15 @@ export default async function ResultadosPage({ searchParams }: PageProps) {
               Limpiar
             </a>
           )}
+
+          {/* Exportar CSV – T-403 */}
+          <a
+            href={`/api/resultados/export${hasFilters ? `?${new URLSearchParams({ ...(status && { status }), ...(from && { from }), ...(to && { to }) })}` : ''}`}
+            className="ml-auto h-9 flex items-center gap-2 rounded-md border px-4 text-sm font-medium text-muted-foreground hover:bg-muted transition-colors"
+          >
+            <Download className="h-4 w-4" />
+            Exportar CSV
+          </a>
         </form>
 
         {/* ── Count ── */}

@@ -44,8 +44,16 @@
         • Tabla: formulario, respondente (nombre desde app_profiles), estado badge,
           fechas inicio/fin, link a detalle
         • Server-side filtering vía URL search params, sin JS requerido
-- [ ] T-402: Vista de Detalle de Ejecución
-- [ ] T-403: Exportación a Excel/CSV
+- [x] T-402: Vista de Detalle de Ejecución
+        • Página /resultados/[id] con metadatos (respondente, estado, inicio, fin)
+        • Respuestas agrupadas por sección, ordenadas por order
+        • Componente AnswerValue polimórfico (bool badge, opción, texto, número, fecha, N/A)
+        • "Acción a seguir" resaltada en naranja cuando answer.comment existe
+- [x] T-403: Exportación a Excel/CSV
+        • API route GET /api/resultados/export con mismos filtros que la lista
+        • CSV con BOM UTF-8 para compatibilidad Excel, escape RFC 4180
+        • Columnas: ID Ejecución, Formulario, Respondente, Estado, Inicio, Completado, Sección, Pregunta, Tipo, Respuesta, Comentario
+        • Botón "Exportar CSV" con ícono Download en la página de resultados
 - [ ] T-404: Gráficas básicas de cumplimiento y KPIs
 
 ## Fase 5 – Pulido y Entrega (MVP) ❌ 0%
