@@ -51,7 +51,8 @@ export interface Condition {
   source_question_id: string
   source_option_id: string | null
   condition_value: string
-  target_section_id: string
+  target_section_id: string | null
+  target_question_id: string | null
   action: string
   created_at: string
 }
@@ -118,6 +119,7 @@ export function EditorClient({
   const [sections, setSections] = useState<Section[]>(initialSections)
   const [questions, setQuestions] = useState<Question[]>(initialQuestions)
   const [options, setOptions] = useState<QuestionOption[]>(initialOptions)
+  const [conditions] = useState<Condition[]>(initialConditions)
   const [selected, setSelected] = useState<SelectedElement>({ kind: 'survey' })
   const [publishing, setPublishing] = useState(false)
   const [publishError, setPublishError] = useState<string | null>(null)

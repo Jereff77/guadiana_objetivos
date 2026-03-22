@@ -1,82 +1,52 @@
 'use client'
 
 import { BaseEdge, EdgeLabelRenderer, getSmoothStepPath, type EdgeProps } from '@xyflow/react'
-
-export interface Condition {
-  id: string
-  survey_id: string
-  source_question_id: string
-  source_option_id: string | null
-  condition_value: string
-  target_section_id: string
-  action: string
-  created_at: string
-}
+import { X } from 'lucide-react'
 
 export type ConditionEdgeData = {
-  condition: Condition
-  questionLabel: string
   optionLabel: string
-  isInvalid?: boolean
-  onEdgeClick?: (conditionId: string) => void
+  onDelete?: (edgeId: string) => void
 }
 
 export function ConditionEdge({
+  id,
   sourceX,
   sourceY,
   targetX,
   targetY,
   data,
 }: EdgeProps) {
-  const [edgePath, labelX, labelY] = getSmoothStepPath({
-    sourceX,
-    sourceY,
-    targetX,
-    targetY,
-  })
-
-  const edgeData = data as ConditionEdgeData | undefined
-  const isInvalid = edgeData?.isInvalid ?? false
-  const strokeColor = isInvalid ? '#ef4444' : '#004B8D'
-  const labelText = edgeData ? `${edgeData.questionLabel}: ${edgeData.optionLabel}` : ''
-
-  const handleClick = () => {
-    if (edgeData?.onEdgeClick && edgeData?.condition) {
-      edgeData.onEdgeClick(edgeData.condition.id)
-    }
-  }
+  const [edgePath, labelX, labelY] = getSmoothStepPath({ sourceX, sourceY, targetX, targetY })
+  const d = data as ConditionEdgeData | undefined
 
   return (
     <>
       <BaseEdge
         path={edgePath}
-        stroke={strokeColor}
+        stroke="#FF8F1C"
         strokeWidth={2}
-        style={{ cursor: 'pointer' }}
-        onClick={handleClick}
       />
       <EdgeLabelRenderer>
         <div
           style={{
             position: 'absolute',
-            transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
-            background: 'white',
-            padding: '4px 8px',
-            borderRadius: '4px',
-            fontSize: '12px',
-            border: `1px solid ${strokeColor}`,
-            color: strokeColor,
+            transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
             pointerEvents: 'auto',
-            cursor: 'pointer',
-            whiteSpace: 'nowrap',
-            maxWidth: '200px',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
           }}
-          onClick={handleClick}
-          title={labelText}
+          className="flex items-center gap-1 bg-white border border-[#FF8F1C] rounded px-2 py-0.5 shadow-sm nodrag nopan"
         >
-          {labelText}
+          <span className="text-[11px] text-[#FF8F1C] font-medium whitespace-nowrap max-w-[120px] truncate">
+            {d?.optionLabel ?? ''}
+          </span>
+          {d?.onDelete && (
+            <button
+              onClick={() => d.onDelete!(id)}
+              className="text-gray-400 hover:text-red-500 transition-colors"
+              title="Eliminar condición"
+            >
+              <X className="h-3 w-3" />
+            </button>
+          )}
         </div>
       </EdgeLabelRenderer>
     </>

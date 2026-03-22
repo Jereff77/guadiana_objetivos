@@ -182,9 +182,8 @@ export async function deleteOption(optionId: string) {
 export async function createCondition(
   surveyId: string,
   sourceQuestionId: string,
-  sourceOptionId: string | null,
-  conditionValue: string,
-  targetSectionId: string
+  sourceOptionId: string,
+  targetQuestionId: string
 ) {
   const supabase = await createClient()
 
@@ -194,9 +193,9 @@ export async function createCondition(
       survey_id: surveyId,
       source_question_id: sourceQuestionId,
       source_option_id: sourceOptionId,
-      condition_value: conditionValue,
-      target_section_id: targetSectionId,
-      action: 'jump_to_section',
+      condition_value: sourceOptionId,
+      target_question_id: targetQuestionId,
+      action: 'jump_to_question',
     })
     .select('*')
     .single()
@@ -204,33 +203,6 @@ export async function createCondition(
   if (error) return { error: error.message }
   revalidatePath(`/formularios/${surveyId}/editar`)
   return { condition: data }
-}
-
-export async function updateCondition(
-  conditionId: string,
-  surveyId: string,
-  data: {
-    sourceQuestionId: string
-    sourceOptionId: string | null
-    conditionValue: string
-    targetSectionId: string
-  }
-) {
-  const supabase = await createClient()
-
-  const { error } = await supabase
-    .from('form_conditions')
-    .update({
-      source_question_id: data.sourceQuestionId,
-      source_option_id: data.sourceOptionId,
-      condition_value: data.conditionValue,
-      target_section_id: data.targetSectionId,
-    })
-    .eq('id', conditionId)
-
-  if (error) return { error: error.message }
-  revalidatePath(`/formularios/${surveyId}/editar`)
-  return { success: true }
 }
 
 export async function deleteCondition(conditionId: string, surveyId: string) {
