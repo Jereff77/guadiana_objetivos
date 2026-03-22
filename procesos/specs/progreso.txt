@@ -22,3 +22,811 @@ FASE 1 – M-102 · Configurar cliente Supabase
   - Llama a WidgetsFlutterBinding.ensureInitialized() y luego a SupabaseManager.initialize() antes de runApp.
 - Se intentó ejecutar flutter test en procesos/flutter_app:
   - Falló con mensaje “Test directory \"test\" not found.” porque aún no se han creado pruebas unitarias para esta app.
+
+FASE 1 – M-103 · Sistema de diseño base (tema Guadiana)
+
+- Se creó lib/core/constants/app_colors.dart con los colores corporativos:
+  - brandBlue (#004B8D), brandOrange (#FF8F1C), brandBlueDark (#002D72),
+    backgroundGrey (#F5F5F5), white (#FFFFFF), errorRed (#D32F2F),
+    successGreen (#388E3C).
+- Se creó lib/core/constants/app_strings.dart con textos reutilizables:
+  - appTitle, homeTitle, loading.
+- Se creó lib/core/theme/app_theme.dart:
+  - ThemeData con primaryColor azul corporativo y secondary naranja.
+  - scaffoldBackgroundColor gris claro.
+  - appBarTheme azul con texto blanco.
+  - elevatedButtonTheme con fondo naranja, texto blanco y bordes redondeados de 8.
+  - inputDecorationTheme con borde naranja al enfocar.
+- Se actualizó lib/main.dart para usar AppTheme.theme y AppStrings.appTitle.
+- Se ejecutó flutter analyze en procesos/flutter_app:
+  - No se encontraron issues; el análisis terminó sin errores.
+
+FASE 1 – M-104 · Estructura de carpetas y arquitectura base
+
+- Se creó la estructura de features con subcarpetas data/domain/presentation:
+  - lib/features/auth/{data,domain,presentation}
+  - lib/features/assignments/{data,domain,presentation}
+  - lib/features/execution/{data,domain,presentation}
+  - lib/features/history/{data,domain,presentation}
+- Se agregaron modelos y repositorios mínimos para cada feature:
+  - auth: AuthUser y AuthRepository.
+  - assignments: Assignment y AssignmentsRepository.
+  - execution: Survey y ExecutionRepository.
+  - history: SurveyRun y HistoryRepository.
+- Se crearon pantallas placeholder por feature:
+  - LoginScreen, AssignmentsScreen, ExecutionScreen, HistoryScreen.
+- Se creó lib/shared/widgets/primary_button.dart como botón primario reutilizable.
+- Se actualizó main.dart para envolver la app en ProviderScope (Riverpod).
+- Se ejecutó flutter analyze en procesos/flutter_app:
+  - Sin issues reportados tras la creación de la estructura.
+
+FASE 1 – M-105 · Configurar navegación con GoRouter
+
+- Se creó lib/core/router/app_router.dart con:
+  - AuthStateNotifier que escucha supabase.auth.onAuthStateChange y expone
+    isAuthenticated.
+  - authStateNotifierProvider y appRouterProvider (Riverpod) que construye
+    GoRouter.
+- Se definieron las rutas:
+  - /login → LoginScreen.
+  - /home → AssignmentsScreen.
+  - /checklist/:assignmentId → ChecklistDetailScreen.
+  - /execution/:runId → ExecutionScreen.
+  - /execution/:runId/confirm → ConfirmationScreen.
+  - /history → HistoryScreen.
+  - /history/:runId → RunDetailScreen.
+  - /profile → ProfileScreen.
+- Se crearon pantallas placeholder adicionales:
+  - ChecklistDetailScreen, ConfirmationScreen, RunDetailScreen, ProfileScreen.
+- Se configuró redirect en GoRouter:
+  - Si no hay sesión y la ruta no es /login → redirige a /login.
+  - Si hay sesión y la ruta es /login → redirige a /home.
+- Se actualizó main.dart:
+  - GuadianaApp ahora usa MaterialApp.router con routerConfig obtenido de
+    appRouterProvider.
+- Se ejecutó flutter analyze en procesos/flutter_app:
+  - No se encontraron issues tras configurar GoRouter y las nuevas pantallas.
+
+FASE 2 – M-201 · Modelo y repositorio de autenticación
+
+- Se implementó AuthRepository en lib/features/auth/data/auth_repository.dart:
+  - Usa SupabaseManager.client (supabase_flutter) para auth.
+  - currentUser retorna AuthUser de dominio mapeando el usuario de Supabase.
+  - signIn(email, password) llama a auth.signInWithPassword y devuelve AuthUser.
+  - signOut() llama a auth.signOut().
+- Se creó AuthNotifier en lib/features/auth/presentation/auth_notifier.dart:
+  - AsyncNotifier<AuthUser?> con provider authNotifierProvider.
+  - build() inicializa AuthRepository y devuelve currentUser.
+  - signIn actualiza el estado a AsyncLoading y luego AsyncData(AuthUser).
+  - signOut limpia el estado a AsyncData(null).
+- Se resolvieron conflictos de nombre entre AuthUser de dominio y el de Supabase
+  usando alias en imports.
+- Se ejecutó flutter analyze en procesos/flutter_app:
+  - No se encontraron issues después de agregar AuthRepository y AuthNotifier.
+
+FASE 2 – M-202 · Pantalla de Login
+
+- Se implementó LoginScreen en lib/features/auth/presentation/login_screen.dart:
+  - ConsumerStatefulWidget con formulario validado.
+  - Campos:
+    - Correo electrónico (TextFormField con validación básica).
+    - Contraseña (TextFormField con obscureText y validación de longitud).
+  - Usa PrimaryButton como botón "Iniciar sesión".
+- Integración con AuthNotifier:
+  - Al enviar el formulario llama a authNotifierProvider.notifier.signIn().
+  - Usa authNotifierProvider para:
+    - Mostrar CircularProgressIndicator mientras está en loading.
+    - Navegar a /home cuando el estado data contiene un usuario.
+    - Mostrar SnackBar con el mensaje de error cuando signIn falla.
+- Se ejecutó flutter analyze en procesos/flutter_app:
+  - No se encontraron issues tras implementar la pantalla de Login.
+
+FASE 2 – M-203 · Pantalla de Perfil y Logout
+
+- Se implementó ProfileScreen en lib/features/profile/presentation/profile_screen.dart:
+  - ConsumerWidget que lee el estado de authNotifierProvider.
+  - Muestra avatar circular con inicial del usuario.
+  - Muestra correo (por ahora como displayName) y placeholders de rol y sucursal.
+  - Muestra la versión de la app usando AppStrings.appVersion.
+- Se agregó appVersion a lib/core/constants/app_strings.dart.
+- Se agregó botón "Cerrar sesión":
+  - Llama a authNotifierProvider.notifier.signOut().
+  - Navega a /login usando GoRouter al terminar.
+- Se ejecutó flutter analyze en procesos/flutter_app:
+  - No se encontraron issues tras implementar la pantalla de Perfil y logout.
+
+FASE 2 – M-204 · Guard de rutas y manejo de sesión
+
+- Se implementó GoRouter con redirect en lib/core/router/app_router.dart:
+  - Usa AuthStateNotifier que escucha supabase.auth.onAuthStateChange para
+    mantener isAuthenticated en memoria.
+  - refreshListenable: authNotifier para que GoRouter reevalúe la ruta cuando
+    cambie el estado de autenticación.
+- Lógica de redirect:
+  - Si no hay sesión (loggedIn = false) y la ruta no es /login → redirige a /login.
+  - Si hay sesión (loggedIn = true) y la ruta es /login → redirige a /home.
+  - En otros casos → no redirige (permite navegación normal).
+- Manejo de expiración de token:
+  - SupabaseFlutter gestiona auto-refresh de tokens.
+  - Si la sesión expira y Supabase emite un estado sin sesión, AuthStateNotifier
+    actualiza isAuthenticated a false y GoRouter fuerza redirect a /login.
+- Se ejecutó flutter analyze en procesos/flutter_app:
+  - No se encontraron issues tras validar el guard de rutas para M-204.
+
+FASE 3 – M-301 · Modelo de datos – Asignaciones y Formularios
+
+- Se actualizó Assignment en lib/features/assignments/domain/assignment.dart:
+  - Campos: id, surveyId, frequency, startDate, isActive, assigneeUserId?,
+    assigneeRole?, branchId?, endDate?.
+  - Se agregó factory Assignment.fromJson mapeando campos snake_case:
+    id, survey_id, frequency, start_date, is_active, assignee_user_id,
+    assignee_role, branch_id, end_date.
+- Se actualizó Survey en lib/features/execution/domain/survey.dart:
+  - Campos: id, name, status, description?, category?, version?.
+  - Se agregó factory Survey.fromJson mapeando campos de Supabase.
+- Se creó AssignmentWithSurvey en
+  lib/features/assignments/domain/assignment_with_survey.dart:
+  - Contiene Assignment y Survey.
+  - factory fromJson espera un mapa con claves 'assignment' y 'survey' y
+    construye ambos modelos.
+- Se ejecutó flutter analyze en procesos/flutter_app:
+  - No se encontraron issues tras agregar los modelos de la Fase 3.
+
+FASE 3 – M-302 · Repositorio de Asignaciones
+
+- Se implementó AssignmentsRepository en
+  lib/features/assignments/data/assignments_repository.dart:
+  - Método getActiveAssignments(userId, {role, today}) que:
+    - Usa SupabaseManager.client (supabase_flutter).
+    - Filtra is_active = true.
+    - Filtra start_date <= hoy.
+    - Filtra end_date IS NULL o end_date >= hoy.
+    - Filtra por asignaciones del usuario actual y, opcionalmente, por rol
+      (assignee_user_id = userId OR assignee_role = role).
+    - JOIN con form_surveys usando select anidado survey:form_surveys(...)
+      para obtener datos del formulario publicado.
+  - Mapea la respuesta a modelos de dominio:
+    - Construye Assignment a partir de los campos de form_assignments.
+    - Construye Survey a partir de los campos de form_surveys.
+    - Devuelve una lista de AssignmentWithSurvey.
+- Se ejecutó flutter analyze en procesos/flutter_app:
+  - No se encontraron issues tras implementar el repositorio de Asignaciones.
+
+FASE 3 – M-303 · Pantalla Home – Lista de Checklists
+
+- Se implementó AssignmentsNotifier en
+  lib/features/assignments/presentation/assignments_notifier.dart:
+  - AsyncNotifier<List<AssignmentWithSurvey>> con provider
+    assignmentsNotifierProvider.
+  - build() usa AuthNotifier para obtener el usuario actual y llama a
+    AssignmentsRepository.getActiveAssignments(userId).
+  - refresh() vuelve a cargar la lista de asignaciones.
+- Se actualizó AssignmentsScreen en
+  lib/features/assignments/presentation/assignments_screen.dart:
+  - AppBar con título "Mis Checklists" y botón de perfil (→ /profile).
+  - Usa assignmentsNotifierProvider para mostrar:
+    - Estado de carga: lista de 3 cards con LinearProgressIndicator.
+    - Estado vacío: mensaje "No tienes checklists asignados".
+    - Estado de error: texto con botón "Reintentar" que llama a refresh().
+    - Estado con datos: ListView de ChecklistCard.
+  - Pull-to-refresh usando RefreshIndicator que dispara refresh().
+- ChecklistCard navega a /checklist/{assignment.id} al tocar una fila.
+- Se ejecutó flutter analyze en procesos/flutter_app:
+  - No se encontraron issues tras implementar la pantalla Home de asignaciones.
+
+FASE 3 – M-304 · Widget ChecklistCard
+
+- Se creó ChecklistCard en
+  lib/features/assignments/presentation/checklist_card.dart:
+  - Borde izquierdo naranja de 4px usando AppColors.brandOrange.
+  - Muestra nombre del formulario (16sp, bold).
+  - Badge con la categoría usando un fondo azul claro y texto azul.
+  - Descripción corta en 2 líneas con overflow ellipsis.
+  - Texto de frecuencia convertido a español
+    (daily → Diario, weekly → Semanal, monthly → Mensual, once → Una sola vez).
+  - Fecha límite formateada dd/MM/yyyy si end_date está definida.
+- AssignmentsScreen ahora usa ChecklistCard en lugar de un ListTile simple.
+- Se ejecutó flutter analyze en procesos/flutter_app:
+  - No se encontraron issues tras implementar ChecklistCard.
+
+FASE 4 – M-401 · SurveyRepository – Detalle de formulario
+
+- Se crearon modelos de dominio adicionales en features/execution/domain:
+  - Section (id, surveyId, title, description?, order) con factory fromJson.
+  - Question (id, sectionId, text, helpText?, type, isRequired, order, options)
+    con factory fromJson y método copyWithOptions.
+  - QuestionOption (id, questionId, label, value, order) con factory fromJson.
+- Se creó SurveyRepository en
+  lib/features/execution/data/survey_repository.dart:
+  - Clase SurveyDetail que agrupa Survey, lista de Section y preguntas por
+    sección (Map<sectionId, List<Question>>).
+  - Método getSurveyDetail(surveyId) que:
+    - Lee el formulario en form_surveys.
+    - Obtiene sus secciones desde form_sections ordenadas por order.
+    - Obtiene preguntas desde form_questions filtrando por las secciones.
+    - Obtiene opciones desde form_question_options filtrando por question_id.
+    - Agrupa opciones por pregunta y construye Question con su lista de
+      QuestionOption.
+    - Agrupa preguntas por sectionId para devolver SurveyDetail completo.
+- Para evitar uso de in_ (no disponible en el cliente), se usan filtros or(...)
+  dinámicos para listas de section_id y question_id.
+- Se ejecutó flutter analyze en procesos/flutter_app:
+  - No se encontraron issues tras implementar SurveyRepository y modelos de
+    detalle de formulario.
+
+FASE 4 – M-402 · ChecklistDetailScreen – Vista previa del formulario
+
+- Se creó ChecklistDetailNotifier en
+  lib/features/execution/presentation/checklist_detail_notifier.dart:
+  - FamilyAsyncNotifier<SurveyDetail, String> con provider
+    checklistDetailNotifierProvider.
+  - build(surveyId) llama a SurveyRepository.getSurveyDetail(surveyId).
+- Se actualizó ChecklistDetailScreen en
+  lib/features/execution/presentation/checklist_detail_screen.dart:
+  - Ahora es un ConsumerWidget que lee checklistDetailNotifierProvider usando
+    assignmentId como surveyId (por ahora 1:1).
+  - Muestra:
+    - CircularProgressIndicator mientras carga.
+    - Mensaje de error si falla la carga.
+    - Lista de secciones (Section) con:
+      - Título de la sección.
+      - Descripción (si existe).
+      - Número de preguntas en la sección.
+- Se ejecutó flutter analyze en procesos/flutter_app:
+  - No se encontraron issues tras implementar la vista previa del formulario.
+
+FASE 4 – M-403 · Pantalla de Ejecución – Layout Principal
+
+- Se creó ExecutionAnswer en
+  lib/features/execution/domain/execution_answer.dart:
+  - Modelo que almacena valores posibles (bool, texto, número, fecha,
+    optionIds y comment) para una pregunta.
+  - Método copyWith y getter hasAnyValue para detectar respuestas no vacías.
+- Se creó ExecutionNotifier en
+  lib/features/execution/presentation/execution_notifier.dart:
+  - FamilyAsyncNotifier<ExecutionState, String> expuesto como
+    executionNotifierProvider(runId).
+  - ExecutionState contiene:
+    - SurveyDetail (formulario con secciones y preguntas).
+    - answers: Map<questionId, ExecutionAnswer>.
+    - totalQuestions, answeredCount y progress calculados a partir de las
+      respuestas.
+  - Métodos:
+    - setAnswer(questionId, ExecutionAnswer).
+    - setComment(questionId, comment).
+- Se actualizó ExecutionScreen en
+  lib/features/execution/presentation/execution_screen.dart:
+  - Ahora es un ConsumerWidget que recibe runId desde la ruta
+    (/execution/:runId).
+  - Usa executionNotifierProvider(runId) para:
+    - Mostrar CircularProgressIndicator mientras carga el formulario.
+    - Mostrar mensaje de error si falla la carga.
+    - Mostrar progreso con LinearProgressIndicator y texto
+      "X de Y preguntas respondidas".
+    - Mostrar descripción del formulario como placeholder mientras se
+      implementan los widgets de preguntas (M-404 a M-409).
+  - AppBar:
+    - Muestra el nombre del formulario.
+    - Incluye botón de cierre que:
+      - Si no hay respuestas → navega directo a /home.
+      - Si hay respuestas → muestra diálogo de confirmación antes de salir.
+  - Añadido FloatingActionButton.extended con ícono de enviar (acción se
+    implementará en Fase 5).
+- Se actualizó el router en lib/core/router/app_router.dart para pasar runId
+  al construir ExecutionScreen.
+- Se ejecutó flutter analyze en procesos/flutter_app:
+  - No se encontraron issues tras implementar ExecutionScreen y ExecutionNotifier.
+
+FASE 4 – M-404 · Widget de Sección
+
+- Se creó SectionHeader en
+  lib/features/execution/presentation/section_header.dart:
+  - Fondo azul corporativo (#004B8D) usando AppColors.brandBlue.
+  - Texto blanco (#FFFFFF) para el título y descripción.
+  - Muestra "Sección X de Y" encima del título.
+  - Incluye la descripción de la sección si existe.
+- Se actualizó ExecutionScreen para usar SectionHeader:
+  - ListView.builder recorre detail.sections y para cada una:
+    - Renderiza SectionHeader con índice de sección y total.
+    - Deja espacio y un texto placeholder donde irán las preguntas
+      (M-405 a M-409).
+- Se ejecutó flutter analyze en procesos/flutter_app:
+  - No se encontraron issues tras implementar SectionHeader e integrarlo.
+
+FASE 4 – M-405 · Widgets de Preguntas – Boolean (Sí/No)
+
+- Se creó BooleanQuestionWidget en
+  lib/features/execution/presentation/boolean_question_widget.dart:
+  - Muestra label de la pregunta y agrega "*" si es obligatoria.
+  - Muestra help_text debajo del label en gris, si existe.
+  - Dos botones lado a lado "Sí" y "No" usando _BooleanChip:
+    - Estado "Sí" seleccionado: fondo azul corporativo (#004B8D),
+      texto blanco.
+    - Estado "No" seleccionado: fondo rojo (#D32F2F), texto blanco.
+    - Estado sin selección: ambos en gris claro.
+  - Campo "Acciones a seguir" debajo de la pregunta:
+    - TextFormField multilínea (2–4 líneas), opcional.
+    - onChanged propaga el comentario a través de onCommentChanged.
+- El widget recibe Question, ExecutionAnswer? y callbacks onChanged y
+  onCommentChanged para integrarse con ExecutionNotifier.
+- Se actualizó ExecutionScreen para usar BooleanQuestionWidget:
+  - Para cada sección, obtiene las preguntas desde
+    detail.questionsBySection[section.id].
+  - Si question.type == 'boolean':
+    - Muestra BooleanQuestionWidget con el answer actual desde
+      ExecutionState.answers[question.id].
+    - onChanged llama a ExecutionNotifier.setAnswer().
+    - onCommentChanged llama a ExecutionNotifier.setComment().
+  - Para otros tipos de preguntas mantiene un placeholder indicando que los
+    widgets se implementarán en M-406 a M-409.
+- Se ejecutó flutter analyze en procesos/flutter_app:
+  - No se encontraron issues tras implementar BooleanQuestionWidget e integrarlo.
+
+FASE 4 – M-406 · Widgets de Preguntas – Choice (Única y Múltiple)
+
+- Se crearon widgets de selección en
+  lib/features/execution/presentation/choice_question_widgets.dart:
+  - SingleChoiceQuestionWidget:
+    - Usa ChoiceChip por opción.
+    - Refleja selección única guardando el optionId seleccionado en
+      ExecutionAnswer.optionIds (lista de un elemento).
+    - Muestra label, help_text y campo "Acciones a seguir" reutilizando
+      _QuestionHeader y _ActionCommentField.
+  - MultipleChoiceQuestionWidget:
+    - Usa CheckboxListTile por opción.
+    - Permite seleccionar múltiples opciones almacenando sus optionIds en
+      ExecutionAnswer.optionIds.
+    - También muestra campo "Acciones a seguir".
+- Ambos widgets reciben Question, lista de QuestionOption, ExecutionAnswer?
+  y callbacks onChanged/onCommentChanged para integrarse con ExecutionNotifier.
+- Se actualizó ExecutionScreen para usar estos widgets:
+  - Si question.type == 'single_choice' → SingleChoiceQuestionWidget.
+  - Si question.type == 'multiple_choice' → MultipleChoiceQuestionWidget.
+  - onChanged de cada widget llama a ExecutionNotifier.setAnswer().
+  - onCommentChanged llama a ExecutionNotifier.setComment().
+- Se ajustó SingleChoiceQuestionWidget para evitar APIs de Radio en desuso,
+  usando ChoiceChip en su lugar.
+- Se ejecutó flutter analyze en procesos/flutter_app:
+  - No se encontraron issues tras implementar los widgets de choice e integrarlos.
+
+FASE 4 – M-407 · Widgets de Preguntas – Texto
+
+- Se creó text_question_widgets.dart en
+  lib/features/execution/presentation/text_question_widgets.dart con:
+  - TextShortQuestionWidget para preguntas de texto corto:
+    - Usa TextFormField de una línea con label "Respuesta".
+    - Actualiza ExecutionAnswer.textValue al escribir.
+    - Incluye campo "Acciones a seguir" reutilizando _ActionCommentField.
+  - TextLongQuestionWidget para preguntas de texto largo:
+    - Usa TextFormField multilínea (3–5 líneas) con label "Respuesta".
+    - También actualiza ExecutionAnswer.textValue y muestra "Acciones a seguir".
+- Ambos widgets reciben Question, ExecutionAnswer? y callbacks onChanged y
+  onCommentChanged para integrarse con ExecutionNotifier.
+- Se actualizó ExecutionScreen en
+  lib/features/execution/presentation/execution_screen.dart para:
+  - Importar text_question_widgets.dart.
+  - Renderizar TextShortQuestionWidget cuando question.type == 'text_short'.
+  - Renderizar TextLongQuestionWidget cuando question.type == 'text_long'.
+  - Conectar onChanged de ambos widgets a ExecutionNotifier.setAnswer() y
+    onCommentChanged a ExecutionNotifier.setComment().
+- Se ejecutó flutter analyze en procesos/flutter_app:
+  - No se encontraron issues tras integrar los widgets de texto en ExecutionScreen.
+
+FASE 4 – M-408 · Widgets de Preguntas – Número y Fecha
+
+- Se creó number_date_question_widgets.dart en
+  lib/features/execution/presentation/number_date_question_widgets.dart con:
+  - NumberQuestionWidget para preguntas numéricas:
+    - Usa TextFormField con teclado numérico y label "Valor numérico".
+    - Convierte el texto ingresado a double (aceptando coma como separador)
+      y actualiza ExecutionAnswer.numberValue.
+    - Incluye campo "Acciones a seguir" para comentarios.
+  - DateQuestionWidget para preguntas de fecha:
+    - Muestra un TextFormField de solo lectura con icono de calendario.
+    - Al tocarlo, abre showDatePicker y guarda la fecha elegida en
+      ExecutionAnswer.dateValue.
+    - También incluye campo "Acciones a seguir".
+- Ambos widgets reciben Question, ExecutionAnswer? y callbacks onChanged y
+  onCommentChanged para integrarse con ExecutionNotifier.
+- Se actualizó ExecutionScreen en
+  lib/features/execution/presentation/execution_screen.dart para:
+  - Importar number_date_question_widgets.dart.
+  - Renderizar NumberQuestionWidget cuando question.type == 'number'.
+  - Renderizar DateQuestionWidget cuando question.type == 'date'.
+  - Conectar onChanged a ExecutionNotifier.setAnswer() y onCommentChanged a
+    ExecutionNotifier.setComment().
+- Se ejecutó flutter analyze en procesos/flutter_app:
+  - No se encontraron issues tras integrar los widgets de número y fecha.
+
+FASE 5 – M-501 · Validación antes del envío
+
+- Se amplió ExecutionState en
+  lib/features/execution/presentation/execution_notifier.dart para incluir:
+  - errorQuestionIds: conjunto de questionId con error de validación.
+  - firstErrorQuestionId: primera pregunta con error para hacer scroll.
+- Se agregaron métodos en ExecutionNotifier:
+  - setAnswer ahora limpia errorQuestionIds para la pregunta actual cuando
+    se actualiza una respuesta.
+  - validateRequired() recorre todas las preguntas obligatorias en orden y
+    verifica:
+    - boolean: boolValue no nulo.
+    - single_choice / multiple_choice: optionIds no vacía.
+    - text_short / text_long: textValue no nulo ni vacío (trim).
+    - number: numberValue no nulo.
+    - date: dateValue no nulo.
+  - Si faltan respuestas, llena errorQuestionIds y firstErrorQuestionId y
+    devuelve la lista de questionId con error.
+- Se actualizó ExecutionScreen para:
+  - Consultar executionState.errorQuestionIds y firstErrorQuestionId.
+  - Envolver cada widget de pregunta en un Builder que:
+    - Si es la primera pregunta con error, llama a Scrollable.ensureVisible()
+      mediante addPostFrameCallback para hacer scroll automático.
+    - Si la pregunta está en errorQuestionIds, envuelve el widget en un
+      Container con borde rojo.
+  - Al pulsar el botón flotante "Enviar":
+    - Llama a notifier.validateRequired().
+    - Si hay errores:
+      - Muestra SnackBar rojo con el mensaje
+        "Hay X preguntas obligatorias sin responder".
+    - Si no hay errores:
+      - Muestra SnackBar informativo indicando que la validación fue
+        correcta y que el envío se implementará en la siguiente tarea.
+- Se ejecutó flutter analyze en procesos/flutter_app:
+  - No se encontraron issues tras implementar la validación y el feedback
+    visual en ExecutionScreen.
+
+FASE 5 – M-502/M-503 · Repositorio de Respuestas y lógica de envío
+
+- Se creó AnswersRepository en
+  lib/features/execution/data/answers_repository.dart:
+  - submitRun(runId, detail, answers) recorre las secciones y preguntas del
+    SurveyDetail y construye la lista de filas para resp_answers solo con
+    respuestas que tienen algún valor.
+  - Para cada tipo de pregunta:
+    - boolean → value_bool.
+    - single_choice → option_id (primer optionId).
+    - multiple_choice → value_json (lista de optionIds).
+    - text_short / text_long → value_text.
+    - number → value_number.
+    - date → value_date en ISO8601.
+    - comment → comment si no está vacío.
+  - Inserta el batch en resp_answers y luego actualiza resp_survey_runs
+    marcando status = 'completed' y completed_at = now().
+- Se actualizó ExecutionNotifier en
+  lib/features/execution/presentation/execution_notifier.dart:
+  - Se inyecta AnswersRepository junto con SurveyRepository.
+  - Se agregó método submit(runId) que delega en AnswersRepository.submitRun()
+    usando el SurveyDetail actual y el mapa de respuestas.
+- Se actualizó ExecutionScreen en
+  lib/features/execution/presentation/execution_screen.dart para:
+  - Al pulsar "Enviar":
+    - Ejecutar notifier.validateRequired() y manejar errores como en M-501.
+    - Si no hay errores:
+      - Llamar await notifier.submit(runId).
+      - Navegar a /execution/{runId}/confirm usando GoRouter.
+      - Si ocurre un error, mostrar AlertDialog con el mensaje y opción
+        para cerrar.
+- Se mejoró ConfirmationScreen en
+  lib/features/execution/presentation/confirmation_screen.dart:
+  - Ahora muestra:
+    - Ícono de check grande en color primario.
+    - Texto "¡Checklist enviado exitosamente!".
+    - ID de ejecución.
+    - Botón "Ver mis checklists" que navega a /home limpiando el stack.
+    - Botón "Ver historial" que navega a /history limpiando el stack.
+  - Se deshabilitó el botón back del AppBar para evitar regresar al
+    formulario ya enviado.
+- Se ejecutó flutter analyze en procesos/flutter_app:
+  - No se encontraron issues tras implementar el flujo de envío y confirmación.
+
+FASE 5 – M-505 · Manejo de errores de red
+
+- Se aprovechó SupabaseManager.testConnection() en
+  lib/core/supabase/supabase_client.dart como verificación ligera de
+  conectividad contra la base de datos.
+- Al iniciar un checklist (ChecklistDetailScreen en
+  lib/features/execution/presentation/checklist_detail_screen.dart):
+  - Se agregó botón "Comenzar" al final de la lista de secciones.
+  - Al pulsarlo:
+    - Se llama a SupabaseManager.testConnection().
+    - Si no hay conexión:
+      - Se muestra AlertDialog con el mensaje:
+        "Sin conexión a internet. Revisa tu conexión e intenta de nuevo."
+      - No se navega a la pantalla de ejecución.
+    - Si hay conexión:
+      - Se navega a /execution/{assignmentId}.
+- Al enviar respuestas (AnswersRepository en
+  lib/features/execution/data/answers_repository.dart):
+  - Antes de insertar en resp_answers y actualizar resp_survey_runs:
+    - Se ejecuta SupabaseManager.testConnection().
+    - Si no hay conexión:
+      - Se lanza Exception con el mensaje:
+        "Sin conexión a internet. Revisa tu conexión e intenta de nuevo."
+  - ExecutionScreen captura cualquier error de submit y muestra un
+    AlertDialog con el mensaje detallado.
+- Este enfoque permite:
+  - Detectar falta de conexión al inicio del checklist y advertir al
+    usuario sin bloquear definitivamente el flujo.
+  - Mantener las respuestas en memoria incluso si la conexión se pierde
+    durante el llenado.
+  - Dar un mensaje claro al intentar enviar sin conexión y permitir que
+    el usuario reintente más tarde.
+- Se ejecutó flutter analyze en procesos/flutter_app:
+  - No se encontraron issues tras implementar el manejo de falta de
+    conexión en inicio y envío.
+
+FASE 6 – M-601 · Repositorio de Historial
+
+- Se creó HistoryRepository en
+  lib/features/history/data/history_repository.dart:
+  - Método getUserRuns(userId) que:
+    - Consulta resp_survey_runs filtrando respondent_id = userId.
+    - Hace JOIN con form_surveys usando alias survey:form_surveys(name)
+      para obtener el nombre del formulario.
+    - Filtra por status IN ('completed', 'in_progress') usando un filtro
+      or("status.eq.completed,status.eq.in_progress").
+    - Ordena por completed_at DESC.
+  - Mapea cada fila a SurveyRun en
+    lib/features/history/domain/run.dart con:
+    - id: id del run.
+    - surveyName: survey.name o cadena vacía si no existe.
+- Se ejecutó flutter analyze en procesos/flutter_app:
+  - No se encontraron issues tras implementar HistoryRepository.
+
+FASE 6 – M-602 · Pantalla de Historial
+
+- Se creó HistoryNotifier en
+  lib/features/history/presentation/history_notifier.dart:
+  - AsyncNotifier<List<SurveyRun>> expuesto como historyNotifierProvider.
+  - build() obtiene el usuario actual desde authNotifierProvider y, si
+    existe, llama a HistoryRepository.getUserRuns(user.id).
+  - refresh() vuelve a cargar la lista de ejecuciones del usuario.
+- Se actualizó HistoryScreen en
+  lib/features/history/presentation/history_screen.dart:
+  - Ahora es un ConsumerWidget que lee historyNotifierProvider.
+  - Estados:
+    - loading: muestra CircularProgressIndicator centrado.
+    - error: muestra mensaje "Error al cargar historial" con detalle y
+      botón "Reintentar" que llama a refresh().
+    - data vacía: muestra texto
+      "Aún no has completado ningún checklist".
+    - data con elementos: muestra ListView de _RunCard con
+      RefreshIndicator para recargar.
+  - _RunCard:
+    - Muestra el nombre del formulario (o "Checklist" si vacío).
+    - Muestra la fecha completed_at formateada dd/MM/yyyy si existe.
+    - Muestra badge de estado:
+      - Verde (AppColors.successGreen) con texto "Completado" si
+        status = 'completed'.
+      - Naranja (AppColors.brandOrange) con texto "En progreso" en caso
+        contrario.
+    - Al tocar una card:
+      - Navega a /history/{run.id} usando GoRouter.
+- Se ejecutó flutter analyze en procesos/flutter_app:
+  - No se encontraron issues tras implementar HistoryScreen y
+    HistoryNotifier.
+
+FASE 6 – M-603 · Pantalla de Detalle de Ejecución (Solo Lectura)
+
+- Se amplió SurveyRun en
+  lib/features/history/domain/run.dart para soportar:
+  - status (cadena).
+  - completedAt (DateTime?).
+- Se amplió HistoryRepository en
+  lib/features/history/data/history_repository.dart con:
+  - Método getRunQuestionDetails(runId) que:
+    - Lee resp_answers para el run con campos de valores y comment.
+    - Recolecta question_id y option_id/value_json para saber qué
+      preguntas y opciones cargar.
+    - Lee form_questions para esas preguntas (id, section_id, text,
+      type, order).
+    - Lee form_sections para las secciones involucradas (id, title,
+      order).
+    - Lee form_question_options para las opciones usadas y construye
+      un mapa id → label.
+    - Construye una lista de RunQuestionDetail con:
+      - sectionId, sectionTitle, sectionOrder.
+      - questionId, questionText, questionOrder.
+      - answerText: respuesta formateada según tipo (Sí/No, texto,
+        número, fecha dd/MM/yyyy, labels de opciones simple/múltiple).
+      - comment (si existe).
+    - Ordena los resultados por sectionOrder y luego questionOrder.
+- Se actualizó RunDetailScreen en
+  lib/features/history/presentation/run_detail_screen.dart:
+  - Ahora es un ConsumerWidget que:
+    - Define un FutureProvider.autoDispose local que llama a
+      HistoryRepository.getRunQuestionDetails(runId).
+    - Muestra:
+      - loading: CircularProgressIndicator centrado.
+      - error: mensaje "Error al cargar el detalle: {error}".
+      - data vacía: texto "No se encontraron respuestas para esta ejecución."
+      - data con elementos: ListView agrupada por sección.
+  - Para cada sección:
+    - Muestra el título de la sección como encabezado.
+    - Debajo, un Card por pregunta con:
+      - Texto de la pregunta (negritas).
+      - Respuesta en texto legible o "Sin respuesta" si está vacía.
+      - Bloque de "Comentario:" y el texto del comentario si existe.
+- Se ejecutó flutter analyze en procesos/flutter_app:
+  - No se encontraron issues tras implementar RunDetailScreen y
+    getRunQuestionDetails().
+
+FASE 6 – M-604 · Pantalla de Perfil
+
+- Se creó UserProfile en
+  lib/features/profile/domain/user_profile.dart con:
+  - fullName, role, branch.
+- Se creó ProfileRepository en
+  lib/features/profile/data/profile_repository.dart:
+  - getProfile(userId, fallbackName) que:
+    - Lee app_profiles filtrando id = userId y selecciona:
+      first_name, last_name, role, assigned_warehouse.
+    - Construye fullName concatenando first_name y last_name si existen;
+      si no, usa fallbackName (email).
+    - Mapea role:
+      - 'auditor' → 'Auditor'.
+      - 'almacenista' → 'Almacenista'.
+      - Otros valores se muestran tal cual.
+    - Usa assigned_warehouse como sucursal (branch).
+  - Si no hay registro en app_profiles:
+    - Devuelve UserProfile con fullName = fallbackName y role/branch vacíos.
+- Se creó ProfileNotifier en
+  lib/features/profile/presentation/profile_notifier.dart:
+  - AsyncNotifier<UserProfile?> expuesto como profileNotifierProvider.
+  - build() obtiene el usuario actual desde authNotifierProvider y, si
+    existe, llama a ProfileRepository.getProfile(user.id, user.email).
+- Se actualizó ProfileScreen en
+  lib/features/profile/presentation/profile_screen.dart:
+  - Ahora es un ConsumerWidget que:
+    - Lee authNotifierProvider para obtener el usuario y correo.
+    - Lee profileNotifierProvider para obtener UserProfile.
+  - Muestra:
+    - Avatar con la inicial del nombre completo (o del correo si no hay
+      nombre en app_profiles).
+    - Nombre completo (fullName) o el correo si no se encontró perfil.
+    - Debajo, el correo en gris si está disponible.
+    - Texto "Rol: {role}" donde role se toma de UserProfile.role o
+      "N/D" si no hay dato.
+    - Texto "Sucursal: {branch}" donde branch se toma de
+      UserProfile.branch o "N/D" si está vacío.
+    - Texto con la versión de la app usando AppStrings.appVersion.
+    - Botón "Cerrar sesión" como OutlinedButton con color de texto
+      rojo (Theme.of(context).colorScheme.error) que:
+      - Llama a authNotifierProvider.notifier.signOut().
+      - Navega a /login usando GoRouter.
+- Se ejecutó flutter analyze en procesos/flutter_app:
+  - No se encontraron issues tras implementar la nueva pantalla de
+    perfil conectada a app_profiles.
+
+FASE 7 – M-701 · Estados de carga y feedback visual
+
+- Se mejoró el feedback visual durante la ejecución del checklist:
+  - Se extendió ExecutionState en
+    lib/features/execution/presentation/execution_notifier.dart para
+    incluir isSubmitting (bool) que indica si el envío está en curso.
+  - ExecutionNotifier.submit(runId) ahora:
+    - Marca isSubmitting = true antes de llamar a AnswersRepository.
+    - En un bloque finally, restablece isSubmitting = false incluso si
+      ocurre un error.
+  - En ExecutionScreen
+    (lib/features/execution/presentation/execution_screen.dart):
+    - Se envolvió el contenido principal en un Stack.
+    - Se agregó un overlay cuando executionState.isSubmitting es true:
+      - Positioned.fill con ColoredBox negro semitransparente.
+      - CircularProgressIndicator centrado.
+    - Este overlay bloquea la interacción mientras se envía el
+      checklist, cumpliendo el requisito de loading overlay.
+- Se homogenizó el estado de carga en pantallas de lista:
+  - AssignmentsScreen ya utilizaba _AssignmentsLoading con 3 cards y
+    LinearProgressIndicator simulando skeleton.
+  - HistoryScreen ahora:
+    - Usa _HistoryLoading en estado loading:
+      - ListView de 3 cards con LinearProgressIndicator como
+        skeleton, similar a AssignmentsScreen.
+    - Conserva estados de error y vacío con mensajes claros y botón
+      "Reintentar" en caso de error.
+- Se ejecutó flutter analyze en procesos/flutter_app:
+  - No se encontraron issues tras aplicar los cambios de M-701.
+
+FASE 7 – M-702 · Accesibilidad y usabilidad en taller
+
+- Se ajustó el tema global en
+  lib/core/theme/app_theme.dart para mejorar legibilidad y tamaño
+  táctil:
+  - elevatedButtonTheme:
+    - Se agregó minimumSize: Size.fromHeight(48) para asegurar que
+      los botones elevados tengan al menos 48dp de alto, cumpliendo
+      con las recomendaciones de accesibilidad.
+  - outlinedButtonTheme:
+    - Se agregó un OutlinedButtonThemeData con minimumSize:
+      Size.fromHeight(48) para que botones como "Cerrar sesión" en
+      ProfileScreen también tengan altura mínima de 48dp.
+  - textTheme:
+    - Se aplicó un fontSizeFactor de 1.05 sobre el textTheme base
+      (ThemeData.light().textTheme.apply(fontSizeFactor: 1.05)),
+      incrementando ligeramente el tamaño de la tipografía en toda
+      la app para facilitar lectura en entorno de taller.
+- Se revisó el resto de la UI:
+  - ListTile en AssignmentScreen y HistoryScreen ya tenían alturas
+    ~72dp, por lo que cumplen el mínimo táctil sin cambios
+    adicionales.
+  - Colores de marca (AppColors.brandBlue, AppColors.brandOrange)
+    se mantienen con buen contraste sobre fondo blanco, usando texto
+    blanco sobre naranja y blanco/azul oscuro según corresponda.
+- Se ejecutó flutter analyze en procesos/flutter_app:
+  - No se encontraron issues tras los ajustes de M-702.
+
+FASE 7 – M-703 · Pruebas unitarias
+
+- Se creó el directorio de pruebas test/ en
+  procesos/flutter_app con pruebas unitarias iniciales para la
+  lógica de ejecución:
+  - execution_state_test.dart en
+    test/execution_state_test.dart:
+    - Pruebas para ExecutionAnswer.hasAnyValue:
+      - Verifica que retorna false cuando todos los campos están
+        null o vacíos.
+      - Verifica que retorna true cuando cualquier campo (boolValue,
+        textValue, numberValue, dateValue, optionIds, comment) tiene
+        valor.
+    - Pruebas para ExecutionState.totalQuestions,
+      answeredCount y progress:
+      - Construye un SurveyDetail de prueba con:
+        - 1 sección (Section) y 2 preguntas requeridas.
+      - Casos:
+        - Sin respuestas:
+          - totalQuestions = 2
+          - answeredCount = 0
+          - progress = 0
+        - Una respuesta capturada:
+          - answeredCount = 1
+          - progress ≈ 0.5
+        - Dos respuestas capturadas:
+          - answeredCount = 2
+          - progress = 1
+- Se ejecutó flutter test en procesos/flutter_app:
+  - Salida: "00:12 +3: All tests passed!" indicando que las pruebas
+    unitarias se ejecutan correctamente y pasan.
+
+FASE 7 – M-704 · Widget tests
+
+- Se agregaron pruebas de widgets para componentes clave de la UI:
+  - BooleanQuestionWidget:
+    - boolean_question_widget_test.dart en
+      test/boolean_question_widget_test.dart:
+      - Verifica que al tocar "Sí" se establece boolValue = true.
+      - Verifica que al tocar "No" se establece boolValue = false.
+  - SingleChoiceQuestionWidget:
+    - single_choice_question_widget_test.dart en
+      test/single_choice_question_widget_test.dart:
+      - Usa dos opciones y verifica que:
+        - Al tocar "Opción 1" se guarda optionIds = ['opt1'].
+        - Al tocar "Opción 2" luego, se reemplaza por optionIds =
+          ['opt2'].
+  - LoginScreen:
+    - login_screen_test.dart en
+      test/login_screen_test.dart:
+      - Sobrescribe authNotifierProvider con un _FakeAuthNotifier que
+        produce un error de credenciales.
+      - Llena correo y contraseña válidos.
+      - Toca el botón de "Iniciar sesión" (ElevatedButton).
+      - Verifica que se muestra un SnackBar con el texto que contiene
+        "Credenciales inválidas".
+  - ChecklistCard:
+    - checklist_card_test.dart en
+      test/checklist_card_test.dart:
+      - Construye AssignmentWithSurvey con:
+        - survey.name = "Checklist de seguridad".
+        - survey.description = "Revisión de seguridad diaria".
+        - survey.category = "Seguridad".
+        - assignment.frequency = "daily".
+      - Verifica que se renderiza:
+        - El título "Checklist de seguridad".
+        - La categoría "Seguridad".
+        - La descripción "Revisión de seguridad diaria".
+        - La frecuencia "Diario" (mapeo de frequency).
+      - Verifica que el callback onTap se ejecuta al tocar la card.
+- Se ejecutó flutter test en procesos/flutter_app:
+  - Salida: "00:06 +7: All tests passed!" indicando que los widget
+    tests se ejecutan correctamente junto con las pruebas unitarias
+    previas.

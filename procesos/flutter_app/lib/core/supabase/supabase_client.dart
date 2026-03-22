@@ -7,21 +7,19 @@ class SupabaseManager {
       String.fromEnvironment('SUPABASE_ANON_KEY', defaultValue: '');
 
   static bool _initialized = false;
+  static final bool _configured =
+      _supabaseUrl.isNotEmpty && _supabaseAnonKey.isNotEmpty;
+
+  static bool get isConfigured => _configured;
 
   static Future<void> initialize() async {
     if (_initialized) {
       return;
     }
 
-    if (_supabaseUrl.isEmpty || _supabaseAnonKey.isEmpty) {
-      throw StateError(
-        'SUPABASE_URL y SUPABASE_ANON_KEY deben definirse con --dart-define.',
-      );
-    }
-
     await Supabase.initialize(
-      url: _supabaseUrl,
-      anonKey: _supabaseAnonKey,
+      url: _supabaseUrl.isEmpty ? 'http://localhost' : _supabaseUrl,
+      anonKey: _supabaseAnonKey.isEmpty ? 'anon-key' : _supabaseAnonKey,
     );
 
     _initialized = true;
@@ -43,4 +41,3 @@ class SupabaseManager {
     }
   }
 }
-
