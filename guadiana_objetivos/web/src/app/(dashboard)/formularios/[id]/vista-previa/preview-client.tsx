@@ -18,11 +18,58 @@ interface QuestionOption {
   score: number | null; order: number; is_default: boolean
 }
 
+interface Condition {
+  id: string
+  survey_id: string
+  source_question_id: string
+  source_option_id: string | null
+  condition_value: string
+  target_section_id: string
+  action: string
+  created_at: string
+}
+
 interface PreviewClientProps {
   survey: { id: string; name: string; description: string | null; status: string; version: number }
   sections: Section[]
   questions: Question[]
   options: QuestionOption[]
+  conditions: Condition[]
+}
+
+// ─── Utility functions ───────────────────────────────────────────────────────
+
+function getNextSectionId(
+  currentSectionId: string,
+  answers: Record<string, unknown>,
+  sections: Section[],
+  questions: Question[],
+  conditions: Condition[]
+): string | null {
+  // 1. Buscar condiciones cuya pregunta pertenece a la sección actual
+  const currentSectionQuestionIds = questions
+    .filter((q) => q.section_id === currentSectionId)
+    .map((q) => q.id)
+
+  const applicableConditions = conditions.filter((c) =>
+    currentSectionQuestionIds.includes(c.source_question_id)
+  )
+
+  // 2. Evaluar si alguna condición se cumple
+  for (const condition of applicableConditions) {
+    const answer = answers[condition.source_question_id]
+    if (String(answer) === condition.condition_value) {
+      return condition.target_section_id
+    }
+  }
+
+  // 3. Sin condición que aplique → siguiente sección en orden
+  const currentOrder = sections.find((s) => s.id === currentSectionId)?.order ?? 0
+  const nextSection = sections
+    .filter((s) => s.order > currentOrder)
+    .sort((a, b) => a.order - b.order)[0]
+
+  return nextSection?.id ?? null
 }
 
 // ─── Question type components ────────────────────────────────────────────────
@@ -186,7 +233,7 @@ function QuestionPreview({ question, options }: { question: Question; options: Q
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export function PreviewClient({ survey, sections, questions, options }: PreviewClientProps) {
+export function PreviewClient({ survey, sections, questions, options, conditions }: PreviewClientProps) {
   return (
     <div className="flex h-screen flex-col">
       {/* Top bar */}

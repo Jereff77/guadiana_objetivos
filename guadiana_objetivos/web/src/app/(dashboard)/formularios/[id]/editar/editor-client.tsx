@@ -8,6 +8,8 @@ import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { SectionsPanel } from '@/components/editor/sections-panel'
 import { PropertiesPanel } from '@/components/editor/properties-panel'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { FlowEditor } from '@/components/editor/flow/flow-editor'
 import { publishSurvey, createNewVersion } from '@/app/(dashboard)/formularios/actions'
 import { useEditorSaveStatus, type SaveStatus } from '@/hooks/use-auto-save'
 
@@ -43,6 +45,17 @@ export interface QuestionOption {
   is_default: boolean
 }
 
+export interface Condition {
+  id: string
+  survey_id: string
+  source_question_id: string
+  source_option_id: string | null
+  condition_value: string
+  target_section_id: string
+  action: string
+  created_at: string
+}
+
 export type SelectedElement =
   | { kind: 'survey' }
   | { kind: 'section'; id: string }
@@ -60,6 +73,7 @@ interface EditorClientProps {
   initialSections: Section[]
   initialQuestions: Question[]
   initialOptions: QuestionOption[]
+  initialConditions: Condition[]
 }
 
 const statusLabels: Record<SurveyStatus, string> = {
@@ -99,6 +113,7 @@ export function EditorClient({
   initialSections,
   initialQuestions,
   initialOptions,
+  initialConditions,
 }: EditorClientProps) {
   const [sections, setSections] = useState<Section[]>(initialSections)
   const [questions, setQuestions] = useState<Question[]>(initialQuestions)
@@ -107,6 +122,7 @@ export function EditorClient({
   const [publishing, setPublishing] = useState(false)
   const [publishError, setPublishError] = useState<string | null>(null)
   const [creatingVersion, setCreatingVersion] = useState(false)
+  const [activeTab, setActiveTab] = useState<'estructura' | 'flujo'>('estructura')
   const { status: saveStatus, onSaveStart, onSaveEnd } = useEditorSaveStatus()
 
   async function handlePublish() {
@@ -189,38 +205,58 @@ export function EditorClient({
         </div>
       )}
 
-      {/* Two-panel layout */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* Left panel: structure */}
-        <div className="w-72 shrink-0 border-r flex flex-col overflow-hidden">
-          <SectionsPanel
-            surveyId={survey.id}
-            sections={sections}
-            questions={questions}
-            selected={selected}
-            onSelect={setSelected}
-            onSectionsChange={setSections}
-            onQuestionsChange={setQuestions}
-          />
-        </div>
+      {/* Tabs: Estructura / Flujo */}
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'estructura' | 'flujo')} className="flex flex-1 flex-col overflow-hidden">
+        <TabsList className="mx-4 mt-2 w-fit">
+          <TabsTrigger value="estructura">Estructura</TabsTrigger>
+          <TabsTrigger value="flujo">Flujo</TabsTrigger>
+        </TabsList>
 
-        {/* Right panel: properties */}
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <PropertiesPanel
-            surveyId={survey.id}
-            survey={survey}
+        <TabsContent value="estructura" className="flex flex-1 overflow-hidden mt-0">
+          {/* Two-panel layout */}
+          <div className="flex flex-1 overflow-hidden">
+            {/* Left panel: structure */}
+            <div className="w-72 shrink-0 border-r flex flex-col overflow-hidden">
+              <SectionsPanel
+                surveyId={survey.id}
+                sections={sections}
+                questions={questions}
+                selected={selected}
+                onSelect={setSelected}
+                onSectionsChange={setSections}
+                onQuestionsChange={setQuestions}
+              />
+            </div>
+
+            {/* Right panel: properties */}
+            <div className="flex-1 flex flex-col overflow-hidden">
+              <PropertiesPanel
+                surveyId={survey.id}
+                survey={survey}
+                sections={sections}
+                questions={questions}
+                options={options}
+                selected={selected}
+                onSectionsChange={setSections}
+                onQuestionsChange={setQuestions}
+                onOptionsChange={setOptions}
+                onSaveStart={onSaveStart}
+                onSaveEnd={onSaveEnd}
+              />
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="flujo" className="flex-1 overflow-hidden mt-0">
+          <FlowEditor
             sections={sections}
             questions={questions}
             options={options}
-            selected={selected}
-            onSectionsChange={setSections}
-            onQuestionsChange={setQuestions}
-            onOptionsChange={setOptions}
-            onSaveStart={onSaveStart}
-            onSaveEnd={onSaveEnd}
+            conditions={conditions}
+            surveyId={survey.id}
           />
-        </div>
-      </div>
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }

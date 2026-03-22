@@ -1,0 +1,81 @@
+## Progreso: Editor Visual de Flujo Condicional
+
+### Estado Final: ✅ COMPLETO
+
+Todas las 11 tareas han sido completadas exitosamente.
+
+### Tareas Completadas
+- ✅ T-001: Migración DB - crear tabla form_conditions (2026-03-22)
+  - Tabla creada con índices y RLS configurados
+
+- ✅ T-002: Instalar @xyflow/react (2026-03-22)
+  - Version: ^12.10.1
+
+- ✅ T-003: Cargar conditions en page.tsx (2026-03-22)
+  - Consulta Supabase agregada
+  - Prop initialConditions pasada a EditorClient
+
+- ✅ T-004: Server actions CRUD (2026-03-22)
+  - createCondition
+  - updateCondition
+  - deleteCondition
+
+- ✅ T-005: SectionNode component (2026-03-22)
+  - Nodo rectangular con handles entrada/salida
+  - Estilos #004B8D
+
+- ✅ T-006: ConditionEdge component (2026-03-22)
+  - Arista personalizada con etiqueta
+  - Validación visual (rojo si inválida)
+
+- ✅ T-007: EdgeConfigPanel component (2026-03-22)
+  - Panel Sheet para configurar condiciones
+  - Selects para pregunta y opción
+  - Botones guardar/eliminar
+
+- ✅ T-008: FlowEditor component (2026-03-22)
+  - Canvas ReactFlow con nodos y aristas
+  - Conversión de secciones a nodos
+  - Conversión de condiciones a aristas
+  - Manejo de onConnect y onEdgeClick
+
+- ✅ T-009: Tab "Flujo" en editor-client.tsx (2026-03-22)
+  - Tabs "Estructura" y "Flujo"
+  - FlowEditor integrado en tab Flujo
+
+- ✅ T-010: Lógica de salto condicional (2026-03-22)
+  - getNextSectionId implementada
+  - Condición interface agregada
+  - Props conditions en preview-client
+
+- ✅ T-011: Verificación TypeScript + ESLint (2026-03-22)
+  - ✅ 0 errores TypeScript
+  - ✅ 0 errores ESLint críticos
+  - 4 warnings no-unused-vars (variables futuras de T-010)
+
+### Archivos Modificados/Creados
+- Creados:
+  - web/src/components/editor/flow/section-node.tsx
+  - web/src/components/editor/flow/condition-edge.tsx
+  - web/src/components/editor/flow/edge-config-panel.tsx
+  - web/src/components/editor/flow/flow-editor.tsx
+
+- Modificados:
+  - web/src/app/(dashboard)/formularios/[id]/editar/page.tsx
+  - web/src/app/(dashboard)/formularios/[id]/editar/editor-client.tsx
+  - web/src/app/(dashboard)/formularios/[id]/editar/section-actions.ts
+  - web/src/app/(dashboard)/formularios/[id]/vista-previa/page.tsx
+  - web/src/app/(dashboard)/formularios/[id]/vista-previa/preview-client.tsx
+  - web/package.json (@xyflow/react agregado)
+
+### Base de Datos
+- ✅ Tabla form_conditions creada
+  - Campos: id, survey_id, source_question_id, source_option_id, condition_value, target_section_id, action, created_at
+  - Índices: survey_id, source_question_id
+  - RLS habilitado con política permisiva
+
+### Próximos Pasos (Opcional)
+- Implementar navegación paso a paso en preview con getNextSectionId
+- Agregar validación de condiciones en editor
+- Implementar duplicación de condiciones
+- Agregar estadísticas de condiciones usadas
