@@ -50,12 +50,14 @@ export function AppSidebar() {
     (item) => pathname === item.href || pathname.startsWith(item.href + '/')
   )
 
-  const [isOpen, setIsOpen] = useState(isProcessActive)
+  // Siempre inicia en false para evitar mismatch de hidratación entre servidor y cliente.
+  // useEffect abre el submenú tras el montaje si hay una ruta activa del módulo.
+  const [isOpen, setIsOpen] = useState(false)
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
-    if (isProcessActive) setIsOpen(true)
-  }, [isProcessActive])
+    setIsOpen(isProcessActive)
+  }, [pathname])
 
   const handleMouseEnter = () => {
     if (closeTimerRef.current) clearTimeout(closeTimerRef.current)
