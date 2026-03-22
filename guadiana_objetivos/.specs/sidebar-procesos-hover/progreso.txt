@@ -1,0 +1,33 @@
+## Progreso - Corrección Sidebar Módulo Procesos
+
+### Estado: COMPLETO ✅
+
+### Tareas realizadas:
+
+[T-001] ✅ Imports agregados
+  - useState, useEffect, useRef desde 'react'
+  - FolderOpen, ChevronDown desde 'lucide-react'
+  - SidebarMenuSub, SidebarMenuSubItem, SidebarMenuSubButton desde '@/components/ui/sidebar'
+  - Collapsible, CollapsibleContent desde '@/components/ui/collapsible'
+
+[T-002] ✅ Lógica de estado hover implementada
+  - isProcessActive detecta ruta activa del módulo
+  - useState(isProcessActive) abre submenú si hay ruta activa al montar
+  - useEffect sincroniza en navegaciones SPA
+  - handleMouseEnter / handleMouseLeave con delay de 150ms para suavizar cierre
+
+[T-003] ✅ Estructura JSX reemplazada
+  - SidebarGroupLabel "Procesos" eliminado (ya no es necesario)
+  - Nuevo ítem padre "Procesos" con FolderOpen + ChevronDown rotado
+  - Collapsible controlado por hover (no por click)
+  - SidebarMenuSub con los 4 subítems (Dashboard, Formularios, Asignaciones, Resultados)
+  - isActive visual en padre solo cuando submenú está cerrado
+
+[T-004] ✅ Verificación
+  - TypeScript: 0 errores
+  - ESLint: 0 warnings ni errores
+
+### Archivo modificado:
+  web/src/components/layout/app-sidebar.tsx
+
+### Fecha: 2026-03-22

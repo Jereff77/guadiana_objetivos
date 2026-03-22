@@ -308,3 +308,39 @@ Próxima fase: **Fase 5** (T-501 a T-504) — Pruebas, optimización, auditoría
 
 #### Resultado:
 **MVP COMPLETO AL 100%** — Las 5 fases y las 24 tareas del PRD están implementadas, probadas y documentadas.
+
+---
+
+### Claude Sonnet 4.6 - Sesión 2026-03-22
+
+#### Rol: Orquestador IA
+- **Solicitud del usuario**: Corregir el sidebar — el módulo "Procesos" debe mostrarse como ítem padre y al hacer hover desplegarse con las opciones (Dashboard, Formularios, Asignaciones, Resultados).
+- **Análisis realizado**: El sidebar usaba ítems planos bajo un `SidebarGroupLabel`. Se rediseñó para usar `Collapsible` + `SidebarMenuSub` con control de hover mediante `useRef` y `setTimeout`.
+- **Decisión de agentes**: Trabajo directo. Cambio localizado en un solo componente UI.
+
+#### Tareas Realizadas:
+1. **Análisis del sidebar existente** (Herramientas: Read, Glob)
+   - Identificados los componentes `sidebar.tsx` (shadcn) y `app-sidebar.tsx` (implementación)
+   - Confirmada existencia de `collapsible.tsx` y componentes `SidebarMenuSub*`
+
+2. **Generación de especificación** (Herramientas: Write)
+   - Creado `.specs/sidebar-procesos-hover/tasks.md` con 4 tareas detalladas
+   - Creado `.specs/sidebar-procesos-hover/progreso.txt`
+
+3. **Implementación [T-001 a T-003]** (Herramientas: Write)
+   - Nuevos imports: `useState`, `useEffect`, `useRef`, `FolderOpen`, `ChevronDown`, `Collapsible`, `CollapsibleContent`, `SidebarMenuSub*`
+   - Lógica hover con delay 150ms para evitar cierre accidental al mover mouse entre trigger y submenú
+   - `useEffect` sincroniza estado cuando la ruta activa pertenece al módulo
+   - JSX reemplazado con estructura `Collapsible` + `SidebarMenuSub`
+
+4. **Verificación [T-004]** (Herramientas: Bash)
+   - TypeScript: 0 errores (`tsc --noEmit`)
+   - ESLint: 0 warnings ni errores (`next lint`)
+
+#### Archivos Modificados/Creados:
+- `guadiana_objetivos/web/src/components/layout/app-sidebar.tsx`: Rediseño completo del módulo Procesos
+- `guadiana_objetivos/.specs/sidebar-procesos-hover/tasks.md`: Especificación de tareas
+- `guadiana_objetivos/.specs/sidebar-procesos-hover/progreso.txt`: Registro de progreso
+
+#### Estado:
+✅ Sidebar corregido — módulo Procesos con submenú hover (Claude Sonnet 4.6) [directo]
