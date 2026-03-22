@@ -65,7 +65,9 @@ export function AppSidebar() {
   }
 
   const handleMouseLeave = () => {
-    closeTimerRef.current = setTimeout(() => setIsOpen(false), 150)
+    closeTimerRef.current = setTimeout(() => {
+      if (!isProcessActive) setIsOpen(false)
+    }, 150)
   }
 
   return (
