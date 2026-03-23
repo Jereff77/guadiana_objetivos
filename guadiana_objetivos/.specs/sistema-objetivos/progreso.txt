@@ -83,3 +83,7 @@ FASE 6 COMPLETA AL 100% ✅ — 2026-03-22
 Tareas Transversales
 ====================================================
 [✅] T-046: Regenerar tipos TypeScript — database.types.ts actualizado con todas las tablas nuevas (lms_*, mentoring_*, incentive_*, ai_*) — 2026-03-22
+[✅] T-047: Variables de entorno — .env.example (Next.js) y ai-service/.env.example documentados — 2026-03-22 (completado en FASE 4)
+[✅] T-048: Actualizar página /inicio — tarjetas de acceso rápido a 11 módulos según permisos + panel de alertas pendientes — 2026-03-22
+
+TODAS LAS TAREAS COMPLETADAS ✅ — 2026-03-22
