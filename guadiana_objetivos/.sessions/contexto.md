@@ -1,18 +1,39 @@
-# Contexto del Proyecto - Plataforma Web Guadiana Checklists
+# Contexto del Proyecto - Plataforma Web Guadiana: Checklists + Sistema de Objetivos e Incentivos
 
-## Información de Sesión
+## Información de Sesión (última actualización)
 - **IA Utilizada**: Claude Sonnet 4.6
-- **Fecha**: 2026-03-20
-- **Herramientas**: Claude Code CLI
-- **Agentes Especializados Utilizados**: nextjs-developer, backend-supabase-developer
+- **Fecha**: 2026-03-22
+- **Herramientas**: Claude Code CLI, MCP Supabase (supaGuadianaObj)
+- **Agentes Especializados Utilizados**: nextjs-developer, backend-supabase-developer (sesiones iniciales)
 - **Rol**: Orquestador IA
 
 ## Resumen del Proyecto
-Plataforma web (Next.js 15) + App móvil Flutter para gestionar checklists y encuestas de auditoría interna en Llantas y Rines del Guadiana. Backend sobre Supabase (PostgreSQL, Auth, Storage). El web permite a administradores diseñar formularios, asignar tareas y ver resultados. La app móvil permite a asesores/operarios responder checklists.
+Plataforma web (Next.js 15 App Router) + App móvil Flutter para **Llantas y Rines del Guadiana**. Backend sobre Supabase (PostgreSQL, Auth, Storage, RLS). Dos grandes módulos:
+
+1. **Checklists/Formularios** (MVP completado 2026-03-20/21): Diseño de formularios, asignaciones, respuestas móviles, resultados y estadísticas.
+2. **Sistema de Objetivos e Incentivos** (desarrollado 2026-03-22, FASES 0–5 completadas):
+   - M0: Roles y permisos granulares
+   - M1: Objetivos por departamento con entregables y evidencias
+   - M2: Dashboard KPIs y gráficas
+   - M3: Incentivos con cálculo automático y aprobación
+   - M4: Servicio Python FastAPI + Claude para análisis IA de evidencias
+   - M6: Mentoring — pares mentor-mentee y sesiones con seguimiento
 
 **Supabase Project URL**: https://zpqjzjqwlofzvxeeczcq.supabase.co
 **Monorepo root**: `guadiana_objetivos/`
 **Web app path**: `guadiana_objetivos/web/`
+**AI Service path**: `guadiana_objetivos/ai-service/`
+
+## Estado Global del Sistema de Objetivos
+| Fase | Módulo | Estado |
+|------|--------|--------|
+| FASE 0 — Roles y Usuarios | M0 | ✅ COMPLETA |
+| FASE 1 — Objetivos | M1 | ✅ COMPLETA |
+| FASE 2 — Dashboard y KPIs | M2 | ✅ COMPLETA |
+| FASE 3 — Incentivos | M3 | ✅ COMPLETA |
+| FASE 4 — Servicio Python de IA | M4 | ✅ COMPLETA |
+| FASE 5 — Mentoring | M6 | ✅ COMPLETA |
+| FASE 6 — LMS | M7 | ⏳ Pendiente |
 
 ## Estado Actual del Proyecto
 | Tarea | Estado |
@@ -287,20 +308,83 @@ Plataforma web (Next.js 15) + App móvil Flutter para gestionar checklists y enc
 
 ---
 
-### Claude Sonnet 4.6 — Sesión 2026-03-22 (continuación — FASE 5)
+### Claude Sonnet 4.6 — Sesión 2026-03-22 (FASE 5 — Mentoring)
 
 #### Rol: Orquestador IA
-- **Solicitud del usuario**: Continuar hasta FASE 5 completa
-- **Decisión de agentes**: Trabajo directo (fix puntual de 1 función no usada)
+- **Solicitud del usuario**: Continuar hasta FASE 5 completa (Mentoring — M6)
+- **Análisis realizado**: FASE 4 completada. Siguiente: FASE 5 — Mentoring (T-042, T-043). Incluye migración SQL, Server Actions, componentes y páginas para gestión de pares mentor-mentee y sesiones.
+- **Decisión de agentes**: Trabajo directo — SQL, Server Actions y UI bien delimitados.
 
 #### Tareas Realizadas:
-1. **T-043 fix — Eliminar `RatingStars` no usada** (Tools: Read, Edit)
-   - Archivo: `web/src/app/(dashboard)/mentoring/[pairId]/page.tsx`
-   - Removida función `RatingStars` (lines 18-26) nunca referenciada en JSX
-2. **TypeScript check** — `npx tsc --noEmit` → 0 errores
-3. **Next.js build** — exitoso, rutas `/mentoring` y `/mentoring/[pairId]` compiladas
-4. **Actualización progreso.txt** — T-042 y T-043 ✅, FASE 5 COMPLETA
+1. **T-042: Migración SQL** (Tools: MCP Supabase, Write)
+   - Tabla `mentoring_pairs`: pares mentor-mentee con UNIQUE(mentor_id, mentee_id), campos `start_date`, `end_date`, `is_active`, `objectives`
+   - Tabla `mentoring_sessions`: sesiones vinculadas al par, opcionalmente a un objetivo de M1 (`objective_id`), campos `scheduled_at`, `modality`, `agenda`, `topics_covered`, `commitments`, `mentor_rating`, `mentor_notes`, `mentee_rating`, `mentee_feedback`, `status` (scheduled/completed/cancelled)
+   - RLS: mentores/mentees ven sus propios pares; `mentoring.view` ve todos; `mentoring.manage` gestiona todos
+   - Política adicional: "mentor can manage sessions" — el mentor puede CUD sesiones de su propio par
+   - Índices sobre `mentor_id`, `mentee_id`, `pair_id` y `status`
+   - Trigger `updated_at` en ambas tablas
+   - Archivo: `web/supabase/migrations/20260322000050_create_mentoring_schema.sql`
 
-#### Archivos Modificados:
-- `web/src/app/(dashboard)/mentoring/[pairId]/page.tsx`: eliminada `RatingStars` no usada
-- `.specs/sistema-objetivos/progreso.txt`: FASE 5 registrada como completa
+2. **T-043: Server Actions** (Tools: Write)
+   - Archivo: `web/src/app/(dashboard)/mentoring/mentoring-actions.ts`
+   - **Pares**: `getMentoringPairs`, `getMentoringPair`, `createMentoringPair`, `updateMentoringPair`, `deleteMentoringPair`
+   - **Sesiones**: `getSessionsByPair`, `createMentoringSession`, `completeMentoringSession`, `submitMenteeFeedback`, `cancelMentoringSession`
+   - **Reportes**: `getMentoringReport` — KPIs (total/completed/cancelled/scheduled + avg ratings por par)
+   - Fix TypeScript: joins Supabase con `!inner` retornan array — resuelto con patrón `T | T[] | null` + `Array.isArray()` (3 ocurrencias)
+
+3. **T-043: Componentes** (Tools: Write)
+   - `web/src/components/mentoring/pair-card.tsx` — Tarjeta de par: progreso de sesiones (barra), toggle activo/inactivo, botón eliminar, enlace al detalle
+   - `web/src/components/mentoring/new-pair-form.tsx` — Formulario de creación de par: selects mentor/mentee (sin duplicados), fecha inicio, fecha fin opcional, descripción de objetivos del programa
+   - `web/src/components/mentoring/session-form.tsx`:
+     - `NewSessionForm`: formulario para programar sesión (datetime-local, modalidad, agenda, objetivo vinculado opcional de M1)
+     - `SessionRow`: fila de sesión expandible. Mentor puede completarla (temas, compromisos, rating, notas) o cancelarla. Mentee puede dar feedback (rating + texto) tras completarse.
+     - Fix JSX: `"` → `&ldquo;`/`&rdquo;` para evitar error de entidad no escapada
+
+4. **T-043: Páginas** (Tools: Write)
+   - `web/src/app/(dashboard)/mentoring/page.tsx` — Lista de pares con KPIs rápidos (pares activos, total sesiones, sesiones completadas), formulario de nuevo par (si `mentoring.manage`/root), sección pares activos e inactivos
+   - `web/src/app/(dashboard)/mentoring/[pairId]/page.tsx` — Detalle de par: header con nombres y fechas, objetivos del programa, resumen KPIs por par (6 cards), formulario programar sesión (solo mentor), secciones de sesiones programadas/completadas/canceladas. Detecta si el usuario actual es mentor o mentee para mostrar acciones correctas.
+
+5. **Sidebar actualizado** — Sección "Desarrollo Humano" con link a Mentoring (guarded por `mentoring.view`). Ícono `Users2` de Lucide.
+
+6. **Fixes de Panel de Problemas**:
+   - `mentoring/page.tsx`: eliminado import no usado `createMentoringPair`
+   - `incentivos/page.tsx`: eliminados `createClient`, `user` y `deleteIncentiveSchema` no usados
+   - `incentivos/configurar/page.tsx`: eliminado `deleteIncentiveSchema` no usado
+   - `session-form.tsx`: escapadas comillas dobles (`&ldquo;`/`&rdquo;`)
+   - `[pairId]/page.tsx`: eliminada función `RatingStars` definida pero nunca usada
+
+7. **Verificación final**:
+   - `npx tsc --noEmit` → 0 errores TypeScript
+   - `npx next build` → build exitoso, 0 warnings críticos, todas las rutas compiladas incluyendo `/mentoring` y `/mentoring/[pairId]`
+
+#### Archivos Creados/Modificados:
+- `web/supabase/migrations/20260322000050_create_mentoring_schema.sql` (nueva)
+- `web/src/app/(dashboard)/mentoring/mentoring-actions.ts` (nueva)
+- `web/src/app/(dashboard)/mentoring/page.tsx` (nueva)
+- `web/src/app/(dashboard)/mentoring/[pairId]/page.tsx` (nueva)
+- `web/src/components/mentoring/pair-card.tsx` (nueva)
+- `web/src/components/mentoring/new-pair-form.tsx` (nueva)
+- `web/src/components/mentoring/session-form.tsx` (nueva)
+- `web/src/components/layout/app-sidebar.tsx`: +sección "Desarrollo Humano" con Mentoring
+- `web/src/app/(dashboard)/incentivos/page.tsx`: fix imports no usados
+- `web/src/app/(dashboard)/incentivos/configurar/page.tsx`: fix imports no usados
+- `.specs/sistema-objetivos/progreso.txt`: T-042 y T-043 ✅, FASE 5 COMPLETA
+
+#### Estado Final del Sistema de Objetivos (todas las fases):
+| Fase | Módulo | Estado |
+|------|--------|--------|
+| FASE 0 — Roles y Usuarios | M0 | ✅ COMPLETA (Claude Sonnet 4.6) - 2026-03-22 |
+| FASE 1 — Objetivos | M1 | ✅ COMPLETA (Claude Sonnet 4.6) - 2026-03-22 |
+| FASE 2 — Dashboard y KPIs | M2 | ✅ COMPLETA (Claude Sonnet 4.6) - 2026-03-22 |
+| FASE 3 — Incentivos | M3 | ✅ COMPLETA (Claude Sonnet 4.6) - 2026-03-22 |
+| FASE 4 — Servicio Python de IA | M4 | ✅ COMPLETA (Claude Sonnet 4.6) - 2026-03-22 |
+| FASE 5 — Mentoring | M6 | ✅ COMPLETA (Claude Sonnet 4.6) - 2026-03-22 |
+| FASE 6 — LMS | M7 | ⏳ Pendiente |
+
+#### Resumen de tareas completadas del sistema de objetivos (T-001 a T-043):
+- **FASE 0** (T-001–T-021): Roles granulares, permisos, usuarios, funciones SQL `is_root`/`has_permission`, RLS, sidebar administración
+- **FASE 1** (T-022–T-027): Departamentos, objetivos, entregables, evidencias, reviews, progress tracking, exportación CSV
+- **FASE 2** (T-028–T-032): Dashboard KPIs, gráficas Recharts (trend, compliance bar), ranking de departamentos, alertas automáticas con deduplicación
+- **FASE 3** (T-033–T-035): Esquemas de incentivos con tiers de bonificación, cálculo automático por período, aprobación y pago, exportación CSV
+- **FASE 4** (T-036–T-041, T-047): Servicio Python FastAPI, análisis Claude claude-sonnet-4-6, extracción PDF/imágenes, notificaciones WhatsApp, log de análisis IA, gestión de prompts configurables
+- **FASE 5** (T-042–T-043): Pares mentor-mentee, sesiones con seguimiento completo, feedback mentee, reportes por par, vinculación con objetivos M1
