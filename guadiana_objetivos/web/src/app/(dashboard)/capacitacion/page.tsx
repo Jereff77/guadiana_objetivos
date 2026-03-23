@@ -1,25 +1,14 @@
 import { requirePermission, checkPermission, checkIsRoot } from '@/lib/permissions'
-import {
-  getLmsContents,
-  getLmsPaths,
-  getMyProgress,
-  getPathProgress,
-} from './lms-actions'
-import { ContentCard } from '@/components/lms/content-card'
+import { getLmsPaths, getMyProgress } from './lms-actions'
+import { getCourses, getMyCourseProgress } from './course-actions'
 import { PathProgressBar } from '@/components/lms/path-progress-bar'
-import { ContentForm } from '@/components/lms/content-form'
-import { ManageSection } from './manage-section'
+import { CourseCard } from '@/components/lms/course-card'
+import { CourseForm } from '@/components/lms/course-form'
 
 export const metadata = { title: 'Capacitación — Guadiana' }
 
-interface CapacitacionPageProps {
-  searchParams: Promise<{ categoria?: string }>
-}
-
-export default async function CapacitacionPage({ searchParams }: CapacitacionPageProps) {
+export default async function CapacitacionPage() {
   await requirePermission('capacitacion.view')
-
-  const { categoria } = await searchParams
 
   const [canManage, canEdit, canDelete, isRoot] = await Promise.all([
     checkPermission('capacitacion.manage'),
@@ -32,46 +21,47 @@ export default async function CapacitacionPage({ searchParams }: CapacitacionPag
   const userCanEdit   = userCanManage || canEdit
   const userCanDelete = userCanManage || canDelete
 
-  const [contentsResult, pathsResult, progressResult] = await Promise.all([
-    getLmsContents(userCanManage ? false : true),
+  const [coursesResult, pathsResult] = await Promise.all([
+    getCourses(userCanManage ? false : true),
     getLmsPaths(true),
-    getMyProgress(),
   ])
 
-  const allContents = contentsResult.success ? (contentsResult.data ?? []) : []
+  const allCourses   = coursesResult.success ? (coursesResult.data ?? []) : []
   const publishedPaths = pathsResult.success ? (pathsResult.data ?? []) : []
-  const myProgress = progressResult.success ? (progressResult.data ?? []) : []
 
-  // Construir mapa de progreso por content_id
-  const progressMap = new Map(myProgress.map((p) => [p.content_id, p]))
-
-  // Filtrar por categoría
-  const filteredContents = categoria
-    ? allContents.filter((c) => c.category === categoria)
-    : allContents
-
-  // Categorías únicas disponibles
-  const categories = Array.from(
-    new Set(allContents.map((c) => c.category).filter((c): c is string => Boolean(c))),
-  ).sort()
-
-  // Progreso de rutas
-  const pathProgressList = await Promise.all(
-    publishedPaths.map(async (path) => {
-      const result = await getPathProgress(path.id)
+  // Progreso de cada curso para el usuario actual
+  const courseProgressList = await Promise.all(
+    allCourses.map(async (course) => {
+      const result = await getMyCourseProgress(course.id)
+      const progress = result.success ? (result.data ?? []) : []
       return {
-        path,
-        total: result.data?.total ?? 0,
-        completed: result.data?.completed ?? 0,
-        certified: result.data?.certified ?? false,
+        course,
+        totalTopics: 0,      // se recalcula en la página de detalle; aquí usamos progreso disponible
+        completedTopics: progress.filter(p => p.completed_at !== null).length,
+        progressCount: progress.length,
       }
-    }),
+    })
   )
 
-  // Contenidos publicados (para usuarios sin manage) o todos (para manage)
-  const visibleContents = userCanManage
-    ? filteredContents
-    : filteredContents.filter((c) => c.is_published)
+  // Rutas de aprendizaje (legacy — se mantienen si existen)
+  const [pathProgressList, myFlatProgress] = await Promise.all([
+    Promise.all(
+      publishedPaths.map(async (path) => {
+        const { getPathProgress } = await import('./lms-actions')
+        const result = await getPathProgress(path.id)
+        return {
+          path,
+          total: result.data?.total ?? 0,
+          completed: result.data?.completed ?? 0,
+          certified: result.data?.certified ?? false,
+        }
+      })
+    ),
+    (async () => {
+      const { getMyProgress } = await import('./lms-actions')
+      return getMyProgress()
+    })(),
+  ])
 
   return (
     <div className="space-y-8">
@@ -80,12 +70,12 @@ export default async function CapacitacionPage({ searchParams }: CapacitacionPag
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Capacitación</h1>
           <p className="text-muted-foreground text-sm mt-1">
-            Accede a los contenidos de formación y rutas de aprendizaje.
+            Accede a los cursos de formación y rutas de aprendizaje.
           </p>
         </div>
       </div>
 
-      {/* Rutas de aprendizaje */}
+      {/* Rutas de aprendizaje (legacy) */}
       {pathProgressList.length > 0 && (
         <section className="space-y-4">
           <h2 className="text-lg font-semibold">Rutas de aprendizaje</h2>
@@ -103,54 +93,26 @@ export default async function CapacitacionPage({ searchParams }: CapacitacionPag
         </section>
       )}
 
-      {/* Catálogo de contenidos */}
+      {/* Catálogo de cursos */}
       <section className="space-y-4">
-        <div className="flex items-center justify-between gap-4 flex-wrap">
-          <h2 className="text-lg font-semibold">Catálogo de contenidos</h2>
+        <h2 className="text-lg font-semibold">Cursos disponibles</h2>
 
-          {categories.length > 0 && (
-            <form method="GET" className="flex items-center gap-2">
-              <label htmlFor="cat-filter" className="text-sm text-muted-foreground">
-                Categoría:
-              </label>
-              <select
-                id="cat-filter"
-                name="categoria"
-                defaultValue={categoria ?? ''}
-                className="rounded-md border border-input bg-background px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-              >
-                <option value="">Todas</option>
-                {categories.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </select>
-              <button
-                type="submit"
-                className="rounded-md border px-3 py-1.5 text-sm hover:bg-muted transition-colors"
-              >
-                Filtrar
-              </button>
-            </form>
-          )}
-        </div>
-
-        {visibleContents.length === 0 ? (
+        {courseProgressList.length === 0 ? (
           <div className="rounded-lg border bg-card p-8 text-center">
             <p className="text-muted-foreground">
-              {categoria
-                ? `No hay contenidos publicados en la categoría "${categoria}".`
-                : 'No hay contenidos publicados disponibles.'}
+              {userCanManage
+                ? 'No hay cursos creados aún. Crea el primero abajo.'
+                : 'No hay cursos publicados disponibles.'}
             </p>
           </div>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {visibleContents.map((content) => (
-              <ContentCard
-                key={content.id}
-                content={content}
-                progress={progressMap.get(content.id)}
+            {courseProgressList.map(({ course, completedTopics, progressCount }) => (
+              <CourseCard
+                key={course.id}
+                course={course}
+                totalTopics={progressCount}
+                completedTopics={completedTopics}
                 canManage={userCanManage}
                 canEdit={userCanEdit}
                 canDelete={userCanDelete}
@@ -160,16 +122,11 @@ export default async function CapacitacionPage({ searchParams }: CapacitacionPag
         )}
       </section>
 
-      {/* Secciones de gestión (solo para manage) */}
-      {userCanManage && (
-        <ManageSection paths={pathsResult.success ? (pathsResult.data ?? []) : []} />
-      )}
-
-      {/* Formulario de creación (solo para manage) */}
+      {/* Crear nuevo curso (solo manage) */}
       {userCanManage && (
         <section className="rounded-lg border bg-card p-6 space-y-4">
-          <h2 className="text-lg font-semibold">Crear nuevo contenido</h2>
-          <ContentForm />
+          <h2 className="text-lg font-semibold">Crear nuevo curso</h2>
+          <CourseForm />
         </section>
       )}
     </div>
