@@ -24,3 +24,14 @@ FASE 0 — Sistema de Usuarios y Roles Granular (M0)
 
 FASE 0 COMPLETA AL 100% ✅ — 2026-03-22
 Usuario jereff@aceleremos.com marcado como root manualmente.
+
+FASE 1 — Sistema de Objetivos (M1)
+====================================================
+[✅] T-022: Migración SQL — Esquema M1 (departments, objectives, objective_deliverables, objective_evidences, objective_reviews, objective_progress, system_alerts) — 2026-03-22
+[✅] T-023: Server Actions — Gestión de departamentos (dept-actions.ts) — 2026-03-22
+[✅] T-024: Server Actions — Gestión de objetivos (objective-actions.ts) — 2026-03-22
+[✅] T-025: Server Actions — Gestión de entregables y evidencias (deliverable-actions.ts) — 2026-03-22
+[✅] T-026: Componentes — ObjectiveCard, DeliverableRow, EvidenceUploader, ReviewPanel, DepartmentsGrid — 2026-03-22
+[✅] T-027: Páginas — /objetivos, /objetivos/[deptId], /objetivos/configurar — 2026-03-22
+
+FASE 1 COMPLETA AL 100% ✅ — 2026-03-22
