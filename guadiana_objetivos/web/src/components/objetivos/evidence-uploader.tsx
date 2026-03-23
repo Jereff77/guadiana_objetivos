@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { Upload, FileText } from 'lucide-react'
-import { submitEvidence, uploadEvidenceFile } from '@/app/(dashboard)/objetivos/deliverable-actions'
+import { submitEvidence, uploadEvidenceFile } from '../../app/(dashboard)/objetivos/deliverable-actions'
 
 interface EvidenceUploaderProps {
   deliverableId: string

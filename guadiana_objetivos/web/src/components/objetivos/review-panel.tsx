@@ -1,14 +1,17 @@
 'use client'
 
 import { useState } from 'react'
-import { reviewDeliverable } from '@/app/(dashboard)/objetivos/deliverable-actions'
+import { Download, ExternalLink, FileText } from 'lucide-react'
+import { reviewDeliverable } from '../../app/(dashboard)/objetivos/deliverable-actions'
+import type { Evidence } from '../../app/(dashboard)/objetivos/deliverable-actions'
 
 interface ReviewPanelProps {
   deliverableId: string
+  evidences?: Evidence[]
   onSuccess?: () => void
 }
 
-export function ReviewPanel({ deliverableId, onSuccess }: ReviewPanelProps) {
+export function ReviewPanel({ deliverableId, evidences = [], onSuccess }: ReviewPanelProps) {
   const [verdict, setVerdict] = useState<'approved' | 'rejected' | ''>('')
   const [comment, setComment] = useState('')
   const [saving, setSaving] = useState(false)
@@ -38,6 +41,8 @@ export function ReviewPanel({ deliverableId, onSuccess }: ReviewPanelProps) {
     }
   }
 
+  const hasEvidences = evidences && evidences.length > 0
+
   return (
     <form onSubmit={handleSubmit} className="border rounded-md p-3 space-y-3 bg-muted/20">
       <h4 className="text-xs font-semibold">Revisar entregable</h4>
@@ -46,6 +51,67 @@ export function ReviewPanel({ deliverableId, onSuccess }: ReviewPanelProps) {
         <p className="text-xs text-red-600 bg-red-50 border border-red-200 rounded px-2 py-1">
           {error}
         </p>
+      )}
+
+      {/* Mostrar evidencias para revisión */}
+      {hasEvidences && (
+        <div className="space-y-2">
+          <p className="text-xs font-semibold text-muted-foreground">
+            Evidencias enviadas ({evidences.length}):
+          </p>
+          {evidences.map((ev) => (
+            <div key={ev.id} className="border rounded-md p-2 bg-background">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs text-muted-foreground">
+                  {ev.submitter_name || 'Usuario'}
+                </span>
+              </div>
+
+              {/* Archivo */}
+              {ev.storage_path && (
+                <div className="flex items-center gap-2 p-2 rounded bg-muted/30">
+                  <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <span className="text-xs truncate flex-1">{ev.storage_path.split('/').pop()}</span>
+                  <a
+                    href={`/api/objetivos/evidence?path=${encodeURIComponent(ev.storage_path)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-brand-blue hover:underline flex items-center gap-1 shrink-0"
+                  >
+                    <Download className="h-3 w-3" />
+                    Descargar
+                  </a>
+                </div>
+              )}
+
+              {/* URL */}
+              {ev.evidence_url && (
+                <a
+                  href={ev.evidence_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 p-2 rounded bg-muted/30 hover:bg-muted/50 transition-colors"
+                >
+                  <ExternalLink className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <span className="text-xs text-brand-blue hover:underline truncate flex-1">
+                    {ev.evidence_url}
+                  </span>
+                </a>
+              )}
+
+              {/* Texto */}
+              {ev.text_content && (
+                <div className="p-2 rounded bg-muted/30">
+                  <p className="text-xs whitespace-pre-wrap break-words">{ev.text_content}</p>
+                </div>
+              )}
+
+              {ev.notes && (
+                <p className="text-xs text-muted-foreground mt-2 italic">Nota: {ev.notes}</p>
+              )}
+            </div>
+          ))}
+        </div>
       )}
 
       {/* Botones de veredicto */}

@@ -1,9 +1,10 @@
 import { requirePermission, checkPermission } from '@/lib/permissions'
 import { createClient } from '@/lib/supabase/server'
 import { getObjectivesByDept } from '../objective-actions'
-import { getDeliverablesByObjective } from '../deliverable-actions'
+import { getDeliverableWithDetail } from '../deliverable-actions'
 import { ObjectiveCard } from '@/components/objetivos/objective-card'
 import { DeliverableRow } from '@/components/objetivos/deliverable-row'
+import type { Deliverable } from '../deliverable-actions'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 
@@ -41,12 +42,78 @@ export default async function DeptObjetivosPage({ params, searchParams }: PagePr
 
   if (!dept) notFound()
 
-  // Para cada objetivo, obtener sus entregables
+  // Para cada objetivo, obtener sus entregables con evidencias y revisiones
   const objectivesWithDeliverables = await Promise.all(
-    objectives.map(async (obj) => ({
-      ...obj,
-      deliverables: await getDeliverablesByObjective(obj.id),
-    }))
+    objectives.map(async (obj) => {
+      // Obtener entregables del objetivo
+      const { data: delivs } = await supabase
+        .from('objective_deliverables')
+        .select(`
+          id, objective_id, title, description, due_date, assignee_id, status, created_at,
+          profiles(full_name),
+          objective_evidences (
+            id, deliverable_id, submitted_by, storage_path, evidence_url,
+            text_content, submitted_at, notes,
+            profiles(full_name)
+          ),
+          objective_reviews (
+            id, deliverable_id, reviewer_id, verdict, comment, reviewed_at,
+            profiles(full_name)
+          )
+        `)
+        .eq('objective_id', obj.id)
+        .order('created_at')
+
+      const deliverables: Deliverable[] = (delivs ?? []).map((d: any) => {
+        const assignee = d.profiles
+        const evidences = (d.objective_evidences ?? []).map((e: any) => {
+          const sub = e.profiles
+          return {
+            id: e.id,
+            deliverable_id: e.deliverable_id,
+            submitted_by: e.submitted_by,
+            submitter_name: sub ? (sub.full_name ?? null) : null,
+            storage_path: e.storage_path,
+            evidence_url: e.evidence_url,
+            text_content: e.text_content,
+            submitted_at: e.submitted_at,
+            notes: e.notes,
+          }
+        })
+
+        const reviews = (d.objective_reviews ?? []).map((r: any) => {
+          const rev = r.profiles
+          return {
+            id: r.id,
+            deliverable_id: r.deliverable_id,
+            reviewer_id: r.reviewer_id,
+            reviewer_name: rev ? (rev.full_name ?? null) : null,
+            verdict: r.verdict,
+            comment: r.comment,
+            reviewed_at: r.reviewed_at,
+          }
+        })
+
+        return {
+          id: d.id,
+          objective_id: d.objective_id,
+          title: d.title,
+          description: d.description,
+          due_date: d.due_date,
+          assignee_id: d.assignee_id,
+          assignee_name: assignee ? (assignee.full_name ?? null) : null,
+          status: d.status,
+          created_at: d.created_at,
+          evidences,
+          latest_review: reviews.length > 0 ? reviews[reviews.length - 1] : null,
+        }
+      })
+
+      return {
+        ...obj,
+        deliverables,
+      }
+    })
   )
 
   const MONTHS = ['', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
