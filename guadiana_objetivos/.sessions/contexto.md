@@ -33,7 +33,7 @@ Plataforma web (Next.js 15 App Router) + App móvil Flutter para **Llantas y Rin
 | FASE 3 — Incentivos | M3 | ✅ COMPLETA |
 | FASE 4 — Servicio Python de IA | M4 | ✅ COMPLETA |
 | FASE 5 — Mentoring | M6 | ✅ COMPLETA |
-| FASE 6 — LMS | M7 | ⏳ Pendiente |
+| FASE 6 — LMS | M7 | ✅ COMPLETA (Claude Sonnet 4.6) - 2026-03-22 |
 
 ## Estado Actual del Proyecto
 | Tarea | Estado |
@@ -304,7 +304,7 @@ Plataforma web (Next.js 15 App Router) + App móvil Flutter para **Llantas y Rin
 | FASE 3 — Incentivos (M3) | ✅ COMPLETA |
 | FASE 4 — Servicio Python de IA (M4) | ✅ COMPLETA (Claude Sonnet 4.6) - 2026-03-22 |
 | FASE 5 — Mentoring (M6) | ✅ COMPLETA (Claude Sonnet 4.6) - 2026-03-22 |
-| FASE 6 — LMS (M7) | ⏳ Pendiente |
+| FASE 6 — LMS (M7) | ✅ COMPLETA (Claude Sonnet 4.6) - 2026-03-22 |
 
 ---
 
@@ -379,7 +379,7 @@ Plataforma web (Next.js 15 App Router) + App móvil Flutter para **Llantas y Rin
 | FASE 3 — Incentivos | M3 | ✅ COMPLETA (Claude Sonnet 4.6) - 2026-03-22 |
 | FASE 4 — Servicio Python de IA | M4 | ✅ COMPLETA (Claude Sonnet 4.6) - 2026-03-22 |
 | FASE 5 — Mentoring | M6 | ✅ COMPLETA (Claude Sonnet 4.6) - 2026-03-22 |
-| FASE 6 — LMS | M7 | ⏳ Pendiente |
+| FASE 6 — LMS | M7 | ✅ COMPLETA (Claude Sonnet 4.6) - 2026-03-22 |
 
 #### Resumen de tareas completadas del sistema de objetivos (T-001 a T-043):
 - **FASE 0** (T-001–T-021): Roles granulares, permisos, usuarios, funciones SQL `is_root`/`has_permission`, RLS, sidebar administración
@@ -388,3 +388,66 @@ Plataforma web (Next.js 15 App Router) + App móvil Flutter para **Llantas y Rin
 - **FASE 3** (T-033–T-035): Esquemas de incentivos con tiers de bonificación, cálculo automático por período, aprobación y pago, exportación CSV
 - **FASE 4** (T-036–T-041, T-047): Servicio Python FastAPI, análisis Claude claude-sonnet-4-6, extracción PDF/imágenes, notificaciones WhatsApp, log de análisis IA, gestión de prompts configurables
 - **FASE 5** (T-042–T-043): Pares mentor-mentee, sesiones con seguimiento completo, feedback mentee, reportes por par, vinculación con objetivos M1
+- **FASE 6** (T-044–T-045): Esquema LMS (lms_content, lms_quizzes, lms_paths, lms_progress), catálogo de contenidos, quiz interactivo, rutas de aprendizaje con certificación, asistente IA vía chat
+
+---
+
+### Claude Sonnet 4.6 — Sesión 2026-03-22 (FASE 6 — LMS)
+
+#### Rol: Orquestador IA
+- **Solicitud del usuario**: Continuar hasta FASE 6 completa (LMS — M7)
+- **Análisis realizado**: FASE 5 completada. Siguiente: T-044 (migración SQL LMS) y T-045 (Server Actions + componentes + páginas)
+- **Decisión de agentes**: T-044 directo (migración SQL vía MCP). T-045 delegado al agente `nextjs-developer` por volumen de archivos.
+
+#### Tareas Realizadas:
+1. **T-044: Migración SQL LMS** (Tools: MCP Supabase, Write)
+   - `lms_content`: contenidos pdf/video/text/quiz con `storage_path` y `video_url`, `is_published`
+   - `lms_quizzes`: evaluación JSONB 1:1 con contenido, `min_score` (0-100)
+   - `lms_paths`: rutas de aprendizaje con array `content_ids` y `cert_title`
+   - `lms_progress`: progreso individual con `quiz_score`, `certified`, UNIQUE(user_id, content_id)
+   - RLS: `capacitacion.view` ve publicados; `capacitacion.manage` gestiona todo; usuarios ven su propio progreso
+   - Índices en `is_published`, `category`, `user_id`, `content_id`, `path_id`
+   - Triggers `updated_at` en `lms_content` y `lms_paths`
+   - Archivo: `web/supabase/migrations/20260322000060_create_lms_schema.sql`
+
+2. **T-045: Server Actions, componentes y páginas LMS** (Agente: nextjs-developer)
+   - `lms-actions.ts`: 14 funciones — getLmsContents, getLmsContent, createLmsContent, updateLmsContent, deleteLmsContent, upsertLmsQuiz, getLmsPaths, createLmsPath, updateLmsPath, deleteLmsPath, getMyProgress, startContent, completeContent, getPathProgress
+   - Componentes: `ContentCard` (badge tipo/estado/progreso), `PathProgressBar` (CSS puro), `QuizComponent` (radio buttons + corrección visual + score), `ContentForm` (formulario crear/editar)
+   - Páginas: `/capacitacion` (catálogo con filtro categoría + sección gestión), `/capacitacion/[contentId]` (viewer PDF/video/texto/quiz + `startContent` al montar), `/capacitacion/chat` (asistente IA)
+   - `manage-section.tsx`: Client Component para publicar/despublicar/eliminar rutas
+   - `content-viewer.tsx`: Client Component con lógica de completado y quiz
+   - `lms-chat-panel.tsx`: Client Component con historial de mensajes y fetch interno
+   - `/api/capacitacion/chat/route.ts`: proxy al servicio Python con auth
+   - Sidebar: "Capacitación" en sección "Desarrollo Humano" (ícono `BookOpen`, permiso `capacitacion.view`)
+
+3. **Verificación final**:
+   - `npx tsc --noEmit` → 0 errores
+   - `npx next build` → build exitoso, rutas `/capacitacion`, `/capacitacion/[contentId]`, `/capacitacion/chat` compiladas
+
+#### Archivos Creados/Modificados:
+- `web/supabase/migrations/20260322000060_create_lms_schema.sql` (nueva)
+- `web/src/app/(dashboard)/capacitacion/lms-actions.ts` (nueva)
+- `web/src/app/(dashboard)/capacitacion/page.tsx` (nueva)
+- `web/src/app/(dashboard)/capacitacion/manage-section.tsx` (nueva)
+- `web/src/app/(dashboard)/capacitacion/[contentId]/page.tsx` (nueva)
+- `web/src/app/(dashboard)/capacitacion/[contentId]/content-viewer.tsx` (nueva)
+- `web/src/app/(dashboard)/capacitacion/chat/page.tsx` (nueva)
+- `web/src/app/(dashboard)/capacitacion/chat/lms-chat-panel.tsx` (nueva)
+- `web/src/app/api/capacitacion/chat/route.ts` (nueva)
+- `web/src/components/lms/content-card.tsx` (nueva)
+- `web/src/components/lms/content-form.tsx` (nueva)
+- `web/src/components/lms/path-progress-bar.tsx` (nueva)
+- `web/src/components/lms/quiz-component.tsx` (nueva)
+- `web/src/components/layout/app-sidebar.tsx`: +Capacitación en sección Desarrollo Humano
+- `.specs/sistema-objetivos/progreso.txt`: T-044 y T-045 ✅, FASE 6 COMPLETA
+
+#### Estado Final — TODAS LAS FASES COMPLETADAS:
+| Fase | Módulo | Estado |
+|------|--------|--------|
+| FASE 0 — Roles y Usuarios | M0 | ✅ COMPLETA |
+| FASE 1 — Objetivos | M1 | ✅ COMPLETA |
+| FASE 2 — Dashboard y KPIs | M2 | ✅ COMPLETA |
+| FASE 3 — Incentivos | M3 | ✅ COMPLETA |
+| FASE 4 — Servicio Python de IA | M4 | ✅ COMPLETA |
+| FASE 5 — Mentoring | M6 | ✅ COMPLETA |
+| FASE 6 — LMS | M7 | ✅ COMPLETA |
