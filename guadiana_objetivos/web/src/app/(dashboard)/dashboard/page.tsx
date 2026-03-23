@@ -7,8 +7,17 @@ import {
 import { DeptKpiCard } from '@/components/dashboard/dept-kpi-card'
 import { RankingTable } from '@/components/dashboard/ranking-table'
 import { AlertPanel } from '@/components/dashboard/alert-badge'
-import { KpiCard, ComplianceBarChart } from '@/components/resultados/kpi-charts'
+import { ComplianceBarChart } from '@/components/dashboard/dashboard-charts'
 import Link from 'next/link'
+
+function KpiCard({ label, value, color = '#004B8D' }: { label: string; value: string | number; color?: string }) {
+  return (
+    <div className="rounded-lg border bg-card p-5 flex flex-col gap-1">
+      <p className="text-xs text-muted-foreground font-medium">{label}</p>
+      <p className="text-3xl font-bold" style={{ color }}>{value}</p>
+    </div>
+  )
+}
 
 export const metadata = { title: 'Dashboard — Guadiana' }
 
