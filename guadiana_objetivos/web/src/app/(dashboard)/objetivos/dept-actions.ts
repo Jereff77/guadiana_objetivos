@@ -31,20 +31,115 @@ async function assertManage() {
   if (!deptPerm && !objPerm) redirect('/sin-acceso')
 }
 
+/**
+ * Obtiene los departamentos según los permisos del usuario:
+ * - objetivos.manage o departamentos.manage: todos los departamentos
+ * - objetivos.view.assigned: solo departamentos con entregables asignados al usuario
+ * - objetivos.view: todos los departamentos (solo lectura)
+ */
 export async function getDepartments(): Promise<Department[]> {
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return []
 
+  // Verificar permisos en orden de especificidad
+  const [
+    { data: canManage },
+    { data: canViewAssigned },
+    { data: canView },
+  ] = await Promise.all([
+    supabase.rpc('has_permission', { permission_key: 'objetivos.manage' }),
+    supabase.rpc('has_permission', { permission_key: 'objetivos.view.assigned' }),
+    supabase.rpc('has_permission', { permission_key: 'objetivos.view' }),
+  ])
+
+  // Si puede gestionar, retorna todos los departamentos
+  if (canManage) {
+    return fetchAllDepartments(supabase)
+  }
+
+  // Si solo puede ver asignados, filtrar por entregables
+  if (canViewAssigned) {
+    return getDepartmentsWithAssignments(supabase, user.id)
+  }
+
+  // Si puede ver todos (view), retorna todos los departamentos
+  if (canView) {
+    return fetchAllDepartments(supabase)
+  }
+
+  return []
+}
+
+/**
+ * Obtiene todos los departamentos con información de manager
+ */
+async function fetchAllDepartments(supabase: any): Promise<Department[]> {
   const { data } = await supabase
     .from('departments')
     .select(`
       id, name, description, manager_id, is_active, created_at,
       profiles(full_name)
     `)
+    .eq('is_active', true)
     .order('name')
 
   if (!data) return []
 
-  return data.map((d) => {
+  return data.map((d: any) => {
+    const mgr = d.profiles
+    return {
+      id: d.id,
+      name: d.name,
+      description: d.description,
+      manager_id: d.manager_id,
+      manager_name:
+        mgr && typeof mgr === 'object' && 'full_name' in mgr
+          ? (mgr as { full_name: string | null }).full_name
+          : null,
+      is_active: d.is_active,
+      created_at: d.created_at,
+    }
+  })
+}
+
+/**
+ * Obtiene solo los departamentos donde el usuario tiene entregables asignados
+ */
+async function getDepartmentsWithAssignments(supabase: any, userId: string): Promise<Department[]> {
+  // Obtener departamentos únicos donde el usuario tiene entregables asignados
+  const { data: deliverables } = await supabase
+    .from('objective_deliverables')
+    .select('objective_id!inner')
+    .eq('assignee_id', userId)
+
+  if (!deliverables || deliverables.length === 0) return []
+
+  // Obtener los department_id de los objetivos
+  const objectiveIds = deliverables.map((d: any) => d.objective_id)
+  const { data: objectives } = await supabase
+    .from('objectives')
+    .select('department_id')
+    .in('id', objectiveIds)
+
+  if (!objectives || objectives.length === 0) return []
+
+  const deptIds = [...new Set(objectives.map((o: any) => o.department_id))]
+
+  // Obtener los departamentos
+  const { data: departments } = await supabase
+    .from('departments')
+    .select(`
+      id, name, description, manager_id, is_active, created_at,
+      profiles(full_name)
+    `)
+    .in('id', deptIds)
+    .eq('is_active', true)
+    .order('name')
+
+  if (!departments) return []
+
+  return departments.map((d: any) => {
     const mgr = d.profiles
     return {
       id: d.id,
