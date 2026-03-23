@@ -15,6 +15,7 @@ import {
   ShieldCheck,
   Target,
   TrendingUp,
+  DollarSign,
 } from 'lucide-react'
 import { logout } from '@/app/(auth)/login/actions'
 import {
@@ -165,8 +166,8 @@ export function AppSidebar({ permissions = [], isRoot = false }: AppSidebarProps
           </SidebarGroup>
         )}
 
-        {/* ── Sección: Objetivos (M1 + M2) ── */}
-        {(hasPermission('objetivos.view') || hasPermission('dashboard.view')) && (
+        {/* ── Sección: Objetivos (M1 + M2 + M3) ── */}
+        {(hasPermission('objetivos.view') || hasPermission('dashboard.view') || hasPermission('incentivos.view')) && (
           <SidebarGroup>
             <SidebarGroupLabel>Objetivos</SidebarGroupLabel>
             <SidebarGroupContent>
@@ -193,6 +194,19 @@ export function AppSidebar({ permissions = [], isRoot = false }: AppSidebarProps
                       <Link href="/objetivos" className="flex items-center gap-2">
                         <Target className="h-4 w-4" />
                         <span>Objetivos</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )}
+                {hasPermission('incentivos.view') && (
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={pathname === '/incentivos' || pathname.startsWith('/incentivos/')}
+                    >
+                      <Link href="/incentivos" className="flex items-center gap-2">
+                        <DollarSign className="h-4 w-4" />
+                        <span>Incentivos</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>

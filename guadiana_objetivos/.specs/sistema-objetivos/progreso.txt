@@ -45,3 +45,11 @@ FASE 2 — Dashboard y KPIs (M2)
 [✅] T-032: Lógica de alertas automáticas — checkAndCreateAlerts ampliado con deduplicación, deadline_approaching y period_closed — 2026-03-22
 
 FASE 2 COMPLETA AL 100% ✅ — 2026-03-22
+
+FASE 3 — Incentivos (M3)
+====================================================
+[✅] T-033: Migración SQL — Tablas de incentivos (incentive_schemas, incentive_records) + RLS + triggers — 2026-03-22
+[✅] T-034: Server Actions — Incentivos (incentive-actions.ts): createIncentiveSchema, updateIncentiveSchema, deleteIncentiveSchema, calculateIncentivesForPeriod, approveIncentiveRecord, markIncentiveRecordAsPaid, getMyIncentiveHistory, getAllIncentiveRecords, getIncentiveSummary — 2026-03-22
+[✅] T-035: Componentes y páginas — IncentiveSchemaForm, IncentiveRecordRow, IncentiveSchemasList + /incentivos, /incentivos/configurar, /incentivos/calcular + /api/incentivos/export + sidebar actualizado — 2026-03-22
+
+FASE 3 COMPLETA AL 100% ✅ — 2026-03-22
