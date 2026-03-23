@@ -24,6 +24,7 @@ interface ConfigurarObjetivosClientProps {
   profiles: Profile[]
   surveys: Survey[]
   recentObjectives: (Objective & { dept_name: string })[]
+  objectivesByDept: Record<string, Objective[]>
   currentMonth: number
   currentYear: number
   initialDeptId?: string
@@ -41,6 +42,7 @@ export function ConfigurarObjetivosClient({
   profiles,
   surveys,
   recentObjectives,
+  objectivesByDept,
   currentMonth,
   currentYear,
   initialDeptId,
@@ -349,10 +351,20 @@ export function ConfigurarObjetivosClient({
             <select value={selectedObj} onChange={(e) => setSelectedObj(e.target.value)}
               className="w-full rounded border border-input px-3 py-1.5 text-sm">
               <option value="">— Seleccionar objetivo —</option>
+              {selectedDept && (objectivesByDept[selectedDept] ?? []).map((obj) => (
+                <option key={obj.id} value={obj.id}>{obj.title}</option>
+              ))}
             </select>
-            <p className="text-xs text-muted-foreground mt-1">
-              Abre el departamento desde la vista de Objetivos y usa el enlace &ldquo;+ Agregar entregable&rdquo;.
-            </p>
+            {!selectedDept && (
+              <p className="text-xs text-muted-foreground mt-1">
+                Selecciona un departamento primero para ver los objetivos disponibles.
+              </p>
+            )}
+            {selectedDept && (objectivesByDept[selectedDept] ?? []).length === 0 && (
+              <p className="text-xs text-muted-foreground mt-1">
+                No hay objetivos configurados para este departamento en el período actual.
+              </p>
+            )}
           </div>
           <div>
             <label className="block text-xs font-medium mb-1">Título *</label>

@@ -23,15 +23,21 @@ export default async function ConfigurarObjetivosPage({ searchParams }: PageProp
     supabase.from('form_surveys').select('id, name').eq('status', 'published').order('name'),
   ])
 
-  // Cargar objetivos recientes (todos los departamentos, últimos 3 meses)
+  // Cargar objetivos recientes (todos los departamentos, mes actual)
   const now = new Date()
   const currentMonth = now.getMonth() + 1
   const currentYear = now.getFullYear()
 
-  // Objetivos del mes actual y siguiente mes
+  // Objetivos del mes actual por departamento
+  const objectivesByDept: Record<string, Objective[]> = {}
+  for (const dept of departments) {
+    objectivesByDept[dept.id] = await getObjectivesByDept(dept.id, currentMonth, currentYear)
+  }
+
+  // Objetivos para mostrar en la lista (con nombre de departamento)
   const recentObjectives: (Objective & { dept_name: string })[] = []
   for (const dept of departments) {
-    const objs = await getObjectivesByDept(dept.id, currentMonth, currentYear)
+    const objs = objectivesByDept[dept.id] ?? []
     objs.forEach(obj => recentObjectives.push({ ...obj, dept_name: dept.name }))
   }
 
@@ -55,6 +61,7 @@ export default async function ConfigurarObjetivosPage({ searchParams }: PageProp
         profiles={profiles ?? []}
         surveys={surveys ?? []}
         recentObjectives={recentObjectives}
+        objectivesByDept={objectivesByDept}
         currentMonth={currentMonth}
         currentYear={currentYear}
         initialDeptId={sp.dept}
