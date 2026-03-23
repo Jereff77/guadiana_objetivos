@@ -487,3 +487,78 @@ Plataforma web (Next.js 15 App Router) + App móvil Flutter para **Llantas y Rin
 
 #### Estado Final — PROYECTO COMPLETO:
 Todas las tareas del sistema de objetivos (T-001 a T-048) han sido completadas.
+
+---
+
+### Claude (glm-4.7) - Sesión 2026-03-23 (MÓDULO M4 - ASISTENTE DE IA)
+
+#### Rol: Orquestador IA
+- **Solicitud del usuario**: Implementar el módulo M4 (Asistente de IA) según las especificaciones en `.specs/asistente-ia/`. Trabajar en una tarea a la vez hasta completar la FASE 0 o FASE 1.
+- **Análisis realizado**: Revisé los archivos de especificación (requirement.md, design.md, tasks.md). La Fase 0 (configuración externa de API) no se puede hacer en código, por lo que comencé con la Fase 1: Infraestructura Base.
+- **Decisión de agentes**: Trabajo directo — tareas bien delimitadas de SQL, TypeScript y Server Actions.
+
+#### Tareas Realizadas:
+1. **T-M4-002: Crear migración de base de datos** (Herramientas: MCP Supabase, Write)
+   - Creado: `supabase/migrations/20260324000010_complete_ai_schema.sql`
+   - Tablas creadas: `ai_analysis_log`, `ai_recommendations`, `ai_settings`, `ai_chat_sessions`, `ai_chat_messages`
+   - Permiso agregado: `ia.analyze`
+   - RLS policies configuradas usando `has_permission()` e `is_root()`
+   - Función auxiliar: `get_ai_setting()`
+
+2. **T-M4-003: Crear tipos TypeScript compartidos** (Herramientas: Write)
+   - Creado: `src/lib/ai/types.ts`
+   - Tipos: ClaudeMessage, ClaudeResponse, AgentConfig, AgentResult, EvidenceAnalysisResult, ObjectiveVerificationResult, TrainingRecommendation, ChatSession, etc.
+
+3. **T-M4-004: Implementar Claude Client** (Herramientas: Bash, Write)
+   - Instalada: `@anthropic-ai/sdk`
+   - Creado: `src/lib/ai/claude-client.ts`
+   - Clase `ClaudeClient` con métodos: `chat()`, `analyzeImage()`, `chatStream()`
+
+4. **T-M4-005: Crear System Prompt** (Herramientas: Write)
+   - Creado: `src/lib/ai/prompts/system-prompt.md`
+   - Prompt GUADIANA con identidad, propósito, personalidad y reglas
+
+5. **T-M4-006: Implementar Base Agent** (Herramientas: Write)
+   - Creado: `src/lib/ai/agents/base-agent.ts`
+   - Clase abstracta con `executePrompt()` y parseo JSON
+
+6. **T-M4-007: Crear Server Actions base** (Herramientas: Write, Edit)
+   - Creado: `src/app/(dashboard)/ia/analyze-actions.ts`
+   - Funciones: `isIAAvailable()`, `getIASettings()`, `updateIASetting()`, `getIAStats()`
+   - Helper: `loadSystemPrompt()` para obtener prompts desde BD
+
+#### Agentes Especializados Utilizados:
+- Ninguno — Trabajo directo en tareas de infraestructura.
+
+#### Errores Encontrados y Soluciones:
+- **Problema**: Error SQL `relation "user_permissions" does not exist`
+  - **Solución**: Cambié a usar `has_permission()` e `is_root()` ya existentes
+  - **Herramientas**: MCP Supabase, Edit
+  - **Archivos**: `20260324000010_complete_ai_schema.sql`
+
+- **Problema**: Tabla `department_members` no existe
+  - **Solución**: Simplifiqué políticas RLS para no usar esa tabla
+  - **Herramientas**: MCP Supabase, Edit
+  - **Archivos**: `20260324000010_complete_ai_schema.sql`
+
+- **Problema**: Errores TypeScript en ActionResult
+  - **Solución**: Agregué tipos genéricos correctos
+  - **Herramientas**: Bash (tsc), Edit
+  - **Archivos**: `src/app/(dashboard)/ia/analyze-actions.ts`
+
+#### Archivos Modificados/Creados:
+- `supabase/migrations/20260324000010_complete_ai_schema.sql`: Migración completa del schema IA
+- `src/lib/ai/types.ts`: Tipos TypeScript compartidos
+- `src/lib/ai/claude-client.ts`: Cliente de Anthropic Claude
+- `src/lib/ai/prompts/system-prompt.md`: Prompt del sistema GUADIANA
+- `src/lib/ai/agents/base-agent.ts`: Clase base para agentes
+- `src/app/(dashboard)/ia/analyze-actions.ts`: Server Actions base
+- `.specs/asistente-ia/progreso.txt`: Archivo de seguimiento
+
+#### Estado Actual Módulo M4:
+- ✅ Fase 1 (Infraestructura Base) COMPLETADA
+- 🔄 Fase 2 (Agente de Evidencias) PENDIENTE
+- 🔄 Fase 3 (Agente de Objetivos) PENDIENTE
+- 🔄 Fase 4 (Recomendador de Capacitación) PENDIENTE
+- 🔄 Fase 5 (Chat de Asistencia) PENDIENTE
+- 🔄 Fase 6 (Integración y Testing) PENDIENTE
