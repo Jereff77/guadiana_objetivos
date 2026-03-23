@@ -355,6 +355,80 @@ export async function getPublishedSurveys(): Promise<ActionResult<{ id: string; 
   return { success: true, data: (data ?? []) as { id: string; name: string; status: string }[] }
 }
 
+// ── Subir PDF a Supabase Storage ────────────────────────────────────────────────
+
+export async function uploadPdfToStorage(
+  file: File,
+  filename: string,
+): Promise<ActionResult<{ storage_path: string }>> {
+  const canManage = await checkPermission('capacitacion.manage')
+  const isRoot = await checkIsRoot()
+  if (!canManage && !isRoot) return { success: false, error: 'Sin permiso para subir archivos.' }
+
+  const supabase = await createClient()
+
+  // Generar path único: pdfs/YYYY/MM/timestamp-filename.pdf
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const timestamp = Date.now()
+  const sanitizedName = filename.replace(/[^a-zA-Z0-9._-]/g, '_')
+  const path = `pdfs/${year}/${month}/${timestamp}-${sanitizedName}`
+
+  const { data: uploadData, error: uploadError } = await supabase.storage
+    .from('lms-content')
+    .upload(path, file, { upsert: false })
+
+  if (uploadError) return { success: false, error: uploadError.message }
+
+  return { success: true, data: { storage_path: uploadData.path } }
+}
+
+// ── Crear contenido LMS desde el editor de temario ───────────────────────────────
+
+export async function createQuickContent(data: {
+  title: string
+  content_type: 'video' | 'pdf' | 'text'
+  video_url?: string
+  storage_path?: string
+  text_body?: string
+}): Promise<ActionResult<{ id: string }>> {
+  const canManage = await checkPermission('capacitacion.manage')
+  const isRoot = await checkIsRoot()
+  if (!canManage && !isRoot) return { success: false, error: 'Sin permiso para crear contenidos.' }
+
+  const supabase = await createClient()
+  const userId = await getCurrentUserId()
+
+  const insertData: Record<string, unknown> = {
+    title: data.title,
+    description: null,
+    category: null,
+    content_type: data.content_type,
+    is_published: true,
+    created_by: userId,
+  }
+
+  if (data.content_type === 'video' && data.video_url) {
+    insertData.video_url = data.video_url
+  } else if (data.content_type === 'pdf' && data.storage_path) {
+    insertData.storage_path = data.storage_path
+  } else if (data.content_type === 'text' && data.text_body) {
+    insertData.text_body = data.text_body
+  }
+
+  const { data: inserted, error } = await supabase
+    .from('lms_content')
+    .insert(insertData)
+    .select('id')
+    .single()
+
+  if (error) return { success: false, error: error.message }
+
+  revalidatePath('/capacitacion')
+  return { success: true, data: { id: inserted.id } }
+}
+
 export async function getPathProgress(
   pathId: string,
 ): Promise<ActionResult<{ total: number; completed: number; certified: boolean }>> {

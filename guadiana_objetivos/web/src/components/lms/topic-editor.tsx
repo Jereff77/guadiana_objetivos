@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
-import { ChevronUp, ChevronDown, Plus, X } from 'lucide-react'
+import { ChevronUp, ChevronDown, Plus, X, Upload } from 'lucide-react'
 import type { LmsCourseTopic } from '@/app/(dashboard)/capacitacion/course-actions'
 import type { LmsContent } from '@/app/(dashboard)/capacitacion/lms-actions'
 import {
@@ -11,6 +11,7 @@ import {
   deleteCourseTopic,
   reorderCourseTopics,
 } from '@/app/(dashboard)/capacitacion/course-actions'
+import { createQuickContent, uploadPdfToStorage } from '@/app/(dashboard)/capacitacion/lms-actions'
 
 interface TopicEditorProps {
   courseId: string
@@ -38,9 +39,15 @@ interface TopicFormState {
   title: string
   description: string
   topic_type: 'content' | 'survey'
+  contentMode: 'select' | 'create'
   content_type: LmsContent['content_type'] | ''
   content_id: string
   survey_id: string
+  // Para crear contenido nuevo
+  newContentTitle: string
+  newVideoUrl: string
+  newPdfFile: File | null
+  newTextBody: string
   is_required: boolean
 }
 
@@ -48,9 +55,14 @@ const emptyForm = (): TopicFormState => ({
   title: '',
   description: '',
   topic_type: 'content',
+  contentMode: 'select',
   content_type: '',
   content_id: '',
   survey_id: '',
+  newContentTitle: '',
+  newVideoUrl: '',
+  newPdfFile: null,
+  newTextBody: '',
   is_required: true,
 })
 
@@ -73,19 +85,80 @@ function TopicForm({
 }) {
   const [values, setValues] = useState<TopicFormState>(initialValues)
   const [error, setError] = useState<string | null>(null)
+  const [isCreating, setIsCreating] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState<string | null>(null)
 
   const set = (patch: Partial<TopicFormState>) => setValues(v => ({ ...v, ...patch }))
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!values.title.trim()) { setError('El título es obligatorio.'); return }
     if (values.topic_type === 'content') {
       if (!values.content_type) { setError('Selecciona el tipo de contenido.'); return }
-      if (!values.content_id) { setError('Selecciona un contenido.'); return }
+      if (values.contentMode === 'select') {
+        if (!values.content_id) { setError('Selecciona un contenido existente.'); return }
+      } else {
+        // Crear nuevo contenido
+        if (!values.newContentTitle.trim()) { setError('El título del contenido es obligatorio.'); return }
+        if (values.content_type === 'video' && !values.newVideoUrl.trim()) {
+          setError('Ingresa la URL del video.'); return
+        }
+        if (values.content_type === 'pdf' && !values.newPdfFile) {
+          setError('Selecciona un archivo PDF.'); return
+        }
+        if (values.content_type === 'text' && !values.newTextBody.trim()) {
+          setError('Escribe el contenido de texto.'); return
+        }
+      }
     }
     if (values.topic_type === 'survey' && !values.survey_id) { setError('Selecciona una evaluación.'); return }
+
     setError(null)
-    onSubmit(values)
+    setIsCreating(true)
+    setUploadProgress(null)
+
+    try {
+      let finalContentId = values.content_id
+
+      // Si es crear nuevo contenido
+      if (values.topic_type === 'content' && values.contentMode === 'create') {
+        setUploadProgress('Creando contenido...')
+
+        let createData: Parameters<typeof createQuickContent>[0] = {
+          title: values.newContentTitle.trim(),
+          content_type: values.content_type as 'video' | 'pdf' | 'text',
+        }
+
+        if (values.content_type === 'video') {
+          createData.video_url = values.newVideoUrl.trim()
+        } else if (values.content_type === 'pdf' && values.newPdfFile) {
+          setUploadProgress('Subiendo PDF...')
+          const uploadResult = await uploadPdfToStorage(values.newPdfFile, values.newPdfFile.name)
+          if (!uploadResult.success) {
+            setError(uploadResult.error ?? 'Error al subir el PDF.')
+            setIsCreating(false)
+            return
+          }
+          createData.storage_path = uploadResult.data?.storage_path
+        } else if (values.content_type === 'text') {
+          createData.text_body = values.newTextBody.trim()
+        }
+
+        const contentResult = await createQuickContent(createData)
+        if (!contentResult.success) {
+          setError(contentResult.error ?? 'Error al crear el contenido.')
+          setIsCreating(false)
+          return
+        }
+        finalContentId = contentResult.data?.id ?? ''
+      }
+
+      // Enviar con el content_id final
+      onSubmit({ ...values, content_id: finalContentId })
+    } catch (err) {
+      setError('Error al procesar. Inténtalo de nuevo.')
+      setIsCreating(false)
+    }
   }
 
   return (
@@ -95,7 +168,7 @@ function TopicForm({
         value={values.title}
         onChange={e => set({ title: e.target.value })}
         placeholder="Título del tema *"
-        disabled={isPending}
+        disabled={isPending || isCreating}
         className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
       />
       <input
@@ -103,7 +176,7 @@ function TopicForm({
         value={values.description}
         onChange={e => set({ description: e.target.value })}
         placeholder="Descripción (opcional)"
-        disabled={isPending}
+        disabled={isPending || isCreating}
         className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
       />
 
@@ -114,7 +187,7 @@ function TopicForm({
             type="radio"
             checked={values.topic_type === 'content'}
             onChange={() => set({ topic_type: 'content', survey_id: '' })}
-            disabled={isPending}
+            disabled={isPending || isCreating}
             className="accent-primary"
           />
           Contenido
@@ -124,7 +197,7 @@ function TopicForm({
             type="radio"
             checked={values.topic_type === 'survey'}
             onChange={() => set({ topic_type: 'survey', content_id: '' })}
-            disabled={isPending}
+            disabled={isPending || isCreating}
             className="accent-primary"
           />
           Evaluación
@@ -136,8 +209,8 @@ function TopicForm({
         <>
           <select
             value={values.content_type}
-            onChange={e => set({ content_type: e.target.value as LmsContent['content_type'] | '', content_id: '' })}
-            disabled={isPending}
+            onChange={e => set({ content_type: e.target.value as LmsContent['content_type'] | '', content_id: '', contentMode: 'select' })}
+            disabled={isPending || isCreating}
             className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
           >
             <option value="">— Seleccionar tipo de contenido —</option>
@@ -147,16 +220,135 @@ function TopicForm({
             <option value="quiz">Evaluación rápida</option>
           </select>
 
-          {/* Selector de contenido filtrado por tipo */}
-          {values.content_type && (
+          {/* Modo: seleccionar existente vs crear nuevo */}
+          {values.content_type && values.content_type !== 'quiz' && (
+            <div className="flex gap-4 text-sm">
+              <label className="flex items-center gap-1.5 cursor-pointer">
+                <input
+                  type="radio"
+                  checked={values.contentMode === 'select'}
+                  onChange={() => set({ contentMode: 'select' })}
+                  disabled={isPending || isCreating}
+                  className="accent-primary"
+                />
+                Seleccionar existente
+              </label>
+              <label className="flex items-center gap-1.5 cursor-pointer">
+                <input
+                  type="radio"
+                  checked={values.contentMode === 'create'}
+                  onChange={() => set({ contentMode: 'create', content_id: '' })}
+                  disabled={isPending || isCreating}
+                  className="accent-primary"
+                />
+                Crear nuevo
+              </label>
+            </div>
+          )}
+
+          {/* Seleccionar existente */}
+          {values.content_type && values.contentMode === 'select' && (
             <select
               value={values.content_id}
               onChange={e => set({ content_id: e.target.value })}
-              disabled={isPending}
+              disabled={isPending || isCreating}
               className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
             >
               <option value="">— Seleccionar {typeLabels[values.content_type].toLowerCase()} —</option>
               {allContents.filter(c => c.content_type === values.content_type).map(c => (
+                <option key={c.id} value={c.id}>{c.title}</option>
+              ))}
+            </select>
+          )}
+
+          {/* Crear nuevo: Video */}
+          {values.content_type === 'video' && values.contentMode === 'create' && (
+            <div className="space-y-2">
+              <input
+                type="text"
+                value={values.newContentTitle}
+                onChange={e => set({ newContentTitle: e.target.value })}
+                placeholder="Título del video *"
+                disabled={isPending || isCreating}
+                className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              />
+              <input
+                type="url"
+                value={values.newVideoUrl}
+                onChange={e => set({ newVideoUrl: e.target.value })}
+                placeholder="URL del video (YouTube, Vimeo, etc.) *"
+                disabled={isPending || isCreating}
+                className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              />
+            </div>
+          )}
+
+          {/* Crear nuevo: PDF */}
+          {values.content_type === 'pdf' && values.contentMode === 'create' && (
+            <div className="space-y-2">
+              <input
+                type="text"
+                value={values.newContentTitle}
+                onChange={e => set({ newContentTitle: e.target.value })}
+                placeholder="Título del PDF *"
+                disabled={isPending || isCreating}
+                className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              />
+              <label className="flex items-center gap-2 text-sm cursor-pointer">
+                <input
+                  type="file"
+                  accept=".pdf,application/pdf"
+                  disabled={isPending || isCreating}
+                  onChange={e => {
+                    const file = e.target.files?.[0]
+                    if (file) set({ newPdfFile: file })
+                  }}
+                  className="hidden"
+                  id="pdf-upload"
+                />
+                <label
+                  htmlFor="pdf-upload"
+                  className="flex items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm hover:bg-muted cursor-pointer"
+                >
+                  <Upload className="h-4 w-4" />
+                  {values.newPdfFile ? values.newPdfFile.name : 'Seleccionar archivo PDF'}
+                </label>
+              </label>
+            </div>
+          )}
+
+          {/* Crear nuevo: Texto */}
+          {values.content_type === 'text' && values.contentMode === 'create' && (
+            <div className="space-y-2">
+              <input
+                type="text"
+                value={values.newContentTitle}
+                onChange={e => set({ newContentTitle: e.target.value })}
+                placeholder="Título del texto *"
+                disabled={isPending || isCreating}
+                className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              />
+              <textarea
+                value={values.newTextBody}
+                onChange={e => set({ newTextBody: e.target.value })}
+                placeholder="Escribe el contenido aquí... *"
+                disabled={isPending || isCreating}
+                rows={8}
+                className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-y"
+              />
+            </div>
+          )}
+
+          {/* Quiz: solo seleccionar existente */}
+          {values.content_type === 'quiz' && (
+            <select
+              value={values.content_id}
+              onChange={e => set({ content_id: e.target.value })}
+              disabled={isPending || isCreating}
+              className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            >
+              <option value="">— Seleccionar evaluación rápida —</option>
+              {allContents.filter(c => c.content_type === 'quiz').map(c => (
                 <option key={c.id} value={c.id}>{c.title}</option>
               ))}
             </select>
@@ -169,7 +361,7 @@ function TopicForm({
         <select
           value={values.survey_id}
           onChange={e => set({ survey_id: e.target.value })}
-          disabled={isPending}
+          disabled={isPending || isCreating}
           className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
         >
           <option value="">— Seleccionar evaluación —</option>
@@ -184,7 +376,7 @@ function TopicForm({
           type="checkbox"
           checked={values.is_required}
           onChange={e => set({ is_required: e.target.checked })}
-          disabled={isPending}
+          disabled={isPending || isCreating}
           className="h-4 w-4 rounded border-input accent-primary"
         />
         Obligatorio para completar el curso
@@ -196,18 +388,24 @@ function TopicForm({
         </p>
       )}
 
+      {uploadProgress && (
+        <p className="rounded-md bg-blue-50 border border-blue-200 text-blue-700 px-3 py-1.5 text-xs">
+          {uploadProgress}
+        </p>
+      )}
+
       <div className="flex gap-2">
         <button
           type="submit"
-          disabled={isPending}
+          disabled={isPending || isCreating}
           className="rounded-md bg-primary text-primary-foreground text-xs font-medium px-3 py-1.5 hover:bg-primary/90 disabled:opacity-50 transition-colors"
         >
-          {isPending ? 'Guardando…' : submitLabel}
+          {isCreating ? 'Procesando…' : isPending ? 'Guardando…' : submitLabel}
         </button>
         <button
           type="button"
           onClick={onCancel}
-          disabled={isPending}
+          disabled={isPending || isCreating}
           className="rounded-md border text-xs font-medium px-3 py-1.5 hover:bg-muted transition-colors"
         >
           Cancelar
@@ -374,9 +572,14 @@ export function TopicEditor({ courseId, initialTopics, allContents, publishedSur
                     title: topic.title,
                     description: topic.description ?? '',
                     topic_type: topic.topic_type,
+                    contentMode: 'select',
                     content_type: topic.lms_content?.content_type ?? '',
                     content_id: topic.content_id ?? '',
                     survey_id: topic.survey_id ?? '',
+                    newContentTitle: '',
+                    newVideoUrl: '',
+                    newPdfFile: null,
+                    newTextBody: '',
                     is_required: topic.is_required,
                   }}
                   allContents={allContents}
