@@ -9,7 +9,6 @@ interface ContentCardProps {
   content: LmsContent
   progress?: LmsProgress
   canManage?: boolean
-  onStart: (id: string) => void
 }
 
 const typeLabels: Record<LmsContent['content_type'], string> = {
@@ -26,14 +25,13 @@ const typeColors: Record<LmsContent['content_type'], string> = {
   quiz: 'bg-green-100 text-green-700',
 }
 
-export function ContentCard({ content, progress, canManage, onStart }: ContentCardProps) {
+export function ContentCard({ content, progress, canManage }: ContentCardProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
 
   const handleView = () => {
     startTransition(async () => {
       await startContent(content.id)
-      onStart(content.id)
       router.push(`/capacitacion/${content.id}`)
     })
   }

@@ -114,10 +114,6 @@ export default async function CapacitacionPage({ searchParams }: CapacitacionPag
                 name="categoria"
                 defaultValue={categoria ?? ''}
                 className="rounded-md border border-input bg-background px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                onChange={(e) => {
-                  const form = e.currentTarget.closest('form') as HTMLFormElement
-                  form.submit()
-                }}
               >
                 <option value="">Todas</option>
                 {categories.map((cat) => (
@@ -126,6 +122,12 @@ export default async function CapacitacionPage({ searchParams }: CapacitacionPag
                   </option>
                 ))}
               </select>
+              <button
+                type="submit"
+                className="rounded-md border px-3 py-1.5 text-sm hover:bg-muted transition-colors"
+              >
+                Filtrar
+              </button>
             </form>
           )}
         </div>
@@ -146,7 +148,6 @@ export default async function CapacitacionPage({ searchParams }: CapacitacionPag
                 content={content}
                 progress={progressMap.get(content.id)}
                 canManage={userCanManage}
-                onStart={() => {}}
               />
             ))}
           </div>
