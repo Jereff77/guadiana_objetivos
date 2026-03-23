@@ -11,13 +11,15 @@
 Plataforma web (Next.js 15 App Router) + App móvil Flutter para **Llantas y Rines del Guadiana**. Backend sobre Supabase (PostgreSQL, Auth, Storage, RLS). Dos grandes módulos:
 
 1. **Checklists/Formularios** (MVP completado 2026-03-20/21): Diseño de formularios, asignaciones, respuestas móviles, resultados y estadísticas.
-2. **Sistema de Objetivos e Incentivos** (desarrollado 2026-03-22, FASES 0–5 completadas):
+2. **Sistema de Objetivos e Incentivos** (desarrollado 2026-03-22, **TODAS LAS FASES COMPLETADAS** T-001 a T-048):
    - M0: Roles y permisos granulares
    - M1: Objetivos por departamento con entregables y evidencias
    - M2: Dashboard KPIs y gráficas
    - M3: Incentivos con cálculo automático y aprobación
    - M4: Servicio Python FastAPI + Claude para análisis IA de evidencias
    - M6: Mentoring — pares mentor-mentee y sesiones con seguimiento
+   - M7: LMS — catálogo de contenidos, quizzes, rutas de aprendizaje, chat IA
+   - Transversales: tipos TypeScript regenerados, variables de entorno, página /inicio
 
 **Supabase Project URL**: https://zpqjzjqwlofzvxeeczcq.supabase.co
 **Monorepo root**: `guadiana_objetivos/`
@@ -381,7 +383,7 @@ Plataforma web (Next.js 15 App Router) + App móvil Flutter para **Llantas y Rin
 | FASE 5 — Mentoring | M6 | ✅ COMPLETA (Claude Sonnet 4.6) - 2026-03-22 |
 | FASE 6 — LMS | M7 | ✅ COMPLETA (Claude Sonnet 4.6) - 2026-03-22 |
 
-#### Resumen de tareas completadas del sistema de objetivos (T-001 a T-043):
+#### Resumen de tareas completadas del sistema de objetivos (T-001 a T-048):
 - **FASE 0** (T-001–T-021): Roles granulares, permisos, usuarios, funciones SQL `is_root`/`has_permission`, RLS, sidebar administración
 - **FASE 1** (T-022–T-027): Departamentos, objetivos, entregables, evidencias, reviews, progress tracking, exportación CSV
 - **FASE 2** (T-028–T-032): Dashboard KPIs, gráficas Recharts (trend, compliance bar), ranking de departamentos, alertas automáticas con deduplicación
@@ -389,6 +391,7 @@ Plataforma web (Next.js 15 App Router) + App móvil Flutter para **Llantas y Rin
 - **FASE 4** (T-036–T-041, T-047): Servicio Python FastAPI, análisis Claude claude-sonnet-4-6, extracción PDF/imágenes, notificaciones WhatsApp, log de análisis IA, gestión de prompts configurables
 - **FASE 5** (T-042–T-043): Pares mentor-mentee, sesiones con seguimiento completo, feedback mentee, reportes por par, vinculación con objetivos M1
 - **FASE 6** (T-044–T-045): Esquema LMS (lms_content, lms_quizzes, lms_paths, lms_progress), catálogo de contenidos, quiz interactivo, rutas de aprendizaje con certificación, asistente IA vía chat
+- **Transversales** (T-046–T-048): `database.types.ts` regenerado (122 KB con todos los tipos nuevos), `.env.example` documentado, página `/inicio` con 11 tarjetas de acceso rápido por permisos + panel de alertas
 
 ---
 
