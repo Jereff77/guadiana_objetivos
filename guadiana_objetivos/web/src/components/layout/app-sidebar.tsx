@@ -8,10 +8,11 @@ import {
   FileText,
   ClipboardList,
   BarChart3,
-  Settings,
   LogOut,
   FolderOpen,
   ChevronDown,
+  Users,
+  ShieldCheck,
 } from 'lucide-react'
 import { logout } from '@/app/(auth)/login/actions'
 import {
@@ -19,8 +20,8 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
-  SidebarGroupContent,
   SidebarGroupLabel,
+  SidebarGroupContent,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -39,34 +40,60 @@ const checklistItems = [
   { title: 'Resultados', href: '/resultados', icon: BarChart3 },
 ]
 
-const settingsItems = [
-  { title: 'Configuración', href: '/configuracion', icon: Settings },
+const adminItems = [
+  { title: 'Usuarios', href: '/usuarios', icon: Users, permission: 'users.view' },
+  { title: 'Roles', href: '/roles', icon: ShieldCheck, permission: 'roles.view' },
 ]
 
-export function AppSidebar() {
+interface AppSidebarProps {
+  permissions?: string[]
+  isRoot?: boolean
+}
+
+export function AppSidebar({ permissions = [], isRoot = false }: AppSidebarProps) {
   const pathname = usePathname()
 
+  const hasPermission = (key: string) => isRoot || permissions.includes(key)
+
+  // Sección Procesos (Checklists)
   const isProcessActive = checklistItems.some(
     (item) => pathname === item.href || pathname.startsWith(item.href + '/')
   )
+  const [isProcessOpen, setIsProcessOpen] = useState(false)
+  const processTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  // Siempre inicia en false para evitar mismatch de hidratación entre servidor y cliente.
-  // useEffect abre el submenú tras el montaje si hay una ruta activa del módulo.
-  const [isOpen, setIsOpen] = useState(false)
-  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  // Sección Administración
+  const adminVisible = adminItems.filter((item) => hasPermission(item.permission))
+  const isAdminActive = adminItems.some(
+    (item) => pathname === item.href || pathname.startsWith(item.href + '/')
+  )
+  const [isAdminOpen, setIsAdminOpen] = useState(false)
+  const adminTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
-    setIsOpen(isProcessActive)
-  }, [pathname])
+    setIsProcessOpen(isProcessActive)
+    setIsAdminOpen(isAdminActive)
+  }, [pathname, isProcessActive, isAdminActive])
 
-  const handleMouseEnter = () => {
-    if (closeTimerRef.current) clearTimeout(closeTimerRef.current)
-    setIsOpen(true)
+  // Handlers Procesos
+  const onProcessEnter = () => {
+    if (processTimerRef.current) clearTimeout(processTimerRef.current)
+    setIsProcessOpen(true)
+  }
+  const onProcessLeave = () => {
+    processTimerRef.current = setTimeout(() => {
+      if (!isProcessActive) setIsProcessOpen(false)
+    }, 150)
   }
 
-  const handleMouseLeave = () => {
-    closeTimerRef.current = setTimeout(() => {
-      if (!isProcessActive) setIsOpen(false)
+  // Handlers Admin
+  const onAdminEnter = () => {
+    if (adminTimerRef.current) clearTimeout(adminTimerRef.current)
+    setIsAdminOpen(true)
+  }
+  const onAdminLeave = () => {
+    adminTimerRef.current = setTimeout(() => {
+      if (!isAdminActive) setIsAdminOpen(false)
     }, 150)
   }
 
@@ -88,20 +115,69 @@ export function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent>
+        {/* ── Sección: Administración ── */}
+        {adminVisible.length > 0 && (
+          <SidebarGroup>
+            <SidebarGroupLabel>Administración</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem
+                  onMouseEnter={onAdminEnter}
+                  onMouseLeave={onAdminLeave}
+                >
+                  <Collapsible open={isAdminOpen} onOpenChange={setIsAdminOpen}>
+                    <SidebarMenuButton isActive={isAdminActive && !isAdminOpen} className="w-full">
+                      <ShieldCheck className="h-4 w-4" />
+                      <span>Administración</span>
+                      <ChevronDown
+                        className={cn(
+                          'ml-auto h-4 w-4 shrink-0 transition-transform duration-200',
+                          isAdminOpen && 'rotate-180'
+                        )}
+                      />
+                    </SidebarMenuButton>
+                    <CollapsibleContent>
+                      <SidebarMenuSub>
+                        {adminVisible.map((item) => {
+                          const active = pathname === item.href || pathname.startsWith(item.href + '/')
+                          return (
+                            <SidebarMenuSubItem key={item.href}>
+                              <SidebarMenuSubButton asChild isActive={active}>
+                                <Link
+                                  href={item.href}
+                                  className={cn('flex items-center gap-2', active && 'font-medium')}
+                                >
+                                  <item.icon className="h-4 w-4" />
+                                  <span>{item.title}</span>
+                                </Link>
+                              </SidebarMenuSubButton>
+                            </SidebarMenuSubItem>
+                          )
+                        })}
+                      </SidebarMenuSub>
+                    </CollapsibleContent>
+                  </Collapsible>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+
+        {/* ── Sección: Procesos (Checklists M5) ── */}
         <SidebarGroup>
           <SidebarMenu>
             <SidebarMenuItem
-              onMouseEnter={handleMouseEnter}
-              onMouseLeave={handleMouseLeave}
+              onMouseEnter={onProcessEnter}
+              onMouseLeave={onProcessLeave}
             >
-              <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-                <SidebarMenuButton isActive={isProcessActive && !isOpen} className="w-full">
+              <Collapsible open={isProcessOpen} onOpenChange={setIsProcessOpen}>
+                <SidebarMenuButton isActive={isProcessActive && !isProcessOpen} className="w-full">
                   <FolderOpen className="h-4 w-4" />
                   <span>Procesos</span>
                   <ChevronDown
                     className={cn(
                       'ml-auto h-4 w-4 shrink-0 transition-transform duration-200',
-                      isOpen && 'rotate-180'
+                      isProcessOpen && 'rotate-180'
                     )}
                   />
                 </SidebarMenuButton>
@@ -129,24 +205,6 @@ export function AppSidebar() {
               </Collapsible>
             </SidebarMenuItem>
           </SidebarMenu>
-        </SidebarGroup>
-
-        <SidebarGroup>
-          <SidebarGroupLabel>Sistema</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {settingsItems.map((item) => (
-                <SidebarMenuItem key={item.href}>
-                  <SidebarMenuButton asChild isActive={pathname === item.href}>
-                    <Link href={item.href} className="flex items-center gap-2">
-                      <item.icon className="h-4 w-4" />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
 

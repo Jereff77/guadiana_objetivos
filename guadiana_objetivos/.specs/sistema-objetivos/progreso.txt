@@ -1,0 +1,26 @@
+FASE 0 — Sistema de Usuarios y Roles Granular (M0)
+====================================================
+[✅] T-001: Migración SQL — Tablas del sistema de roles (platform_modules, roles, role_permissions, role_change_log) — 2026-03-22
+[✅] T-002: Migración SQL — Actualizar tabla profiles (role_id, phone, whatsapp, avatar_url, last_seen) — 2026-03-22
+[✅] T-003: Migración SQL — Funciones SQL de permisos (is_root, has_permission, current_user_role_id, handle_new_user) — 2026-03-22
+[✅] T-004: Migración SQL — RLS para tablas M0 — 2026-03-22
+[✅] T-005: Migración de datos — Roles actuales a nuevo sistema (5 roles + permisos + update profiles) — 2026-03-22
+[✅] T-006: Helper de permisos en Next.js (permissions.ts) — 2026-03-22
+[✅] T-007: Server Actions — Gestión de roles (role-actions.ts) — 2026-03-22
+[✅] T-008: Server Actions — Gestión de usuarios (user-actions.ts) — 2026-03-22
+[✅] T-009: Componente — PermissionsMatrix — 2026-03-22
+[✅] T-010: Componente — RolesTable — 2026-03-22
+[✅] T-011: Componente — RoleForm — 2026-03-22
+[✅] T-012: Página — /roles — 2026-03-22
+[✅] T-013: Páginas — /roles/nuevo y /roles/[id] — 2026-03-22
+[✅] T-014: Componente — UsersTable — 2026-03-22
+[✅] T-015: Componente — UserProfileForm — 2026-03-22
+[✅] T-016: Componente — UserRoleSelector — 2026-03-22
+[✅] T-017: Página — /usuarios — 2026-03-22
+[✅] T-018: Página — /usuarios/[id] — 2026-03-22
+[✅] T-019: Página — /sin-acceso — 2026-03-22
+[✅] T-020: Actualizar sidebar con sección Administración — 2026-03-22
+[✅] T-021: Actualizar M5 para usar has_permission() (RLS migrado) — 2026-03-22
+
+FASE 0 COMPLETA AL 100% ✅ — 2026-03-22
+Usuario jereff@aceleremos.com marcado como root manualmente.
