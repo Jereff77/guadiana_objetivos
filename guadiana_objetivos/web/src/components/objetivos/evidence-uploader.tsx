@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Upload, FileText } from 'lucide-react'
+import { Upload, FileText, X, Plus } from 'lucide-react'
 import { submitEvidence, uploadEvidenceFile } from '../../app/(dashboard)/objetivos/deliverable-actions'
 
 interface EvidenceUploaderProps {
@@ -10,6 +10,15 @@ interface EvidenceUploaderProps {
 }
 
 type EvidenceTab = 'file' | 'url' | 'text'
+
+interface PendingEvidence {
+  id: string
+  type: EvidenceTab
+  file?: File
+  url?: string
+  text?: string
+  notes?: string
+}
 
 export function EvidenceUploader({ deliverableId, onSuccess }: EvidenceUploaderProps) {
   const [tab, setTab] = useState<EvidenceTab>('file')
@@ -20,10 +29,9 @@ export function EvidenceUploader({ deliverableId, onSuccess }: EvidenceUploaderP
   const [saving, setSaving] = useState(false)
   const [uploadProgress, setUploadProgress] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [pendingEvidences, setPendingEvidences] = useState<PendingEvidence[]>([])
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-
+  function addToPendingList() {
     if (tab === 'file' && !file) {
       setError('Selecciona un archivo para subir')
       return
@@ -37,41 +45,80 @@ export function EvidenceUploader({ deliverableId, onSuccess }: EvidenceUploaderP
       return
     }
 
+    const newEvidence: PendingEvidence = {
+      id: Math.random().toString(36).substring(7),
+      type: tab,
+      file: tab === 'file' ? file || undefined : undefined,
+      url: tab === 'url' ? url.trim() : undefined,
+      text: tab === 'text' ? text.trim() : undefined,
+      notes: notes.trim() || undefined,
+    }
+
+    setPendingEvidences([...pendingEvidences, newEvidence])
+
+    // Limpiar formulario
+    setFile(null)
+    setUrl('')
+    setText('')
+    setNotes('')
+    setError(null)
+  }
+
+  function removePending(id: string) {
+    setPendingEvidences(pendingEvidences.filter(e => e.id !== id))
+  }
+
+  async function handleSubmitAll(e: React.FormEvent) {
+    e.preventDefault()
+
+    if (pendingEvidences.length === 0) {
+      setError('Agrega al menos una evidencia')
+      return
+    }
+
     setSaving(true)
     setError(null)
     setUploadProgress(null)
 
     try {
-      let storage_path: string | undefined
+      for (let i = 0; i < pendingEvidences.length; i++) {
+        const ev = pendingEvidences[i]
+        setUploadProgress(`Procesando evidencia ${i + 1} de ${pendingEvidences.length}...`)
 
-      // Si es archivo, subir primero a Storage
-      if (tab === 'file' && file) {
-        setUploadProgress('Subiendo archivo...')
-        const uploadResult = await uploadEvidenceFile(file, deliverableId)
-        if (uploadResult.error) {
-          setError(uploadResult.error)
+        let storage_path: string | undefined
+
+        // Si es archivo, subir primero a Storage
+        if (ev.type === 'file' && ev.file) {
+          const uploadResult = await uploadEvidenceFile(ev.file, deliverableId)
+          if (uploadResult.error) {
+            setError(`Error en archivo ${ev.file.name}: ${uploadResult.error}`)
+            setSaving(false)
+            setUploadProgress(null)
+            return
+          }
+          storage_path = uploadResult.storage_path
+        }
+
+        // Guardar evidencia en BD
+        const result = await submitEvidence(deliverableId, {
+          storage_path,
+          evidence_url: ev.url,
+          text_content: ev.text,
+          notes: ev.notes,
+        })
+
+        if (result.error) {
+          setError(`Error al guardar evidencia ${i + 1}: ${result.error}`)
           setSaving(false)
+          setUploadProgress(null)
           return
         }
-        storage_path = uploadResult.storage_path
       }
-
-      setUploadProgress('Guardando evidencia...')
-      const result = await submitEvidence(deliverableId, {
-        storage_path,
-        evidence_url: tab === 'url' ? url.trim() : undefined,
-        text_content: tab === 'text' ? text.trim() : undefined,
-        notes: notes.trim() || undefined,
-      })
 
       setSaving(false)
       setUploadProgress(null)
-
-      if (result.error) {
-        setError(result.error)
-      } else {
-        onSuccess?.()
-      }
+      setPendingEvidences([])
+      onSuccess?.()
     } catch (err) {
       setError('Error al procesar. Inténtalo de nuevo.')
       setSaving(false)
@@ -80,8 +127,8 @@ export function EvidenceUploader({ deliverableId, onSuccess }: EvidenceUploaderP
   }
 
   return (
-    <form onSubmit={handleSubmit} className="border rounded-md p-3 space-y-3 bg-muted/20">
-      <h4 className="text-xs font-semibold text-foreground">Subir evidencia</h4>
+    <form onSubmit={handleSubmitAll} className="border rounded-md p-3 space-y-3 bg-muted/20">
+      <h4 className="text-xs font-semibold text-foreground">Subir evidencias</h4>
 
       {error && (
         <p className="text-xs text-red-600 bg-red-50 border border-red-200 rounded px-2 py-1">
@@ -93,6 +140,44 @@ export function EvidenceUploader({ deliverableId, onSuccess }: EvidenceUploaderP
         <p className="text-xs text-blue-600 bg-blue-50 border border-blue-200 rounded px-2 py-1">
           {uploadProgress}
         </p>
+      )}
+
+      {/* Lista de evidencias pendientes */}
+      {pendingEvidences.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-xs font-semibold text-muted-foreground">
+            Evidencias agregadas ({pendingEvidences.length}):
+          </p>
+          {pendingEvidences.map((ev) => (
+            <div key={ev.id} className="flex items-start gap-2 p-2 rounded bg-background border">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-medium text-brand-blue">
+                    {ev.type === 'file' && 'Archivo'}
+                    {ev.type === 'url' && 'URL'}
+                    {ev.type === 'text' && 'Texto'}
+                  </span>
+                  {ev.notes && (
+                    <span className="text-xs text-muted-foreground truncate">— {ev.notes}</span>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground truncate mt-0.5">
+                  {ev.type === 'file' && ev.file?.name}
+                  {ev.type === 'url' && ev.url}
+                  {ev.type === 'text' && ev.text?.substring(0, 50) + (ev.text!.length > 50 ? '...' : '')}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => removePending(ev.id)}
+                className="text-red-500 hover:text-red-700 p-1"
+                title="Eliminar"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          ))}
+        </div>
       )}
 
       {/* Tabs: Archivo, URL, Texto */}
@@ -183,13 +268,25 @@ export function EvidenceUploader({ deliverableId, onSuccess }: EvidenceUploaderP
 
       <div className="flex items-center gap-2">
         <button
-          type="submit"
+          type="button"
+          onClick={addToPendingList}
           disabled={saving || (tab === 'file' && !file)}
-          className="inline-flex items-center gap-1.5 rounded bg-brand-blue text-white px-3 py-1.5
-            text-xs font-medium hover:bg-brand-blue/90 disabled:opacity-60 transition-colors"
+          className="inline-flex items-center gap-1.5 rounded bg-green-600 text-white px-3 py-1.5
+            text-xs font-medium hover:bg-green-700 disabled:opacity-60 transition-colors"
         >
-          {saving ? 'Procesando…' : 'Enviar evidencia'}
+          <Plus className="h-3 w-3" />
+          Agregar evidencia
         </button>
+        {pendingEvidences.length > 0 && (
+          <button
+            type="submit"
+            disabled={saving}
+            className="inline-flex items-center gap-1.5 rounded bg-brand-blue text-white px-3 py-1.5
+              text-xs font-medium hover:bg-brand-blue/90 disabled:opacity-60 transition-colors"
+          >
+            {saving ? 'Enviando…' : `Enviar todas (${pendingEvidences.length})`}
+          </button>
+        )}
       </div>
     </form>
   )
