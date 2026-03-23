@@ -23,8 +23,12 @@ export interface Department {
 
 async function assertManage() {
   const supabase = await createClient()
-  const { data } = await supabase.rpc('has_permission', { permission_key: 'objetivos.manage' })
-  if (!data) redirect('/sin-acceso')
+  // Permite acceso con departamentos.manage O con objetivos.manage (retrocompatible)
+  const [{ data: deptPerm }, { data: objPerm }] = await Promise.all([
+    supabase.rpc('has_permission', { permission_key: 'departamentos.manage' }),
+    supabase.rpc('has_permission', { permission_key: 'objetivos.manage' }),
+  ])
+  if (!deptPerm && !objPerm) redirect('/sin-acceso')
 }
 
 export async function getDepartments(): Promise<Department[]> {

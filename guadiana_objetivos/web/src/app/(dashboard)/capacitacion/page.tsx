@@ -21,12 +21,16 @@ export default async function CapacitacionPage({ searchParams }: CapacitacionPag
 
   const { categoria } = await searchParams
 
-  const [canManage, isRoot] = await Promise.all([
+  const [canManage, canEdit, canDelete, isRoot] = await Promise.all([
     checkPermission('capacitacion.manage'),
+    checkPermission('capacitacion.edit'),
+    checkPermission('capacitacion.delete'),
     checkIsRoot(),
   ])
 
   const userCanManage = canManage || isRoot
+  const userCanEdit   = userCanManage || canEdit
+  const userCanDelete = userCanManage || canDelete
 
   const [contentsResult, pathsResult, progressResult] = await Promise.all([
     getLmsContents(userCanManage ? false : true),
@@ -148,6 +152,8 @@ export default async function CapacitacionPage({ searchParams }: CapacitacionPag
                 content={content}
                 progress={progressMap.get(content.id)}
                 canManage={userCanManage}
+                canEdit={userCanEdit}
+                canDelete={userCanDelete}
               />
             ))}
           </div>

@@ -1,11 +1,57 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { cookies } from 'next/headers'
+
+// ── Helper interno: permisos del rol en vista previa ─────────────────────────
+// Retorna null si no hay preview activo, o el array de permission keys del rol.
+
+async function getPreviewPermissions(): Promise<string[] | null> {
+  const cookieStore = await cookies()
+  const previewRoleId = cookieStore.get('guadiana_preview_role')?.value
+  if (!previewRoleId) return null
+
+  const supabase = await createClient()
+
+  const { data: role } = await supabase
+    .from('roles')
+    .select('is_root')
+    .eq('id', previewRoleId)
+    .single()
+
+  if (role?.is_root) {
+    const { data: modules } = await supabase
+      .from('platform_modules')
+      .select('key')
+      .eq('is_active', true)
+    return (modules ?? []).map((m: { key: string }) => m.key)
+  }
+
+  const { data: perms } = await supabase
+    .from('role_permissions')
+    .select('platform_modules(key)')
+    .eq('role_id', previewRoleId)
+
+  return (perms ?? [])
+    .map((p: { platform_modules: unknown }) => {
+      const mod = p.platform_modules
+      if (mod && typeof mod === 'object' && 'key' in mod) {
+        return (mod as { key: string }).key
+      }
+      return null
+    })
+    .filter((k): k is string => k !== null)
+}
+
+// ── Funciones públicas ────────────────────────────────────────────────────────
 
 /**
  * Verifica si el usuario actual tiene un permiso específico.
- * Llama a la función SQL has_permission() que incluye bypass para root.
+ * En modo vista previa, comprueba los permisos del rol de prueba.
  */
 export async function checkPermission(key: string): Promise<boolean> {
+  const preview = await getPreviewPermissions()
+  if (preview !== null) return preview.includes(key)
+
   const supabase = await createClient()
   const { data } = await supabase.rpc('has_permission', { permission_key: key })
   return data === true
@@ -13,8 +59,22 @@ export async function checkPermission(key: string): Promise<boolean> {
 
 /**
  * Verifica si el usuario actual tiene el rol root.
+ * En modo vista previa, refleja si el rol de prueba es root.
  */
 export async function checkIsRoot(): Promise<boolean> {
+  const cookieStore = await cookies()
+  const previewRoleId = cookieStore.get('guadiana_preview_role')?.value
+
+  if (previewRoleId) {
+    const supabase = await createClient()
+    const { data: role } = await supabase
+      .from('roles')
+      .select('is_root')
+      .eq('id', previewRoleId)
+      .single()
+    return role?.is_root === true
+  }
+
   const supabase = await createClient()
   const { data } = await supabase.rpc('is_root')
   return data === true
@@ -41,14 +101,16 @@ export async function requireRoot(): Promise<void> {
 
 /**
  * Retorna la lista de claves de permisos que tiene el usuario actual.
- * Útil para pasar al cliente (para mostrar/ocultar UI).
+ * En modo vista previa, retorna los permisos del rol de prueba.
  */
 export async function getUserPermissions(): Promise<string[]> {
+  const preview = await getPreviewPermissions()
+  if (preview !== null) return preview
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return []
 
-  // Si es root, retornar todos los permisos disponibles
   const isRoot = await checkIsRoot()
   if (isRoot) {
     const { data: modules } = await supabase
@@ -58,7 +120,6 @@ export async function getUserPermissions(): Promise<string[]> {
     return (modules ?? []).map((m: { key: string }) => m.key)
   }
 
-  // Obtener permisos del rol del usuario
   const { data: profile } = await supabase
     .from('profiles')
     .select('role_id')

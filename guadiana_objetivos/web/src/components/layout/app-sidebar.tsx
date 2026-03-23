@@ -53,10 +53,10 @@ export function AppSidebar({ permissions = [], isRoot = false }: AppSidebarProps
   ]
 
   const procesosItems: NavItem[] = [
-    { title: 'Dashboard',   href: '/dashboard',      icon: LayoutDashboard },
-    { title: 'Formularios', href: '/formularios',    icon: FileText },
-    { title: 'Asignaciones',href: '/asignaciones',   icon: ClipboardList },
-    { title: 'Resultados',  href: '/resultados',     icon: BarChart3 },
+    { title: 'Dashboard',    href: '/dashboard',    icon: LayoutDashboard, permission: 'dashboard.view' },
+    { title: 'Formularios',  href: '/formularios',  icon: FileText,        permission: 'formularios.view' },
+    { title: 'Asignaciones', href: '/asignaciones', icon: ClipboardList,   permission: 'asignaciones.view' },
+    { title: 'Resultados',   href: '/resultados',   icon: BarChart3,       permission: 'resultados.view' },
   ]
 
   const desarrolloItems: NavItem[] = [
@@ -74,6 +74,7 @@ export function AppSidebar({ permissions = [], isRoot = false }: AppSidebarProps
   ]
 
   const visibleObjetivos   = objetivosItems.filter(i => has(i.permission))
+  const visibleProcesos    = procesosItems.filter(i => has(i.permission))
   const visibleDesarrollo  = desarrolloItems.filter(i => has(i.permission))
   const visibleIa          = iaItems.filter(i => has(i.permission))
   const visibleConfig      = configItems.filter(i => has(i.permission))
@@ -105,8 +106,10 @@ export function AppSidebar({ permissions = [], isRoot = false }: AppSidebarProps
           <NavGroup label="Objetivos" items={visibleObjetivos} isActive={isActive} />
         )}
 
-        {/* Procesos (siempre visible) */}
-        <NavGroup label="Procesos" items={procesosItems} isActive={isActive} />
+        {/* Procesos */}
+        {visibleProcesos.length > 0 && (
+          <NavGroup label="Procesos" items={visibleProcesos} isActive={isActive} />
+        )}
 
         {/* Desarrollo Humano */}
         {visibleDesarrollo.length > 0 && (
@@ -168,9 +171,10 @@ function NavGroup({
                 className={cn(
                   'flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors',
                   active
-                    ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium'
+                    ? 'text-white font-medium'
                     : 'text-sidebar-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground'
                 )}
+                style={active ? { backgroundColor: '#194D95' } : undefined}
               >
                 <Icon className="h-4 w-4 shrink-0" />
                 <span className="truncate">{item.title}</span>

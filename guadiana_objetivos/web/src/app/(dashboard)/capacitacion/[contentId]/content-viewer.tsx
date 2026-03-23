@@ -9,9 +9,10 @@ import type { LmsContent, LmsQuiz, LmsProgress } from '../lms-actions'
 interface ContentViewerProps {
   content: LmsContent & { quiz?: LmsQuiz }
   progress?: LmsProgress
+  pdfSignedUrl?: string | null
 }
 
-export function ContentViewer({ content, progress }: ContentViewerProps) {
+export function ContentViewer({ content, progress, pdfSignedUrl }: ContentViewerProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [completed, setCompleted] = useState(Boolean(progress?.completed_at))
@@ -64,21 +65,29 @@ export function ContentViewer({ content, progress }: ContentViewerProps) {
         </div>
       )}
 
-      {content.content_type === 'pdf' && content.storage_path && (
+      {content.content_type === 'pdf' && (
         <div className="rounded-lg border bg-card p-4 space-y-3">
-          <iframe
-            src={content.storage_path}
-            className="w-full h-[600px] rounded-md border"
-            title={content.title}
-          />
-          <a
-            href={content.storage_path}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
-          >
-            Descargar PDF
-          </a>
+          {pdfSignedUrl ? (
+            <>
+              <iframe
+                src={pdfSignedUrl}
+                className="w-full h-[600px] rounded-md border"
+                title={content.title}
+              />
+              <a
+                href={pdfSignedUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
+              >
+                Descargar PDF
+              </a>
+            </>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              No hay archivo PDF disponible para este contenido.
+            </p>
+          )}
         </div>
       )}
 

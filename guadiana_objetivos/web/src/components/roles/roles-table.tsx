@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { deleteRole, updateRole } from '@/app/(dashboard)/roles/role-actions'
+import { startRolePreview } from '@/app/(dashboard)/roles/preview-actions'
 
 interface Role {
   id: string
@@ -20,6 +21,7 @@ interface RolesTableProps {
 
 export function RolesTable({ roles, canManage }: RolesTableProps) {
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [previewingId, setPreviewingId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   async function handleDelete(id: string) {
@@ -35,6 +37,15 @@ export function RolesTable({ roles, canManage }: RolesTableProps) {
     setError(null)
     const result = await updateRole(id, { is_active: !currentActive })
     if (result.error) setError(result.error)
+  }
+
+  async function handlePreview(id: string) {
+    setPreviewingId(id)
+    setError(null)
+    const result = await startRolePreview(id)
+    // startRolePreview hace redirect server-side; si llega aquí es por error
+    setPreviewingId(null)
+    if (result?.error) setError(result.error)
   }
 
   return (
@@ -93,8 +104,17 @@ export function RolesTable({ roles, canManage }: RolesTableProps) {
                 {canManage && (
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-2">
+                      <button
+                        onClick={() => handlePreview(role.id)}
+                        disabled={previewingId === role.id}
+                        className="text-xs text-amber-600 hover:text-amber-800 font-medium disabled:opacity-50"
+                        title="Ver cómo se ve la app con este rol"
+                      >
+                        {previewingId === role.id ? 'Iniciando…' : 'Probar rol'}
+                      </button>
                       {!role.is_root && (
                         <>
+                          <span className="text-muted-foreground/40">·</span>
                           <Link
                             href={`/roles/${role.id}`}
                             className="text-xs text-brand-blue hover:underline font-medium"

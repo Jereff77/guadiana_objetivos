@@ -21,13 +21,14 @@ const nextConfig: NextConfig = {
           { key: 'Permissions-Policy',         value: 'camera=(), microphone=(), geolocation=()' },
         ],
       },
-      {
-        // Assets estáticos de Next.js — caché agresiva (inmutable por hash de build)
+      // En producción los assets de Next.js tienen hash en el nombre → caché agresiva segura.
+      // En desarrollo se omite este bloque para evitar que el browser sirva JS obsoleto.
+      ...(process.env.NODE_ENV === 'production' ? [{
         source: '/_next/static/(.*)',
         headers: [
           { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
         ],
-      },
+      }] : []),
       {
         // API routes — sin caché (datos dinámicos)
         source: '/api/(.*)',

@@ -148,9 +148,10 @@ export async function updateLmsContent(
   id: string,
   data: Partial<Omit<LmsContent, 'id' | 'created_by' | 'created_at' | 'updated_at'>>,
 ): Promise<ActionResult> {
-  const canManage = await checkPermission('capacitacion.manage')
   const isRoot = await checkIsRoot()
-  if (!canManage && !isRoot) return { success: false, error: 'Sin permiso para editar contenidos.' }
+  const canEdit = await checkPermission('capacitacion.edit')
+  const canManage = await checkPermission('capacitacion.manage')
+  if (!isRoot && !canEdit && !canManage) return { success: false, error: 'Sin permiso para editar contenidos.' }
 
   const supabase = await createClient()
   const { error } = await supabase.from('lms_content').update(data).eq('id', id)
@@ -162,9 +163,10 @@ export async function updateLmsContent(
 }
 
 export async function deleteLmsContent(id: string): Promise<ActionResult> {
-  const canManage = await checkPermission('capacitacion.manage')
   const isRoot = await checkIsRoot()
-  if (!canManage && !isRoot) return { success: false, error: 'Sin permiso para eliminar contenidos.' }
+  const canDelete = await checkPermission('capacitacion.delete')
+  const canManage = await checkPermission('capacitacion.manage')
+  if (!isRoot && !canDelete && !canManage) return { success: false, error: 'Sin permiso para eliminar contenidos.' }
 
   const supabase = await createClient()
   const { error } = await supabase.from('lms_content').delete().eq('id', id)

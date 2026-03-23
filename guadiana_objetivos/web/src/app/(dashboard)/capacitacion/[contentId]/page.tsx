@@ -1,7 +1,8 @@
 import { notFound } from 'next/navigation'
 import { requirePermission } from '@/lib/permissions'
-import { getLmsContent, getMyProgress } from '../lms-actions'
+import { getLmsContent, getMyProgress, startContent } from '../lms-actions'
 import { ContentViewer } from './content-viewer'
+import { createClient } from '@/lib/supabase/server'
 
 interface ContentPageProps {
   params: Promise<{ contentId: string }>
@@ -39,6 +40,19 @@ export default async function ContentPage({ params }: ContentPageProps) {
   const myProgress = progressResult.success ? (progressResult.data ?? []) : []
   const progress = myProgress.find((p) => p.content_id === contentId)
 
+  // Registrar inicio de progreso server-side (sin depender de Server Actions en Client Components)
+  await startContent(contentId)
+
+  // Generar URL firmada para PDFs almacenados en bucket privado
+  let pdfSignedUrl: string | null = null
+  if (content.content_type === 'pdf' && content.storage_path) {
+    const supabase = await createClient()
+    const { data: signedData } = await supabase.storage
+      .from('lms-content')
+      .createSignedUrl(content.storage_path, 3600) // 1 hora de validez
+    pdfSignedUrl = signedData?.signedUrl ?? null
+  }
+
   const typeLabel = typeLabels[content.content_type] ?? content.content_type
   const badgeColor = typeBadgeColors[content.content_type] ?? 'bg-gray-100 text-gray-700'
 
@@ -63,7 +77,7 @@ export default async function ContentPage({ params }: ContentPageProps) {
       </div>
 
       {/* Contenido interactivo */}
-      <ContentViewer content={content} progress={progress} />
+      <ContentViewer content={content} progress={progress} pdfSignedUrl={pdfSignedUrl} />
     </div>
   )
 }

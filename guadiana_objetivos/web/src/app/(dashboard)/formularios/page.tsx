@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { requirePermission } from '@/lib/permissions'
 import { Header } from '@/components/layout/header'
 
 export const metadata: Metadata = { title: 'Formularios' }
@@ -10,6 +11,8 @@ import { SurveysTable } from '@/components/formularios/surveys-table'
 import { CreateSurveyDialog } from '@/components/formularios/create-survey-dialog'
 
 export default async function FormulariosPage() {
+  await requirePermission('formularios.view')
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
