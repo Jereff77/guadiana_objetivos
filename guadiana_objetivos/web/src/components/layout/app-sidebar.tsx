@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
@@ -9,8 +8,6 @@ import {
   ClipboardList,
   BarChart3,
   LogOut,
-  FolderOpen,
-  ChevronDown,
   Users,
   ShieldCheck,
   Target,
@@ -21,91 +18,71 @@ import {
   BookOpen,
 } from 'lucide-react'
 import { logout } from '@/app/(auth)/login/actions'
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupLabel,
-  SidebarGroupContent,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubItem,
-  SidebarMenuSubButton,
-} from '@/components/ui/sidebar'
-import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible'
 import { cn } from '@/lib/utils'
-
-const checklistItems = [
-  { title: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { title: 'Formularios', href: '/formularios', icon: FileText },
-  { title: 'Asignaciones', href: '/asignaciones', icon: ClipboardList },
-  { title: 'Resultados', href: '/resultados', icon: BarChart3 },
-]
-
-const adminItems = [
-  { title: 'Usuarios', href: '/usuarios', icon: Users, permission: 'users.view' },
-  { title: 'Roles', href: '/roles', icon: ShieldCheck, permission: 'roles.view' },
-]
 
 interface AppSidebarProps {
   permissions?: string[]
   isRoot?: boolean
 }
 
+interface NavItem {
+  title: string
+  href: string
+  icon: React.ElementType
+  permission?: string
+}
+
 export function AppSidebar({ permissions = [], isRoot = false }: AppSidebarProps) {
   const pathname = usePathname()
 
-  const hasPermission = (key: string) => isRoot || permissions.includes(key)
-
-  // Sección Procesos (Checklists)
-  const isProcessActive = checklistItems.some(
-    (item) => pathname === item.href || pathname.startsWith(item.href + '/')
-  )
-  const [isProcessOpen, setIsProcessOpen] = useState(false)
-  const processTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-
-  // Sección Administración
-  const adminVisible = adminItems.filter((item) => hasPermission(item.permission))
-  const isAdminActive = adminItems.some(
-    (item) => pathname === item.href || pathname.startsWith(item.href + '/')
-  )
-  const [isAdminOpen, setIsAdminOpen] = useState(false)
-  const adminTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-
-  useEffect(() => {
-    setIsProcessOpen(isProcessActive)
-    setIsAdminOpen(isAdminActive)
-  }, [pathname, isProcessActive, isAdminActive])
-
-  // Handlers Procesos
-  const onProcessEnter = () => {
-    if (processTimerRef.current) clearTimeout(processTimerRef.current)
-    setIsProcessOpen(true)
-  }
-  const onProcessLeave = () => {
-    processTimerRef.current = setTimeout(() => {
-      if (!isProcessActive) setIsProcessOpen(false)
-    }, 150)
+  const has = (key?: string) => {
+    if (isRoot) return true
+    if (!key) return true
+    return permissions.includes(key)
   }
 
-  // Handlers Admin
-  const onAdminEnter = () => {
-    if (adminTimerRef.current) clearTimeout(adminTimerRef.current)
-    setIsAdminOpen(true)
-  }
-  const onAdminLeave = () => {
-    adminTimerRef.current = setTimeout(() => {
-      if (!isAdminActive) setIsAdminOpen(false)
-    }, 150)
-  }
+  const isActive = (href: string) =>
+    pathname === href || pathname.startsWith(href + '/')
+
+  // ── Grupos de navegación ──────────────────────────────────────────────────
+
+  const objetivosItems: NavItem[] = [
+    { title: 'Dashboard',   href: '/dashboard',   icon: TrendingUp, permission: 'dashboard.view' },
+    { title: 'Objetivos',   href: '/objetivos',   icon: Target,     permission: 'objetivos.view' },
+    { title: 'Incentivos',  href: '/incentivos',  icon: DollarSign, permission: 'incentivos.view' },
+  ]
+
+  const procesosItems: NavItem[] = [
+    { title: 'Dashboard',   href: '/dashboard',      icon: LayoutDashboard },
+    { title: 'Formularios', href: '/formularios',    icon: FileText },
+    { title: 'Asignaciones',href: '/asignaciones',   icon: ClipboardList },
+    { title: 'Resultados',  href: '/resultados',     icon: BarChart3 },
+  ]
+
+  const desarrolloItems: NavItem[] = [
+    { title: 'Mentoring',    href: '/mentoring',    icon: Users2,    permission: 'mentoring.view' },
+    { title: 'Capacitación', href: '/capacitacion', icon: BookOpen,  permission: 'capacitacion.view' },
+  ]
+
+  const iaItems: NavItem[] = [
+    { title: 'Análisis IA', href: '/ia-verificacion', icon: BrainCircuit, permission: 'ia.view' },
+  ]
+
+  const configItems: NavItem[] = [
+    { title: 'Usuarios', href: '/usuarios', icon: Users,       permission: 'users.view' },
+    { title: 'Roles',    href: '/roles',    icon: ShieldCheck, permission: 'roles.view' },
+  ]
+
+  const visibleObjetivos   = objetivosItems.filter(i => has(i.permission))
+  const visibleDesarrollo  = desarrolloItems.filter(i => has(i.permission))
+  const visibleIa          = iaItems.filter(i => has(i.permission))
+  const visibleConfig      = configItems.filter(i => has(i.permission))
 
   return (
-    <Sidebar collapsible="none">
-      <SidebarHeader className="border-b border-sidebar-border px-2 py-3">
+    <aside className="flex flex-col h-screen w-56 shrink-0 border-r bg-sidebar text-sidebar-foreground">
+
+      {/* Logo */}
+      <div className="border-b border-sidebar-border px-3 py-3 shrink-0">
         <Link href="/inicio" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
           <div
             className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-white font-bold text-sm"
@@ -118,222 +95,90 @@ export function AppSidebar({ permissions = [], isRoot = false }: AppSidebarProps
             <span className="text-xs text-muted-foreground leading-tight truncate">Plataforma</span>
           </div>
         </Link>
-      </SidebarHeader>
+      </div>
 
-      <SidebarContent>
-        {/* ── Sección: Administración ── */}
-        {adminVisible.length > 0 && (
-          <SidebarGroup>
-            <SidebarGroupLabel>Administración</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                <SidebarMenuItem
-                  onMouseEnter={onAdminEnter}
-                  onMouseLeave={onAdminLeave}
-                >
-                  <Collapsible open={isAdminOpen} onOpenChange={setIsAdminOpen}>
-                    <SidebarMenuButton isActive={isAdminActive && !isAdminOpen} className="w-full">
-                      <ShieldCheck className="h-4 w-4" />
-                      <span>Administración</span>
-                      <ChevronDown
-                        className={cn(
-                          'ml-auto h-4 w-4 shrink-0 transition-transform duration-200',
-                          isAdminOpen && 'rotate-180'
-                        )}
-                      />
-                    </SidebarMenuButton>
-                    <CollapsibleContent>
-                      <SidebarMenuSub>
-                        {adminVisible.map((item) => {
-                          const active = pathname === item.href || pathname.startsWith(item.href + '/')
-                          return (
-                            <SidebarMenuSubItem key={item.href}>
-                              <SidebarMenuSubButton asChild isActive={active}>
-                                <Link
-                                  href={item.href}
-                                  className={cn('flex items-center gap-2', active && 'font-medium')}
-                                >
-                                  <item.icon className="h-4 w-4" />
-                                  <span>{item.title}</span>
-                                </Link>
-                              </SidebarMenuSubButton>
-                            </SidebarMenuSubItem>
-                          )
-                        })}
-                      </SidebarMenuSub>
-                    </CollapsibleContent>
-                  </Collapsible>
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
+      {/* Nav — ocupa todo el espacio disponible con scroll */}
+      <nav className="flex-1 overflow-y-auto py-2 space-y-4">
+
+        {/* Objetivos */}
+        {visibleObjetivos.length > 0 && (
+          <NavGroup label="Objetivos" items={visibleObjetivos} isActive={isActive} />
         )}
 
-        {/* ── Sección: Objetivos (M1 + M2 + M3) ── */}
-        {(hasPermission('objetivos.view') || hasPermission('dashboard.view') || hasPermission('incentivos.view')) && (
-          <SidebarGroup>
-            <SidebarGroupLabel>Objetivos</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {hasPermission('dashboard.view') && (
-                  <SidebarMenuItem>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={pathname === '/dashboard' || pathname.startsWith('/dashboard/')}
-                    >
-                      <Link href="/dashboard" className="flex items-center gap-2">
-                        <TrendingUp className="h-4 w-4" />
-                        <span>Dashboard</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                )}
-                {hasPermission('objetivos.view') && (
-                  <SidebarMenuItem>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={pathname === '/objetivos' || pathname.startsWith('/objetivos/')}
-                    >
-                      <Link href="/objetivos" className="flex items-center gap-2">
-                        <Target className="h-4 w-4" />
-                        <span>Objetivos</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                )}
-                {hasPermission('incentivos.view') && (
-                  <SidebarMenuItem>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={pathname === '/incentivos' || pathname.startsWith('/incentivos/')}
-                    >
-                      <Link href="/incentivos" className="flex items-center gap-2">
-                        <DollarSign className="h-4 w-4" />
-                        <span>Incentivos</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                )}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
+        {/* Procesos (siempre visible) */}
+        <NavGroup label="Procesos" items={procesosItems} isActive={isActive} />
+
+        {/* Desarrollo Humano */}
+        {visibleDesarrollo.length > 0 && (
+          <NavGroup label="Desarrollo Humano" items={visibleDesarrollo} isActive={isActive} />
         )}
 
-        {/* ── Sección: Procesos (Checklists M5) ── */}
-        <SidebarGroup>
-          <SidebarMenu>
-            <SidebarMenuItem
-              onMouseEnter={onProcessEnter}
-              onMouseLeave={onProcessLeave}
-            >
-              <Collapsible open={isProcessOpen} onOpenChange={setIsProcessOpen}>
-                <SidebarMenuButton isActive={isProcessActive && !isProcessOpen} className="w-full">
-                  <FolderOpen className="h-4 w-4" />
-                  <span>Procesos</span>
-                  <ChevronDown
-                    className={cn(
-                      'ml-auto h-4 w-4 shrink-0 transition-transform duration-200',
-                      isProcessOpen && 'rotate-180'
-                    )}
-                  />
-                </SidebarMenuButton>
-                <CollapsibleContent>
-                  <SidebarMenuSub>
-                    {checklistItems.map((item) => {
-                      const active =
-                        pathname === item.href || pathname.startsWith(item.href + '/')
-                      return (
-                        <SidebarMenuSubItem key={item.href}>
-                          <SidebarMenuSubButton asChild isActive={active}>
-                            <Link
-                              href={item.href}
-                              className={cn('flex items-center gap-2', active && 'font-medium')}
-                            >
-                              <item.icon className="h-4 w-4" />
-                              <span>{item.title}</span>
-                            </Link>
-                          </SidebarMenuSubButton>
-                        </SidebarMenuSubItem>
-                      )
-                    })}
-                  </SidebarMenuSub>
-                </CollapsibleContent>
-              </Collapsible>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarGroup>
-
-        {/* ── Sección: Desarrollo Humano (M6 + M7) ── */}
-        {(hasPermission('mentoring.view') || hasPermission('capacitacion.view')) && (
-          <SidebarGroup>
-            <SidebarGroupLabel>Desarrollo Humano</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {hasPermission('mentoring.view') && (
-                  <SidebarMenuItem>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={pathname === '/mentoring' || pathname.startsWith('/mentoring/')}
-                    >
-                      <Link href="/mentoring" className="flex items-center gap-2">
-                        <Users2 className="h-4 w-4" />
-                        <span>Mentoring</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                )}
-                {hasPermission('capacitacion.view') && (
-                  <SidebarMenuItem>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={pathname === '/capacitacion' || pathname.startsWith('/capacitacion/')}
-                    >
-                      <Link href="/capacitacion" className="flex items-center gap-2">
-                        <BookOpen className="h-4 w-4" />
-                        <span>Capacitación</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                )}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
+        {/* IA */}
+        {visibleIa.length > 0 && (
+          <NavGroup label="IA" items={visibleIa} isActive={isActive} />
         )}
 
-        {/* ── Sección: IA y Verificación (M4) ── */}
-        {(hasPermission('ia.view') || hasPermission('ia.configure')) && (
-          <SidebarGroup>
-            <SidebarGroupLabel>IA</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={pathname === '/ia-verificacion' || pathname.startsWith('/ia-verificacion/')}
-                  >
-                    <Link href="/ia-verificacion" className="flex items-center gap-2">
-                      <BrainCircuit className="h-4 w-4" />
-                      <span>Análisis IA</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
+        {/* Configuración — siempre al final */}
+        {visibleConfig.length > 0 && (
+          <NavGroup label="Configuración" items={visibleConfig} isActive={isActive} />
         )}
-      </SidebarContent>
 
-      <SidebarFooter className="border-t border-sidebar-border px-2 py-2">
+      </nav>
+
+      {/* Cerrar sesión — pegado al fondo */}
+      <div className="shrink-0 border-t border-sidebar-border px-2 py-2">
         <form action={logout}>
-          <SidebarMenuButton
+          <button
             type="submit"
-            className="w-full text-muted-foreground hover:text-destructive"
+            className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
           >
-            <LogOut className="h-4 w-4" />
+            <LogOut className="h-4 w-4 shrink-0" />
             <span>Cerrar sesión</span>
-          </SidebarMenuButton>
+          </button>
         </form>
-      </SidebarFooter>
-    </Sidebar>
+      </div>
+    </aside>
+  )
+}
+
+// ── Componente interno NavGroup ───────────────────────────────────────────────
+
+function NavGroup({
+  label,
+  items,
+  isActive,
+}: {
+  label: string
+  items: NavItem[]
+  isActive: (href: string) => boolean
+}) {
+  return (
+    <div className="px-2">
+      <p className="px-2 mb-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+        {label}
+      </p>
+      <ul className="space-y-0.5">
+        {items.map((item) => {
+          const active = isActive(item.href)
+          const Icon = item.icon
+          return (
+            <li key={item.href}>
+              <Link
+                href={item.href}
+                className={cn(
+                  'flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors',
+                  active
+                    ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium'
+                    : 'text-sidebar-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground'
+                )}
+              >
+                <Icon className="h-4 w-4 shrink-0" />
+                <span className="truncate">{item.title}</span>
+              </Link>
+            </li>
+          )
+        })}
+      </ul>
+    </div>
   )
 }

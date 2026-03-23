@@ -1,5 +1,4 @@
 import type { ReactNode } from 'react'
-import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 import { AppSidebar } from '@/components/layout/app-sidebar'
 import { getUserPermissions, checkIsRoot } from '@/lib/permissions'
 
@@ -10,11 +9,11 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   ])
 
   return (
-    <SidebarProvider>
+    <div className="flex h-screen overflow-hidden">
       <AppSidebar permissions={permissions} isRoot={isRoot} />
-      <SidebarInset>
+      <main className="flex-1 overflow-y-auto p-6">
         {children}
-      </SidebarInset>
-    </SidebarProvider>
+      </main>
+    </div>
   )
 }
