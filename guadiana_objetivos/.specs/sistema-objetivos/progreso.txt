@@ -35,3 +35,13 @@ FASE 1 — Sistema de Objetivos (M1)
 [✅] T-027: Páginas — /objetivos, /objetivos/[deptId], /objetivos/configurar — 2026-03-22
 
 FASE 1 COMPLETA AL 100% ✅ — 2026-03-22
+
+FASE 2 — Dashboard y KPIs (M2)
+====================================================
+[✅] T-028: Server Actions — Datos de dashboard (getDashboardKpis, getDeptTrend, getDepartmentRanking, getActiveAlerts, markAlertRead) — 2026-03-22
+[✅] T-029: Componentes — DeptKpiCard, RankingTable, AlertPanel + ObjectiveTrendChart + ComplianceBarChart en kpi-charts.tsx — 2026-03-22
+[✅] T-030: Página — /dashboard con KPIs, gráfica, ranking y alertas — 2026-03-22
+[✅] T-031: Exportación — /api/objetivos/export (CSV con filtro mes/año, requiere dashboard.export) — 2026-03-22
+[✅] T-032: Lógica de alertas automáticas — checkAndCreateAlerts ampliado con deduplicación, deadline_approaching y period_closed — 2026-03-22
+
+FASE 2 COMPLETA AL 100% ✅ — 2026-03-22

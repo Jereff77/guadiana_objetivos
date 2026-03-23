@@ -14,6 +14,7 @@ import {
   Users,
   ShieldCheck,
   Target,
+  TrendingUp,
 } from 'lucide-react'
 import { logout } from '@/app/(auth)/login/actions'
 import {
@@ -164,23 +165,38 @@ export function AppSidebar({ permissions = [], isRoot = false }: AppSidebarProps
           </SidebarGroup>
         )}
 
-        {/* ── Sección: Objetivos (M1) ── */}
-        {hasPermission('objetivos.view') && (
+        {/* ── Sección: Objetivos (M1 + M2) ── */}
+        {(hasPermission('objetivos.view') || hasPermission('dashboard.view')) && (
           <SidebarGroup>
             <SidebarGroupLabel>Objetivos</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={pathname === '/objetivos' || pathname.startsWith('/objetivos/')}
-                  >
-                    <Link href="/objetivos" className="flex items-center gap-2">
-                      <Target className="h-4 w-4" />
-                      <span>Objetivos</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
+                {hasPermission('dashboard.view') && (
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={pathname === '/dashboard' || pathname.startsWith('/dashboard/')}
+                    >
+                      <Link href="/dashboard" className="flex items-center gap-2">
+                        <TrendingUp className="h-4 w-4" />
+                        <span>Dashboard</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )}
+                {hasPermission('objetivos.view') && (
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={pathname === '/objetivos' || pathname.startsWith('/objetivos/')}
+                    >
+                      <Link href="/objetivos" className="flex items-center gap-2">
+                        <Target className="h-4 w-4" />
+                        <span>Objetivos</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>

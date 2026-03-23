@@ -283,20 +283,40 @@ export async function calculateObjectiveProgress(objectiveId: string): Promise<n
 export async function checkAndCreateAlerts(month: number, year: number): Promise<void> {
   const supabase = await createClient()
 
-  // Obtener progreso de todos los objetivos del período
+  // Alertas ya existentes hoy para deduplicar
+  const today = new Date().toISOString().split('T')[0]
+  const { data: existing } = await supabase
+    .from('system_alerts')
+    .select('type, entity_id')
+    .gte('created_at', `${today}T00:00:00`)
+
+  const existingSet = new Set((existing ?? []).map((a) => `${a.type}::${a.entity_id}`))
+
+  const alerts: {
+    type: string
+    entity_type: string
+    entity_id: string
+    message: string
+    severity: string
+    target_role_id: null
+    target_user: string | null
+  }[] = []
+
+  function maybeAdd(alert: typeof alerts[number]) {
+    const key = `${alert.type}::${alert.entity_id}`
+    if (!existingSet.has(key)) alerts.push(alert)
+  }
+
+  // 1. Objetivos con cumplimiento < 70%
   const { data: progress } = await supabase
     .from('objective_progress')
-    .select('objective_id, department_id, completion_pct, objectives(title, department_id)')
+    .select('objective_id, department_id, completion_pct')
     .eq('month', month)
     .eq('year', year)
 
-  if (!progress) return
-
-  const alerts = []
-
-  for (const p of progress) {
+  for (const p of progress ?? []) {
     if (p.completion_pct < 70) {
-      alerts.push({
+      maybeAdd({
         type: 'low_completion',
         entity_type: 'objective',
         entity_id: p.objective_id,
@@ -308,7 +328,7 @@ export async function checkAndCreateAlerts(month: number, year: number): Promise
     }
   }
 
-  // Entregables próximos a vencer (2 días)
+  // 2. Entregables próximos a vencer (≤2 días) sin evidencia
   const in2days = new Date()
   in2days.setDate(in2days.getDate() + 2)
 
@@ -317,18 +337,47 @@ export async function checkAndCreateAlerts(month: number, year: number): Promise
     .select('id, title, due_date, assignee_id')
     .eq('status', 'pending')
     .lte('due_date', in2days.toISOString().split('T')[0])
-    .gte('due_date', new Date().toISOString().split('T')[0])
+    .gte('due_date', today)
 
   for (const d of pending ?? []) {
-    if (d.assignee_id) {
-      alerts.push({
-        type: 'deadline_approaching',
-        entity_type: 'deliverable',
-        entity_id: d.id,
-        message: `Entregable "${d.title}" vence el ${d.due_date}`,
-        severity: 'warning',
+    maybeAdd({
+      type: 'deadline_approaching',
+      entity_type: 'deliverable',
+      entity_id: d.id,
+      message: `Entregable "${d.title}" vence el ${d.due_date} y aún no tiene evidencia`,
+      severity: 'warning',
+      target_role_id: null,
+      target_user: d.assignee_id ?? null,
+    })
+  }
+
+  // 3. Período cerrado con cumplimiento < 80%
+  const { data: closedObjectives } = await supabase
+    .from('objectives')
+    .select('id, title, department_id')
+    .eq('month', month)
+    .eq('year', year)
+    .eq('status', 'closed')
+
+  for (const obj of closedObjectives ?? []) {
+    const { data: prog } = await supabase
+      .from('objective_progress')
+      .select('completion_pct')
+      .eq('objective_id', obj.id)
+      .eq('month', month)
+      .eq('year', year)
+      .maybeSingle()
+
+    const pct = prog?.completion_pct ?? 0
+    if (pct < 80) {
+      maybeAdd({
+        type: 'period_closed',
+        entity_type: 'objective',
+        entity_id: obj.id,
+        message: `Período cerrado con ${pct}% de cumplimiento en "${obj.title}"`,
+        severity: pct < 50 ? 'critical' : 'warning',
         target_role_id: null,
-        target_user: d.assignee_id,
+        target_user: null,
       })
     }
   }
