@@ -269,6 +269,34 @@ export async function submitEvidence(
 }
 
 /**
+ * Subir archivo de evidencia a Supabase Storage
+ */
+export async function uploadEvidenceFile(
+  file: File,
+  deliverableId: string
+): Promise<{ error?: string; storage_path?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'No autenticado' }
+
+  // Generar path único: evidences/YYYY/MM/deliverableId_timestamp_filename
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const timestamp = Date.now()
+  const sanitizedName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
+  const path = `evidences/${year}/${month}/${deliverableId}_${timestamp}_${sanitizedName}`
+
+  const { data: uploadData, error: uploadError } = await supabase.storage
+    .from('objective-evidences')
+    .upload(path, file, { upsert: false })
+
+  if (uploadError) return { error: uploadError.message }
+
+  return { storage_path: uploadData.path }
+}
+
+/**
  * Aprobar o rechazar un entregable. Requiere objetivos.review.
  * El rechazo devuelve el entregable a estado 'pending'.
  */
