@@ -176,3 +176,39 @@ export async function deleteOption(optionId: string) {
   const supabase = await createClient()
   await supabase.from('form_question_options').delete().eq('id', optionId)
 }
+
+// ─── Conditions ──────────────────────────────────────────────────────────────
+
+export async function createCondition(
+  surveyId: string,
+  sourceQuestionId: string,
+  sourceOptionId: string | null,
+  targetQuestionId: string | null,
+  action: 'jump_to_question' | 'jump_to_end' = 'jump_to_question'
+) {
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from('form_conditions')
+    .insert({
+      survey_id: surveyId,
+      source_question_id: sourceQuestionId,
+      source_option_id: sourceOptionId,
+      condition_value: sourceOptionId ?? '',
+      target_question_id: targetQuestionId,
+      action,
+    })
+    .select('*')
+    .single()
+
+  if (error) return { error: error.message }
+  revalidatePath(`/formularios/${surveyId}/editar`)
+  return { condition: data }
+}
+
+export async function deleteCondition(conditionId: string, surveyId: string) {
+  const supabase = await createClient()
+
+  await supabase.from('form_conditions').delete().eq('id', conditionId)
+  revalidatePath(`/formularios/${surveyId}/editar`)
+}

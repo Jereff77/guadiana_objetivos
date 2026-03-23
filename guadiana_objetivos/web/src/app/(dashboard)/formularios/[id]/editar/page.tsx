@@ -54,12 +54,18 @@ export default async function EditorPage({ params }: PageProps) {
     )
     .order('order', { ascending: true })
 
+  const { data: conditions } = await supabase
+    .from('form_conditions')
+    .select('*')
+    .eq('survey_id', id)
+
   return (
     <EditorClient
       survey={survey}
       initialSections={sections ?? []}
       initialQuestions={questions ?? []}
       initialOptions={options ?? []}
+      initialConditions={conditions ?? []}
     />
   )
 }

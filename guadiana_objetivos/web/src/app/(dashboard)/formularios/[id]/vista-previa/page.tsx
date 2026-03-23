@@ -39,12 +39,18 @@ export default async function PreviewPage({ params }: PageProps) {
     .in('question_id', (questions ?? []).map((q) => q.id))
     .order('order', { ascending: true })
 
+  const { data: conditions } = await supabase
+    .from('form_conditions')
+    .select('*')
+    .eq('survey_id', id)
+
   return (
     <PreviewClient
       survey={survey}
       sections={sections ?? []}
       questions={questions ?? []}
       options={options ?? []}
+      conditions={conditions ?? []}
     />
   )
 }

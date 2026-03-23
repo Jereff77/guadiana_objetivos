@@ -70,6 +70,7 @@ function SortableQuestion({ question, selected, onSelect }: SortableQuestionProp
       <span
         {...attributes}
         {...listeners}
+        suppressHydrationWarning
         className="mt-0.5 shrink-0 cursor-grab active:cursor-grabbing text-muted-foreground/40"
         onClick={(e) => e.stopPropagation()}
       >
@@ -142,6 +143,7 @@ function SortableSection({
         <span
           {...attributes}
           {...listeners}
+          suppressHydrationWarning
           className="shrink-0 cursor-grab active:cursor-grabbing text-muted-foreground/40"
           onClick={(e) => e.stopPropagation()}
         >
