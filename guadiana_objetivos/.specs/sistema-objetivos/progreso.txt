@@ -79,3 +79,7 @@ FASE 6 — LMS (M7)
 [✅] T-045: Server Actions, componentes y páginas LMS — lms-actions.ts (getLmsContents, getLmsContent, createLmsContent, updateLmsContent, deleteLmsContent, upsertLmsQuiz, getLmsPaths, createLmsPath, updateLmsPath, deleteLmsPath, getMyProgress, startContent, completeContent, getPathProgress) + ContentCard, PathProgressBar, QuizComponent, ContentForm + /capacitacion, /capacitacion/[contentId], /capacitacion/chat + /api/capacitacion/chat + sidebar actualizado — 2026-03-22
 
 FASE 6 COMPLETA AL 100% ✅ — 2026-03-22
+
+Tareas Transversales
+====================================================
+[✅] T-046: Regenerar tipos TypeScript — database.types.ts actualizado con todas las tablas nuevas (lms_*, mentoring_*, incentive_*, ai_*) — 2026-03-22
