@@ -38,6 +38,7 @@ interface TopicFormState {
   title: string
   description: string
   topic_type: 'content' | 'survey'
+  content_type: LmsContent['content_type'] | ''
   content_id: string
   survey_id: string
   is_required: boolean
@@ -47,6 +48,7 @@ const emptyForm = (): TopicFormState => ({
   title: '',
   description: '',
   topic_type: 'content',
+  content_type: '',
   content_id: '',
   survey_id: '',
   is_required: true,
@@ -77,7 +79,10 @@ function TopicForm({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!values.title.trim()) { setError('El título es obligatorio.'); return }
-    if (values.topic_type === 'content' && !values.content_id) { setError('Selecciona un contenido.'); return }
+    if (values.topic_type === 'content') {
+      if (!values.content_type) { setError('Selecciona el tipo de contenido.'); return }
+      if (!values.content_id) { setError('Selecciona un contenido.'); return }
+    }
     if (values.topic_type === 'survey' && !values.survey_id) { setError('Selecciona una evaluación.'); return }
     setError(null)
     onSubmit(values)
@@ -126,21 +131,37 @@ function TopicForm({
         </label>
       </div>
 
-      {/* Selector de contenido */}
+      {/* Selector de tipo de contenido */}
       {values.topic_type === 'content' && (
-        <select
-          value={values.content_id}
-          onChange={e => set({ content_id: e.target.value })}
-          disabled={isPending}
-          className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-        >
-          <option value="">— Seleccionar contenido —</option>
-          {allContents.map(c => (
-            <option key={c.id} value={c.id}>
-              [{typeLabels[c.content_type]}] {c.title}
-            </option>
-          ))}
-        </select>
+        <>
+          <select
+            value={values.content_type}
+            onChange={e => set({ content_type: e.target.value as LmsContent['content_type'] | '', content_id: '' })}
+            disabled={isPending}
+            className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+          >
+            <option value="">— Seleccionar tipo de contenido —</option>
+            <option value="video">Video</option>
+            <option value="pdf">PDF</option>
+            <option value="text">Texto</option>
+            <option value="quiz">Evaluación rápida</option>
+          </select>
+
+          {/* Selector de contenido filtrado por tipo */}
+          {values.content_type && (
+            <select
+              value={values.content_id}
+              onChange={e => set({ content_id: e.target.value })}
+              disabled={isPending}
+              className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            >
+              <option value="">— Seleccionar {typeLabels[values.content_type].toLowerCase()} —</option>
+              {allContents.filter(c => c.content_type === values.content_type).map(c => (
+                <option key={c.id} value={c.id}>{c.title}</option>
+              ))}
+            </select>
+          )}
+        </>
       )}
 
       {/* Selector de evaluación */}
@@ -353,6 +374,7 @@ export function TopicEditor({ courseId, initialTopics, allContents, publishedSur
                     title: topic.title,
                     description: topic.description ?? '',
                     topic_type: topic.topic_type,
+                    content_type: topic.lms_content?.content_type ?? '',
                     content_id: topic.content_id ?? '',
                     survey_id: topic.survey_id ?? '',
                     is_required: topic.is_required,
