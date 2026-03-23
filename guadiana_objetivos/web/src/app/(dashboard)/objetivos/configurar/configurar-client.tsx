@@ -9,6 +9,7 @@ import {
 import {
   createObjective,
   type ObjectiveData,
+  type Objective,
 } from '../objective-actions'
 import { createDeliverable } from '../deliverable-actions'
 import { useRouter } from 'next/navigation'
@@ -22,6 +23,9 @@ interface ConfigurarObjetivosClientProps {
   departments: Department[]
   profiles: Profile[]
   surveys: Survey[]
+  recentObjectives: (Objective & { dept_name: string })[]
+  currentMonth: number
+  currentYear: number
   initialDeptId?: string
   initialObjId?: string
   initialTab: string
@@ -36,6 +40,9 @@ export function ConfigurarObjetivosClient({
   departments,
   profiles,
   surveys,
+  recentObjectives,
+  currentMonth,
+  currentYear,
   initialDeptId,
   initialObjId,
   initialTab,
@@ -110,8 +117,8 @@ export function ConfigurarObjetivosClient({
     })
     setSaving(false)
     if (result.error) { setError(result.error); return }
-    setObjTitle(''); setObjDesc(''); setObjWeight(25); setObjTargetValue('')
-    router.refresh()
+    // Redirigir a la página del departamento para ver el objetivo creado
+    router.push(`/objetivos/${selectedDept}?month=${objMonth}&year=${objYear}`)
   }
 
   // ─── Crear Entregable ─────────────────────────────────────────────────────
@@ -212,8 +219,9 @@ export function ConfigurarObjetivosClient({
 
       {/* ── Tab: Objetivos ── */}
       {tab === 'objectives' && (
-        <form onSubmit={handleCreateObj} className="space-y-4 border rounded-lg p-4">
-          <h3 className="text-sm font-semibold">Nuevo objetivo</h3>
+        <>
+          <form onSubmit={handleCreateObj} className="space-y-4 border rounded-lg p-4">
+            <h3 className="text-sm font-semibold">Nuevo objetivo</h3>
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-medium mb-1">Departamento *</label>
@@ -280,6 +288,38 @@ export function ConfigurarObjetivosClient({
             {saving ? 'Creando…' : 'Crear objetivo'}
           </button>
         </form>
+
+        {/* Lista de objetivos del mes actual */}
+        {recentObjectives.length > 0 && (
+          <div className="space-y-4">
+            <h3 className="text-sm font-semibold">
+              Objetivos de {MONTHS[currentMonth]} {currentYear}
+            </h3>
+            <div className="space-y-2">
+              {recentObjectives.map((obj) => (
+                <div key={obj.id} className="flex items-center justify-between border rounded-md px-4 py-2">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium">{obj.title}</span>
+                      <span className="text-xs text-muted-foreground">({obj.dept_name})</span>
+                      <span className="text-xs bg-muted px-2 py-0.5 rounded">{obj.weight}%</span>
+                    </div>
+                    {obj.description && (
+                      <p className="text-xs text-muted-foreground mt-0.5">{obj.description}</p>
+                    )}
+                  </div>
+                  <a
+                    href={`/objetivos/${obj.department_id}?month=${obj.month}&year=${obj.year}`}
+                    className="text-xs text-brand-blue hover:underline"
+                  >
+                    Ver
+                  </a>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        </>
       )}
 
       {/* ── Tab: Entregables ── */}

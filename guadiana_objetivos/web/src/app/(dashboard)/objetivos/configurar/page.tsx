@@ -1,7 +1,9 @@
 import { requirePermission } from '@/lib/permissions'
 import { createClient } from '@/lib/supabase/server'
 import { getDepartments } from '../dept-actions'
+import { getObjectivesByDept } from '../objective-actions'
 import { ConfigurarObjetivosClient } from './configurar-client'
+import type { Objective } from '../objective-actions'
 
 export const metadata = { title: 'Configurar objetivos — Guadiana' }
 
@@ -21,6 +23,24 @@ export default async function ConfigurarObjetivosPage({ searchParams }: PageProp
     supabase.from('form_surveys').select('id, name').eq('status', 'published').order('name'),
   ])
 
+  // Cargar objetivos recientes (todos los departamentos, últimos 3 meses)
+  const now = new Date()
+  const currentMonth = now.getMonth() + 1
+  const currentYear = now.getFullYear()
+
+  // Objetivos del mes actual y siguiente mes
+  const recentObjectives: (Objective & { dept_name: string })[] = []
+  for (const dept of departments) {
+    const objs = await getObjectivesByDept(dept.id, currentMonth, currentYear)
+    objs.forEach(obj => recentObjectives.push({ ...obj, dept_name: dept.name }))
+  }
+
+  // Ordenar por departamento y luego por peso
+  recentObjectives.sort((a, b) => {
+    if (a.dept_name !== b.dept_name) return a.dept_name.localeCompare(b.dept_name)
+    return b.weight - a.weight
+  })
+
   return (
     <div className="space-y-6 max-w-3xl">
       <div>
@@ -34,6 +54,9 @@ export default async function ConfigurarObjetivosPage({ searchParams }: PageProp
         departments={departments}
         profiles={profiles ?? []}
         surveys={surveys ?? []}
+        recentObjectives={recentObjectives}
+        currentMonth={currentMonth}
+        currentYear={currentYear}
         initialDeptId={sp.dept}
         initialObjId={sp.obj}
         initialTab={sp.tab ?? 'departments'}
