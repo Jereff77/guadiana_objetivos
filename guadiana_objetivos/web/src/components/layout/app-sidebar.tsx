@@ -13,6 +13,7 @@ import {
   ChevronDown,
   Users,
   ShieldCheck,
+  Target,
 } from 'lucide-react'
 import { logout } from '@/app/(auth)/login/actions'
 import {
@@ -157,6 +158,28 @@ export function AppSidebar({ permissions = [], isRoot = false }: AppSidebarProps
                       </SidebarMenuSub>
                     </CollapsibleContent>
                   </Collapsible>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+
+        {/* ── Sección: Objetivos (M1) ── */}
+        {hasPermission('objetivos.view') && (
+          <SidebarGroup>
+            <SidebarGroupLabel>Objetivos</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={pathname === '/objetivos' || pathname.startsWith('/objetivos/')}
+                  >
+                    <Link href="/objetivos" className="flex items-center gap-2">
+                      <Target className="h-4 w-4" />
+                      <span>Objetivos</span>
+                    </Link>
+                  </SidebarMenuButton>
                 </SidebarMenuItem>
               </SidebarMenu>
             </SidebarGroupContent>
