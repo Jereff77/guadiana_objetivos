@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import 'assignments_notifier.dart';
 import 'checklist_card.dart';
+import '../../../shared/widgets/app_drawer.dart';
 
 class AssignmentsScreen extends ConsumerWidget {
   const AssignmentsScreen({super.key});
@@ -15,21 +16,8 @@ class AssignmentsScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Mis Checklists'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.history),
-            onPressed: () {
-              context.push('/history');
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.person),
-            onPressed: () {
-              context.push('/profile');
-            },
-          ),
-        ],
       ),
+      drawer: const AppDrawer(),
       body: assignmentsState.when(
         loading: () => const _AssignmentsLoading(),
         error: (error, _) => _AssignmentsError(

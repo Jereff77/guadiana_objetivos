@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_colors.dart';
+import '../../../shared/widgets/app_drawer.dart';
 import '../domain/run.dart';
 import 'history_notifier.dart';
 
@@ -17,6 +18,7 @@ class HistoryScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Historial de checklists'),
       ),
+      drawer: const AppDrawer(),
       body: runsState.when(
         loading: () => const _HistoryLoading(),
         error: (error, _) => _HistoryError(
