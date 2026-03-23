@@ -182,8 +182,9 @@ export async function deleteOption(optionId: string) {
 export async function createCondition(
   surveyId: string,
   sourceQuestionId: string,
-  sourceOptionId: string,
-  targetQuestionId: string
+  sourceOptionId: string | null,
+  targetQuestionId: string | null,
+  action: 'jump_to_question' | 'jump_to_end' = 'jump_to_question'
 ) {
   const supabase = await createClient()
 
@@ -193,9 +194,9 @@ export async function createCondition(
       survey_id: surveyId,
       source_question_id: sourceQuestionId,
       source_option_id: sourceOptionId,
-      condition_value: sourceOptionId,
+      condition_value: sourceOptionId ?? '',
       target_question_id: targetQuestionId,
-      action: 'jump_to_question',
+      action,
     })
     .select('*')
     .single()
