@@ -76,3 +76,6 @@ FASE 5 COMPLETA AL 100% ✅ — 2026-03-22
 FASE 6 — LMS (M7)
 ====================================================
 [✅] T-044: Migración SQL — Tablas LMS (lms_content, lms_quizzes, lms_paths, lms_progress) + RLS + índices + triggers updated_at — 2026-03-22
+[✅] T-045: Server Actions, componentes y páginas LMS — lms-actions.ts (getLmsContents, getLmsContent, createLmsContent, updateLmsContent, deleteLmsContent, upsertLmsQuiz, getLmsPaths, createLmsPath, updateLmsPath, deleteLmsPath, getMyProgress, startContent, completeContent, getPathProgress) + ContentCard, PathProgressBar, QuizComponent, ContentForm + /capacitacion, /capacitacion/[contentId], /capacitacion/chat + /api/capacitacion/chat + sidebar actualizado — 2026-03-22
+
+FASE 6 COMPLETA AL 100% ✅ — 2026-03-22

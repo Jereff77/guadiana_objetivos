@@ -18,6 +18,7 @@ import {
   DollarSign,
   BrainCircuit,
   Users2,
+  BookOpen,
 } from 'lucide-react'
 import { logout } from '@/app/(auth)/login/actions'
 import {
@@ -262,23 +263,38 @@ export function AppSidebar({ permissions = [], isRoot = false }: AppSidebarProps
           </SidebarMenu>
         </SidebarGroup>
 
-        {/* ── Sección: Mentoring (M6) ── */}
-        {hasPermission('mentoring.view') && (
+        {/* ── Sección: Desarrollo Humano (M6 + M7) ── */}
+        {(hasPermission('mentoring.view') || hasPermission('capacitacion.view')) && (
           <SidebarGroup>
             <SidebarGroupLabel>Desarrollo Humano</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={pathname === '/mentoring' || pathname.startsWith('/mentoring/')}
-                  >
-                    <Link href="/mentoring" className="flex items-center gap-2">
-                      <Users2 className="h-4 w-4" />
-                      <span>Mentoring</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
+                {hasPermission('mentoring.view') && (
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={pathname === '/mentoring' || pathname.startsWith('/mentoring/')}
+                    >
+                      <Link href="/mentoring" className="flex items-center gap-2">
+                        <Users2 className="h-4 w-4" />
+                        <span>Mentoring</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )}
+                {hasPermission('capacitacion.view') && (
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={pathname === '/capacitacion' || pathname.startsWith('/capacitacion/')}
+                    >
+                      <Link href="/capacitacion" className="flex items-center gap-2">
+                        <BookOpen className="h-4 w-4" />
+                        <span>Capacitación</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
