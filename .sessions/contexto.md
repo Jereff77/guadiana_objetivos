@@ -720,3 +720,62 @@ Sistema de roles granular activo en Supabase y Next.js. M0 es prerequisito cumpl
 ✅ **FASE 1 COMPLETA AL 100%** — 6 tareas implementadas (T-022 a T-027), 0 errores TypeScript, 0 warnings ESLint.
 Sistema de objetivos M1 activo: gestión de departamentos, objetivos por período, entregables con evidencias y revisiones.
 Commit: c66de95
+
+---
+
+### Claude Sonnet 4.6 - Sesión 2026-03-22 (FASE 2)
+
+#### Rol: Orquestador IA
+- **Solicitud del usuario**: Completar FASE 2 del dashboard de objetivos (M2) — T-028 a T-032
+- **Análisis realizado**: FASE 1 completa. Implementar server actions de KPIs, componentes visuales, página de dashboard, exportación CSV y lógica de alertas automáticas.
+- **Decisión de agentes**: Trabajo directo — tareas de desarrollo frontend/backend sin necesidad de agentes especializados.
+
+#### Tareas Realizadas:
+1. **T-028: Server Actions — Dashboard** (Write)
+   - getDashboardKpis(month, year): KPIs por departamento (contadores, % cumplimiento, alertas)
+   - getDeptTrend(deptId, months): tendencia histórica de cumplimiento
+   - getDepartmentRanking(month, year): ranking ordenado por % descendente
+   - getActiveAlerts(): alertas no leídas del usuario
+   - markAlertRead(alertId): dismissal de alertas
+   - Archivo: `web/src/app/(dashboard)/dashboard/dashboard-actions.ts`
+
+2. **T-029: Componentes** (Write x3 + Edit)
+   - DeptKpiCard: tarjeta por departamento con barra de progreso y contadores
+   - RankingTable: ranking con medallas y barras de color semáforo
+   - AlertPanel: lista de alertas con dismiss y colores por severidad
+   - Extensión de kpi-charts.tsx: ObjectiveTrendChart (línea) + ComplianceBarChart (barras horizontales)
+
+3. **T-030: Página /dashboard** (Write)
+   - Selector de mes/año, botón Exportar CSV (condicional a permiso)
+   - KPIs globales (4 tarjetas), gráfica comparativa, grid de departamentos, ranking + alertas
+   - requiere `dashboard.view`
+
+4. **T-031: API de exportación CSV** (Write)
+   - /api/objetivos/export?month=&year=
+   - Requiere `dashboard.export` vía has_permission()
+   - BOM UTF-8, columnas: Período, Departamento, Objetivo, Peso, Entregable, Asignado, Estado, Fecha límite
+
+5. **T-032: Alertas automáticas ampliadas** (Edit)
+   - Deduplicación diaria (evita duplicar alertas del mismo día)
+   - low_completion: objetivo < 70% (critical si < 50%)
+   - deadline_approaching: entregable vence en ≤2 días sin evidencia
+   - period_closed: período cerrado con cumplimiento < 80%
+
+#### Archivos Creados:
+- `web/src/app/(dashboard)/dashboard/dashboard-actions.ts`
+- `web/src/app/api/objetivos/export/route.ts`
+- `web/src/components/dashboard/dept-kpi-card.tsx`
+- `web/src/components/dashboard/ranking-table.tsx`
+- `web/src/components/dashboard/alert-badge.tsx`
+
+#### Archivos Modificados:
+- `web/src/app/(dashboard)/dashboard/page.tsx`: reescrita con datos reales
+- `web/src/components/resultados/kpi-charts.tsx`: +ObjectiveTrendChart +ComplianceBarChart
+- `web/src/components/layout/app-sidebar.tsx`: sección Objetivos con Dashboard + Objetivos
+- `web/src/app/(dashboard)/objetivos/objective-actions.ts`: checkAndCreateAlerts mejorado
+- `guadiana_objetivos/.specs/sistema-objetivos/progreso.txt`: FASE 2 100% completa
+
+#### Resultado:
+✅ **FASE 2 COMPLETA AL 100%** — 5 tareas (T-028 a T-032), 0 errores TypeScript, 0 warnings ESLint.
+Dashboard ejecutivo con KPIs en tiempo real, gráficas, ranking, alertas y exportación CSV.
+Commit: 6c21ecf
