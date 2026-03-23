@@ -2,7 +2,6 @@ import { requirePermission, checkPermission, checkIsRoot } from '@/lib/permissio
 import { getAllIncentiveRecords, getIncentiveSummary, getMyIncentiveHistory } from './incentive-actions'
 import { IncentiveRecordRow } from '@/components/incentivos/incentive-record-row'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/server'
 
 export const metadata = { title: 'Incentivos — Guadiana' }
 
@@ -45,10 +44,6 @@ export default async function IncentivosPage({ searchParams }: PageProps) {
   const records = recordsResult.success ? (recordsResult.data ?? []) : []
   const summary = summaryResult.success ? summaryResult.data : null
   const canActOnRecords = canApprove || isRoot
-
-  // Obtener usuario actual para calcular su propio historial
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
 
   const myHistoryResult = await getMyIncentiveHistory()
   const myRecords = myHistoryResult.success ? (myHistoryResult.data ?? []) : []

@@ -1,5 +1,5 @@
 import { requirePermission } from '@/lib/permissions'
-import { getIncentiveSchemas, deleteIncentiveSchema } from '../incentive-actions'
+import { getIncentiveSchemas } from '../incentive-actions'
 import { IncentiveSchemaForm } from '@/components/incentivos/incentive-schema-form'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'

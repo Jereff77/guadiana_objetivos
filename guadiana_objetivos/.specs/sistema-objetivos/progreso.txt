@@ -65,3 +65,10 @@ FASE 4 — Servicio Python de IA (M4)
 [✅] T-047: Variables de entorno — .env.example (Next.js) y ai-service/.env.example documentados — 2026-03-22
 
 FASE 4 COMPLETA AL 100% ✅ — 2026-03-22
+
+FASE 5 — Mentoring (M6)
+====================================================
+[✅] T-042: Migración SQL — Tablas de mentoring (mentoring_pairs, mentoring_sessions) + RLS + índices + trigger updated_at — 2026-03-22
+[✅] T-043: Server Actions, componentes y páginas — mentoring-actions.ts (getMentoringPairs, createMentoringPair, updateMentoringPair, deleteMentoringPair, getSessionsByPair, createMentoringSession, completeMentoringSession, submitMenteeFeedback, cancelMentoringSession, getMentoringReport) + PairCard, NewPairForm, NewSessionForm, SessionRow + /mentoring, /mentoring/[pairId] + sidebar actualizado con sección Desarrollo Humano — 2026-03-22
+
+FASE 5 COMPLETA AL 100% ✅ — 2026-03-22

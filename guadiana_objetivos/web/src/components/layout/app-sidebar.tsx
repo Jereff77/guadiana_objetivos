@@ -17,6 +17,7 @@ import {
   TrendingUp,
   DollarSign,
   BrainCircuit,
+  Users2,
 } from 'lucide-react'
 import { logout } from '@/app/(auth)/login/actions'
 import {
@@ -260,6 +261,28 @@ export function AppSidebar({ permissions = [], isRoot = false }: AppSidebarProps
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
+
+        {/* ── Sección: Mentoring (M6) ── */}
+        {hasPermission('mentoring.view') && (
+          <SidebarGroup>
+            <SidebarGroupLabel>Desarrollo Humano</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={pathname === '/mentoring' || pathname.startsWith('/mentoring/')}
+                  >
+                    <Link href="/mentoring" className="flex items-center gap-2">
+                      <Users2 className="h-4 w-4" />
+                      <span>Mentoring</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
 
         {/* ── Sección: IA y Verificación (M4) ── */}
         {(hasPermission('ia.view') || hasPermission('ia.configure')) && (

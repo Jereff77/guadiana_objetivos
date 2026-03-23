@@ -246,3 +246,61 @@ Plataforma web (Next.js 15) + App móvil Flutter para gestionar checklists y enc
 | FASE 4 — Servicio Python de IA (M4) | ⏳ Pendiente |
 | FASE 5 — Mentoring (M6) | ⏳ Pendiente |
 | FASE 6 — LMS (M7) | ⏳ Pendiente |
+
+### Claude Sonnet 4.6 - Sesión 2026-03-22 (FASE 4)
+
+#### Rol: Orquestador IA
+- **Solicitud del usuario**: Continuar con la siguiente tarea del sistema de objetivos hasta completar FASE 4.
+- **Análisis realizado**: FASE 3 completada. Siguiente era FASE 4 — Servicio Python de IA (M4): T-036 a T-041 + T-047.
+- **Decisión de agentes**: Trabajo directo — SQL, Python FastAPI y componentes Next.js bien delimitados.
+
+#### Tareas Realizadas:
+1. **T-036**: Migración SQL `ai_prompts` + `ai_analysis_results` con RLS granular y prompt de verificación seeded.
+2. **T-037**: Estructura FastAPI completa en `ai-service/`: main.py (middleware API Key, CORS), config.py (pydantic-settings), models.py (AnalyzeRequest/Response, ChatRequest/Response), requirements.txt.
+3. **T-038**: Router `/analyze`: descarga evidencias de Storage, extrae texto PDF (pypdf), envía imágenes en base64 a Claude, guarda resultado en `ai_analysis_results`, notifica WhatsApp opcional.
+4. **T-039**: Router `/chat`: chat contextualizado con contenido LMS, usa prompt configurado en Supabase.
+5. **T-040**: `requestAiAnalysis()` en `deliverable-actions.ts` — llama servicio Python desde Server Action con permiso `objetivos.review`.
+6. **T-041**: Página `/ia-verificacion` (log + KPIs + prompts), `AnalysisResultCard`, `PromptEditor`. Sidebar actualizado con sección IA.
+7. **T-047**: `.env.example` documentado en Next.js y ai-service.
+
+#### Archivos Creados/Modificados:
+- `ai-service/`: main.py, config.py, models.py, requirements.txt, .env.example
+- `ai-service/routers/`: analyze.py, chat.py
+- `ai-service/services/`: supabase_client.py, storage.py, ai_client.py, whatsapp.py
+- `web/supabase/migrations/20260322000040_create_ai_schema.sql`
+- `web/src/app/(dashboard)/ia-verificacion/`: ia-actions.ts, page.tsx
+- `web/src/components/ia/`: analysis-result-card.tsx, prompt-editor.tsx
+- `web/src/app/(dashboard)/objetivos/deliverable-actions.ts`: +requestAiAnalysis
+- `web/src/components/layout/app-sidebar.tsx`: +sección IA
+- `web/.env.example`, `web/.env.local`: +PYTHON_AI_SERVICE_URL/KEY
+
+#### Estado Actual:
+| Fase | Estado |
+|------|--------|
+| FASE 0 — Roles y Usuarios (M0) | ✅ COMPLETA |
+| FASE 1 — Objetivos (M1) | ✅ COMPLETA |
+| FASE 2 — Dashboard y KPIs (M2) | ✅ COMPLETA |
+| FASE 3 — Incentivos (M3) | ✅ COMPLETA |
+| FASE 4 — Servicio Python de IA (M4) | ✅ COMPLETA (Claude Sonnet 4.6) - 2026-03-22 |
+| FASE 5 — Mentoring (M6) | ✅ COMPLETA (Claude Sonnet 4.6) - 2026-03-22 |
+| FASE 6 — LMS (M7) | ⏳ Pendiente |
+
+---
+
+### Claude Sonnet 4.6 — Sesión 2026-03-22 (continuación — FASE 5)
+
+#### Rol: Orquestador IA
+- **Solicitud del usuario**: Continuar hasta FASE 5 completa
+- **Decisión de agentes**: Trabajo directo (fix puntual de 1 función no usada)
+
+#### Tareas Realizadas:
+1. **T-043 fix — Eliminar `RatingStars` no usada** (Tools: Read, Edit)
+   - Archivo: `web/src/app/(dashboard)/mentoring/[pairId]/page.tsx`
+   - Removida función `RatingStars` (lines 18-26) nunca referenciada en JSX
+2. **TypeScript check** — `npx tsc --noEmit` → 0 errores
+3. **Next.js build** — exitoso, rutas `/mentoring` y `/mentoring/[pairId]` compiladas
+4. **Actualización progreso.txt** — T-042 y T-043 ✅, FASE 5 COMPLETA
+
+#### Archivos Modificados:
+- `web/src/app/(dashboard)/mentoring/[pairId]/page.tsx`: eliminada `RatingStars` no usada
+- `.specs/sistema-objetivos/progreso.txt`: FASE 5 registrada como completa
