@@ -789,3 +789,153 @@ Commit: 6c21ecf
 - `KpiCard` convertido a componente inline simple en el Server Component (no necesita ser cliente)
 - `kpi-charts.tsx` restaurado a su estado original (sin tipos M2)
 - Commit: 0abada5
+
+---
+
+### Claude Sonnet 4.6 - Sesión 2026-03-22 (Fix PDF viewer + content-form upload)
+
+#### Rol: Orquestador IA
+- **Solicitud del usuario**: Completar flujo de subida y visualización de PDFs en LMS
+- **Análisis realizado**: Se detectó que `content-viewer.tsx` usaba `storage_path` directamente como URL en `<iframe>` y link de descarga, pero el bucket `lms-content` es privado — necesita URL firmada (signed URL). Adicionalmente, `content-form.tsx` ya fue actualizado con upload de PDF vía browser client.
+- **Decisión de agentes**: Trabajo directo — correcciones quirúrgicas en 2 archivos.
+
+#### Tareas Realizadas:
+1. **Fix PDF viewer — URL firmada (signed URL)** (Herramientas: Edit)
+   - `capacitacion/[contentId]/page.tsx`: genera signed URL server-side con `supabase.storage.from('lms-content').createSignedUrl(path, 3600)` si `content_type === 'pdf'`
+   - Pasa `pdfSignedUrl` como prop a `ContentViewer`
+   - `content-viewer.tsx`: acepta `pdfSignedUrl?: string | null`, usa esa URL en `<iframe src>` y `<a href>` en lugar de `storage_path`
+   - Muestra mensaje de error amigable si no hay URL disponible
+
+2. **Verificación TypeScript y build** (Herramientas: Bash)
+   - `npx tsc --noEmit` → 0 errores
+   - `npx next build` → exitoso, todas las rutas compiladas correctamente
+
+#### Archivos Modificados:
+- `web/src/app/(dashboard)/capacitacion/[contentId]/page.tsx`: +import createClient, +generación signed URL, +prop pdfSignedUrl en ContentViewer
+- `web/src/app/(dashboard)/capacitacion/[contentId]/content-viewer.tsx`: +prop pdfSignedUrl, PDF renderiza con signed URL (bucket privado)
+
+#### Errores Encontrados y Soluciones:
+- **Problema**: `content-viewer.tsx` usaba `content.storage_path` (ej: `contenidos/xxx.pdf`) directamente como `src` del `<iframe>` — bucket privado, sin acceso
+- **Solución**: Generar signed URL server-side en `page.tsx` y pasarla como prop al componente cliente
+
+#### Resultado:
+✅ Flujo completo PDF: subida en content-form → guardado en bucket lms-content → signed URL generada al ver → iframe con PDF accesible
+
+---
+
+### Claude Sonnet 4.6 - Sesión 2026-03-23 (Vista previa de rol + Permisos + LMS edición + Spec Cursos)
+
+#### Rol: Orquestador IA
+- **Solicitud del usuario**: (1) Fix "onStart is not a function" en ContentCard. (2) Fix recurrente "Server Action not found". (3) Agregar permiso para crear departamentos. (4) Vista previa de rol — simular UI de un rol antes de asignarlo. (5) Incluir permisos de Procesos en plataforma. (6) Agregar editar/eliminar en contenidos LMS. (7) Incluir permisos granulares capacitacion.edit y capacitacion.delete. (8) Color activo sidebar #194D95. (9) Reestructurar catálogo LMS como sistema de cursos con temario.
+- **Análisis realizado**: Múltiples correcciones quirúrgicas + feature complejo de vista previa de rol con cookie httpOnly + planificación de reestructura LMS.
+- **Decisión de agentes**: Trabajo directo + agentes Explore para planificación de cursos LMS.
+
+#### Estado del Proyecto (ACTUALIZADO)
+- ✅ Fases 1-5 completas (MVP base checklists)
+- ✅ FASE 0 completa (M0 — Roles granular)
+- ✅ FASE 1 completa (M1 — Objetivos)
+- ✅ FASE 2 completa (M2 — Dashboard)
+- ✅ **Vista previa de rol** — cookie guadiana_preview_role, banner ámbar, botón en roles-table
+- ✅ **Permisos nuevos**: departamentos.manage, asignaciones.view/manage, capacitacion.edit/delete
+- ✅ **LMS edición/borrado granular** en ContentCard
+- ✅ **PDF signed URL** — startContent movido al server
+- ✅ **Sidebar**: grupo Procesos filtrado por permisos; color activo #194D95
+- 📝 **FASE LMS Cursos** — spec aprobada, tareas T-01..T-10 creadas, pendiente implementación
+
+#### Tareas Realizadas:
+
+1. **Fix "onStart is not a function"** (Herramientas: Edit)
+   - `ContentCard` tenía `startContent` Server Action llamada desde cliente
+   - Movido `startContent(contentId)` al server en `[contentId]/page.tsx`
+   - ContentCard ya no importa ni llama startContent
+
+2. **Fix "Server Action not found" (hash mismatch)** (Herramientas: Edit)
+   - `next.config.ts`: cache de `/_next/static` solo se aplica en producción (`process.env.NODE_ENV === 'production'`)
+   - Solución para desarrollo: borrar `.next`, reiniciar dev server, abrir en pestaña nueva
+
+3. **Permiso departamentos.manage** (Herramientas: Write, MCP)
+   - Migración: `20260323000001_add_departamentos_permission.sql`
+   - `dept-actions.ts`: `assertManage()` acepta `departamentos.manage` OR `objetivos.manage`
+
+4. **Vista previa de rol** (Herramientas: Write, Edit)
+   - `src/app/(dashboard)/roles/preview-actions.ts` (nuevo): `startRolePreview()` y `stopRolePreview()` con cookie httpOnly `guadiana_preview_role`
+   - `src/lib/permissions.ts`: helper privado `getPreviewPermissions()` — lee cookie, devuelve permisos del rol de prueba; intercepta `checkPermission`, `checkIsRoot`, `getUserPermissions`
+   - `src/components/layout/preview-banner.tsx` (nuevo): banner ámbar con `<form action={stopRolePreview}>`
+   - `src/app/(dashboard)/layout.tsx`: lee cookie, obtiene nombre del rol, muestra `PreviewBanner`
+   - `src/components/roles/roles-table.tsx`: botón "Probar rol" (amber) + estado `previewingId`
+
+5. **Permisos Procesos** (Herramientas: Write, MCP)
+   - Migración: `20260323000002_add_procesos_permissions.sql`
+   - `asignaciones.view`, `asignaciones.manage`
+   - `app-sidebar.tsx`: `procesosItems` con `permission` field; `visibleProcesos` filtrado igual que otros grupos
+   - `requirePermission` agregado a `/formularios/page.tsx`, `/asignaciones/page.tsx`, `/resultados/page.tsx`
+
+6. **Color activo sidebar #194D95** (Herramientas: Edit)
+   - `app-sidebar.tsx`: clase activa → `text-white font-medium` + `style={{ backgroundColor: '#194D95' }}`
+
+7. **LMS edición/borrado granular en ContentCard** (Herramientas: Edit)
+   - `content-card.tsx`: panel de edición inline (título, descripción, categoría, video_url, text_body, is_published) + confirmación de borrado
+   - Props nuevas: `canEdit`, `canDelete` separadas de `canManage`
+   - `lms-actions.ts`: `updateLmsContent` acepta `capacitacion.edit` OR `manage` OR root; `deleteLmsContent` acepta `capacitacion.delete` OR `manage` OR root
+   - Migración: `20260323000003_add_capacitacion_edit_delete_permissions.sql`
+   - `capacitacion/page.tsx`: pasa `canEdit` y `canDelete` a `ContentCard`
+
+8. **Spec y tareas LMS Cursos** (Herramientas: Write, Agent Explore)
+   - Spec aprobada en plan mode: sistema de cursos con temario, temas tipo content o survey (form_surveys)
+   - `guadiana_objetivos/.specs/lms-courses-temario.md`: spec completa
+   - `web/specs/lms-courses-temario.md`: copia en web
+   - `web/specs/tareas.md`: 10 tareas detalladas T-01..T-10
+   - Tareas registradas en task tracker del agente
+
+9. **Commit y push** (Herramientas: Bash)
+   - Commit `8999372` rama `decisiones` — 22 archivos, 944 inserciones
+
+#### Errores Encontrados y Soluciones:
+- **"onStart is not a function"**: ContentCard llamaba Server Action en cliente con firma incorrecta. Solución: mover startContent al server en [contentId]/page.tsx
+- **"Server Action not found" recurrente**: caché de /_next/static en desarrollo causaba hashes obsoletos. Solución: fix next.config.ts + borrar .next al desarrollar
+- **"Event handlers cannot be passed to Client Component"**: `<select onChange>` en Server Component. Solución: form nativo con button submit GET
+
+#### Archivos Creados:
+- `web/src/app/(dashboard)/roles/preview-actions.ts`
+- `web/src/components/layout/preview-banner.tsx`
+- `web/supabase/migrations/20260323000001_add_departamentos_permission.sql`
+- `web/supabase/migrations/20260323000002_add_procesos_permissions.sql`
+- `web/supabase/migrations/20260323000003_add_capacitacion_edit_delete_permissions.sql`
+- `web/specs/lms-courses-temario.md`
+- `web/specs/tareas.md`
+- `guadiana_objetivos/.specs/lms-courses-temario.md`
+
+#### Archivos Modificados:
+- `web/next.config.ts`: cache /_next/static solo en producción
+- `web/src/lib/permissions.ts`: soporte de preview via cookie
+- `web/src/app/(dashboard)/layout.tsx`: PreviewBanner + lectura de cookie
+- `web/src/components/layout/app-sidebar.tsx`: Procesos filtrado por permisos + color activo #194D95
+- `web/src/components/roles/roles-table.tsx`: botón "Probar rol"
+- `web/src/app/(dashboard)/capacitacion/page.tsx`: canEdit + canDelete a ContentCard
+- `web/src/app/(dashboard)/capacitacion/lms-actions.ts`: permisos granulares en update/delete
+- `web/src/app/(dashboard)/capacitacion/[contentId]/page.tsx`: startContent server-side
+- `web/src/app/(dashboard)/capacitacion/[contentId]/content-viewer.tsx`: prop pdfSignedUrl
+- `web/src/components/lms/content-card.tsx`: edición inline + borrado + permisos granulares
+- `web/src/app/(dashboard)/formularios/page.tsx`: requirePermission
+- `web/src/app/(dashboard)/asignaciones/page.tsx`: requirePermission
+- `web/src/app/(dashboard)/resultados/page.tsx`: requirePermission
+- `web/src/app/(dashboard)/objetivos/dept-actions.ts`: departamentos.manage OR objetivos.manage
+
+#### Próximas tareas (LMS Cursos — T-01..T-10):
+- **T-01**: Migración SQL lms_courses + lms_course_topics + lms_course_progress + RLS
+- **T-02**: Server Actions course-actions.ts
+- **T-03**: Componente CourseCard
+- **T-04**: Componente CourseForm
+- **T-05**: Componente TopicEditor
+- **T-06**: Página /capacitacion refactorizada
+- **T-07**: Página /capacitacion/[courseId]
+- **T-08**: Página /capacitacion/[courseId]/[topicId]
+- **T-09**: Componente SurveyTopicViewer
+- **T-10**: Verificación final
+
+#### Resultado:
+✅ Vista previa de rol funcional con cookie persistente y banner de salida.
+✅ Permisos granulares LMS (edit/delete) implementados.
+✅ Sidebar Procesos filtrado correctamente. Color activo #194D95.
+✅ Spec de cursos LMS aprobada. 10 tareas creadas listas para implementar.
+Commit: 8999372 en rama `decisiones`.
