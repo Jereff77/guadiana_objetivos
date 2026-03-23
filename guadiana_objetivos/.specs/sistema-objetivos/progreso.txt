@@ -72,3 +72,7 @@ FASE 5 — Mentoring (M6)
 [✅] T-043: Server Actions, componentes y páginas — mentoring-actions.ts (getMentoringPairs, createMentoringPair, updateMentoringPair, deleteMentoringPair, getSessionsByPair, createMentoringSession, completeMentoringSession, submitMenteeFeedback, cancelMentoringSession, getMentoringReport) + PairCard, NewPairForm, NewSessionForm, SessionRow + /mentoring, /mentoring/[pairId] + sidebar actualizado con sección Desarrollo Humano — 2026-03-22
 
 FASE 5 COMPLETA AL 100% ✅ — 2026-03-22
+
+FASE 6 — LMS (M7)
+====================================================
+[✅] T-044: Migración SQL — Tablas LMS (lms_content, lms_quizzes, lms_paths, lms_progress) + RLS + índices + triggers updated_at — 2026-03-22
