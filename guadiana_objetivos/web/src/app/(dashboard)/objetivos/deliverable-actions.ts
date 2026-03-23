@@ -318,3 +318,83 @@ export async function reviewDeliverable(
   revalidatePath('/objetivos')
   return {}
 }
+
+// ─── IA: Disparar análisis (T-040) ───────────────────────────────────────────
+
+export interface AiAnalysisResult {
+  analysis_id: string
+  verdict: string
+  confidence: number
+  summary: string
+  findings: { positive: string[]; negative: string[] }
+}
+
+export async function requestAiAnalysis(
+  deliverableId: string,
+  notifyWhatsapp = false,
+): Promise<{ data?: AiAnalysisResult; error?: string }> {
+  await assertReview()
+
+  const aiServiceUrl = process.env.PYTHON_AI_SERVICE_URL
+  const aiServiceKey = process.env.PYTHON_AI_SERVICE_API_KEY
+
+  if (!aiServiceUrl || !aiServiceKey) {
+    return { error: 'Servicio de IA no configurado. Revisa las variables de entorno.' }
+  }
+
+  const supabase = await createClient()
+
+  // Obtener entregable con su objetivo
+  const { data: deliverable, error: dErr } = await supabase
+    .from('objective_deliverables')
+    .select(`
+      id, title, description,
+      objectives ( title, description ),
+      objective_evidences ( id )
+    `)
+    .eq('id', deliverableId)
+    .single()
+
+  if (dErr || !deliverable) {
+    return { error: 'Entregable no encontrado.' }
+  }
+
+  const objectiveRaw = deliverable.objectives as { title: string; description: string | null } | { title: string; description: string | null }[] | null
+  const objective = Array.isArray(objectiveRaw) ? (objectiveRaw[0] ?? null) : objectiveRaw
+  const evidenceIds = (deliverable.objective_evidences as { id: string }[]).map((e) => e.id)
+
+  if (evidenceIds.length === 0) {
+    return { error: 'El entregable no tiene evidencias para analizar.' }
+  }
+
+  try {
+    const response = await fetch(`${aiServiceUrl}/analyze`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-API-Key': aiServiceKey,
+      },
+      body: JSON.stringify({
+        deliverable_id: deliverableId,
+        objective_title: objective?.title ?? '',
+        objective_description: objective?.description ?? null,
+        deliverable_title: deliverable.title,
+        deliverable_description: deliverable.description ?? null,
+        evidence_ids: evidenceIds,
+        notify_whatsapp: notifyWhatsapp,
+      }),
+    })
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      return { error: `Error del servicio IA: ${response.status} — ${errorText.slice(0, 200)}` }
+    }
+
+    const result = await response.json() as AiAnalysisResult
+    revalidatePath('/objetivos')
+    revalidatePath('/ia-verificacion')
+    return { data: result }
+  } catch (err) {
+    return { error: `No se pudo conectar con el servicio de IA: ${(err as Error).message}` }
+  }
+}

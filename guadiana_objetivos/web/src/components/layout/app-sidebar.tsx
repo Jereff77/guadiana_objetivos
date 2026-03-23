@@ -16,6 +16,7 @@ import {
   Target,
   TrendingUp,
   DollarSign,
+  BrainCircuit,
 } from 'lucide-react'
 import { logout } from '@/app/(auth)/login/actions'
 import {
@@ -259,6 +260,28 @@ export function AppSidebar({ permissions = [], isRoot = false }: AppSidebarProps
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
+
+        {/* ── Sección: IA y Verificación (M4) ── */}
+        {(hasPermission('ia.view') || hasPermission('ia.configure')) && (
+          <SidebarGroup>
+            <SidebarGroupLabel>IA</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={pathname === '/ia-verificacion' || pathname.startsWith('/ia-verificacion/')}
+                  >
+                    <Link href="/ia-verificacion" className="flex items-center gap-2">
+                      <BrainCircuit className="h-4 w-4" />
+                      <span>Análisis IA</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
       </SidebarContent>
 
       <SidebarFooter className="border-t border-sidebar-border px-2 py-2">

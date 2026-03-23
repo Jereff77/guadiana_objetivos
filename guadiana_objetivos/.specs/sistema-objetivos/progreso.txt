@@ -53,3 +53,15 @@ FASE 3 — Incentivos (M3)
 [✅] T-035: Componentes y páginas — IncentiveSchemaForm, IncentiveRecordRow, IncentiveSchemasList + /incentivos, /incentivos/configurar, /incentivos/calcular + /api/incentivos/export + sidebar actualizado — 2026-03-22
 
 FASE 3 COMPLETA AL 100% ✅ — 2026-03-22
+
+FASE 4 — Servicio Python de IA (M4)
+====================================================
+[✅] T-036: Migración SQL — Tablas IA (ai_prompts, ai_analysis_results) + RLS + seed prompt verificación — 2026-03-22
+[✅] T-037: Estructura del servicio Python — FastAPI: main.py, config.py, models.py, services/ (supabase_client, storage, ai_client, whatsapp), requirements.txt, .env.example — 2026-03-22
+[✅] T-038: Router /analyze — Descarga evidencias de Storage, extrae texto de PDFs, envía imágenes en base64 a Claude, guarda resultado en ai_analysis_results, notifica WhatsApp opcional — 2026-03-22
+[✅] T-039: Router /chat — Chat contextualizado con contenido LMS, usa prompt de Supabase, devuelve sources — 2026-03-22
+[✅] T-040: Server Action requestAiAnalysis — Llama al servicio Python desde deliverable-actions.ts, requiere objetivos.review, revalida /ia-verificacion — 2026-03-22
+[✅] T-041: Componentes y página — AnalysisResultCard, PromptEditor + /ia-verificacion (log + KPIs + gestión de prompts) + sidebar actualizado con sección IA — 2026-03-22
+[✅] T-047: Variables de entorno — .env.example (Next.js) y ai-service/.env.example documentados — 2026-03-22
+
+FASE 4 COMPLETA AL 100% ✅ — 2026-03-22

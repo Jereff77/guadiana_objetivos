@@ -211,3 +211,38 @@ Plataforma web (Next.js 15) + App móvil Flutter para gestionar checklists y enc
 |-------|--------|
 | Fases 1-5 MVP | ✅ Completadas (Claude Sonnet 4.6) |
 | Sidebar fijo sin toggle | ✅ Completado (Claude Sonnet 4.6) - 2026-03-21 |
+
+### Claude Sonnet 4.6 - Sesión 2026-03-22 (FASE 3)
+
+#### Rol: Orquestador IA
+- **Solicitud del usuario**: Continuar con la siguiente tarea del sistema de objetivos hasta completar FASE 3.
+- **Análisis realizado**: Fases 0, 1 y 2 completadas en sesiones previas. La siguiente era FASE 3 — Sistema de Incentivos (M3): T-033, T-034, T-035.
+- **Decisión de agentes**: Trabajo directo — tareas de migración SQL, Server Actions y UI/páginas bien delimitadas.
+
+#### Tareas Realizadas:
+1. **T-033: Migración SQL** — Tablas `incentive_schemas` e `incentive_records` aplicadas a Supabase vía MCP. RLS con políticas `incentivos.view/manage/approve`. Triggers `updated_at`. Archivo local: `20260322000030_create_incentives_schema.sql`.
+2. **T-034: Server Actions** — `incentive-actions.ts` con: getIncentiveSchemas, createIncentiveSchema, updateIncentiveSchema, deleteIncentiveSchema, calculateIncentivesForPeriod, approveIncentiveRecord, markIncentiveRecordAsPaid, getMyIncentiveHistory, getAllIncentiveRecords, getIncentiveSummary.
+3. **T-035: Componentes y páginas** — IncentiveSchemaForm, IncentiveRecordRow, IncentiveSchemasList; páginas /incentivos, /incentivos/configurar, /incentivos/calcular; API /api/incentivos/export (CSV); sidebar actualizado con entrada Incentivos bajo permiso `incentivos.view`.
+
+#### Archivos Modificados/Creados:
+- `web/supabase/migrations/20260322000030_create_incentives_schema.sql`: Migración M3
+- `web/src/app/(dashboard)/incentivos/incentive-actions.ts`: Server Actions
+- `web/src/app/(dashboard)/incentivos/page.tsx`: Página principal
+- `web/src/app/(dashboard)/incentivos/configurar/page.tsx`: Configurar esquemas
+- `web/src/app/(dashboard)/incentivos/calcular/page.tsx`: Disparar cálculo
+- `web/src/app/api/incentivos/export/route.ts`: Exportación CSV
+- `web/src/components/incentivos/incentive-schema-form.tsx`: Formulario de esquemas
+- `web/src/components/incentivos/incentive-record-row.tsx`: Fila de registro
+- `web/src/components/incentivos/incentive-schemas-list.tsx`: Lista de esquemas
+- `web/src/components/layout/app-sidebar.tsx`: +Incentivos en sidebar
+
+#### Estado Actual:
+| Fase | Estado |
+|------|--------|
+| FASE 0 — Roles y Usuarios (M0) | ✅ COMPLETA (Claude Sonnet 4.6) - 2026-03-22 |
+| FASE 1 — Objetivos (M1) | ✅ COMPLETA (Claude Sonnet 4.6) - 2026-03-22 |
+| FASE 2 — Dashboard y KPIs (M2) | ✅ COMPLETA (Claude Sonnet 4.6) - 2026-03-22 |
+| FASE 3 — Incentivos (M3) | ✅ COMPLETA (Claude Sonnet 4.6) - 2026-03-22 |
+| FASE 4 — Servicio Python de IA (M4) | ⏳ Pendiente |
+| FASE 5 — Mentoring (M6) | ⏳ Pendiente |
+| FASE 6 — LMS (M7) | ⏳ Pendiente |
