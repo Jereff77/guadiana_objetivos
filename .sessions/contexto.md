@@ -779,3 +779,13 @@ Commit: c66de95
 ✅ **FASE 2 COMPLETA AL 100%** — 5 tareas (T-028 a T-032), 0 errores TypeScript, 0 warnings ESLint.
 Dashboard ejecutivo con KPIs en tiempo real, gráficas, ranking, alertas y exportación CSV.
 Commit: 6c21ecf
+
+#### Fix post-FASE 2 — Runtime Error Dashboard
+
+**Problema**: `TypeError: Cannot read properties of undefined (reading 'call')` en `/dashboard`.
+**Causa**: `kpi-charts.tsx` (`'use client'` + Recharts pesado) importado directamente desde un Server Component — webpack fallaba al cargar el chunk.
+**Solución**:
+- Creado `web/src/components/dashboard/dashboard-charts.tsx` con `ComplianceBarChart` y `ObjectiveTrendChart` exclusivos del dashboard
+- `KpiCard` convertido a componente inline simple en el Server Component (no necesita ser cliente)
+- `kpi-charts.tsx` restaurado a su estado original (sin tipos M2)
+- Commit: 0abada5
