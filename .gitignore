@@ -47,3 +47,4 @@ app.*.map.json
 /android/app/.cxx/
 
 .env
+SARA/node_modules/electron/dist/
