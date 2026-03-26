@@ -1,18 +1,41 @@
-# Contexto del Proyecto - Plataforma Web Guadiana Checklists
+# Contexto del Proyecto - Plataforma Web Guadiana: Checklists + Sistema de Objetivos e Incentivos
 
-## Información de Sesión
+## Información de Sesión (última actualización)
 - **IA Utilizada**: Claude Sonnet 4.6
-- **Fecha**: 2026-03-20
-- **Herramientas**: Claude Code CLI
-- **Agentes Especializados Utilizados**: nextjs-developer, backend-supabase-developer
+- **Fecha**: 2026-03-22
+- **Herramientas**: Claude Code CLI, MCP Supabase (supaGuadianaObj)
+- **Agentes Especializados Utilizados**: nextjs-developer, backend-supabase-developer (sesiones iniciales)
 - **Rol**: Orquestador IA
 
 ## Resumen del Proyecto
-Plataforma web (Next.js 15) + App móvil Flutter para gestionar checklists y encuestas de auditoría interna en Llantas y Rines del Guadiana. Backend sobre Supabase (PostgreSQL, Auth, Storage). El web permite a administradores diseñar formularios, asignar tareas y ver resultados. La app móvil permite a asesores/operarios responder checklists.
+Plataforma web (Next.js 15 App Router) + App móvil Flutter para **Llantas y Rines del Guadiana**. Backend sobre Supabase (PostgreSQL, Auth, Storage, RLS). Dos grandes módulos:
+
+1. **Checklists/Formularios** (MVP completado 2026-03-20/21): Diseño de formularios, asignaciones, respuestas móviles, resultados y estadísticas.
+2. **Sistema de Objetivos e Incentivos** (desarrollado 2026-03-22, **TODAS LAS FASES COMPLETADAS** T-001 a T-048):
+   - M0: Roles y permisos granulares
+   - M1: Objetivos por departamento con entregables y evidencias
+   - M2: Dashboard KPIs y gráficas
+   - M3: Incentivos con cálculo automático y aprobación
+   - M4: Servicio Python FastAPI + Claude para análisis IA de evidencias
+   - M6: Mentoring — pares mentor-mentee y sesiones con seguimiento
+   - M7: LMS — catálogo de contenidos, quizzes, rutas de aprendizaje, chat IA
+   - Transversales: tipos TypeScript regenerados, variables de entorno, página /inicio
 
 **Supabase Project URL**: https://zpqjzjqwlofzvxeeczcq.supabase.co
 **Monorepo root**: `guadiana_objetivos/`
 **Web app path**: `guadiana_objetivos/web/`
+**AI Service path**: `guadiana_objetivos/ai-service/`
+
+## Estado Global del Sistema de Objetivos
+| Fase | Módulo | Estado |
+|------|--------|--------|
+| FASE 0 — Roles y Usuarios | M0 | ✅ COMPLETA |
+| FASE 1 — Objetivos | M1 | ✅ COMPLETA |
+| FASE 2 — Dashboard y KPIs | M2 | ✅ COMPLETA |
+| FASE 3 — Incentivos | M3 | ✅ COMPLETA |
+| FASE 4 — Servicio Python de IA | M4 | ✅ COMPLETA |
+| FASE 5 — Mentoring | M6 | ✅ COMPLETA |
+| FASE 6 — LMS | M7 | ✅ COMPLETA (Claude Sonnet 4.6) - 2026-03-22 |
 
 ## Estado Actual del Proyecto
 | Tarea | Estado |
@@ -211,3 +234,331 @@ Plataforma web (Next.js 15) + App móvil Flutter para gestionar checklists y enc
 |-------|--------|
 | Fases 1-5 MVP | ✅ Completadas (Claude Sonnet 4.6) |
 | Sidebar fijo sin toggle | ✅ Completado (Claude Sonnet 4.6) - 2026-03-21 |
+
+### Claude Sonnet 4.6 - Sesión 2026-03-22 (FASE 3)
+
+#### Rol: Orquestador IA
+- **Solicitud del usuario**: Continuar con la siguiente tarea del sistema de objetivos hasta completar FASE 3.
+- **Análisis realizado**: Fases 0, 1 y 2 completadas en sesiones previas. La siguiente era FASE 3 — Sistema de Incentivos (M3): T-033, T-034, T-035.
+- **Decisión de agentes**: Trabajo directo — tareas de migración SQL, Server Actions y UI/páginas bien delimitadas.
+
+#### Tareas Realizadas:
+1. **T-033: Migración SQL** — Tablas `incentive_schemas` e `incentive_records` aplicadas a Supabase vía MCP. RLS con políticas `incentivos.view/manage/approve`. Triggers `updated_at`. Archivo local: `20260322000030_create_incentives_schema.sql`.
+2. **T-034: Server Actions** — `incentive-actions.ts` con: getIncentiveSchemas, createIncentiveSchema, updateIncentiveSchema, deleteIncentiveSchema, calculateIncentivesForPeriod, approveIncentiveRecord, markIncentiveRecordAsPaid, getMyIncentiveHistory, getAllIncentiveRecords, getIncentiveSummary.
+3. **T-035: Componentes y páginas** — IncentiveSchemaForm, IncentiveRecordRow, IncentiveSchemasList; páginas /incentivos, /incentivos/configurar, /incentivos/calcular; API /api/incentivos/export (CSV); sidebar actualizado con entrada Incentivos bajo permiso `incentivos.view`.
+
+#### Archivos Modificados/Creados:
+- `web/supabase/migrations/20260322000030_create_incentives_schema.sql`: Migración M3
+- `web/src/app/(dashboard)/incentivos/incentive-actions.ts`: Server Actions
+- `web/src/app/(dashboard)/incentivos/page.tsx`: Página principal
+- `web/src/app/(dashboard)/incentivos/configurar/page.tsx`: Configurar esquemas
+- `web/src/app/(dashboard)/incentivos/calcular/page.tsx`: Disparar cálculo
+- `web/src/app/api/incentivos/export/route.ts`: Exportación CSV
+- `web/src/components/incentivos/incentive-schema-form.tsx`: Formulario de esquemas
+- `web/src/components/incentivos/incentive-record-row.tsx`: Fila de registro
+- `web/src/components/incentivos/incentive-schemas-list.tsx`: Lista de esquemas
+- `web/src/components/layout/app-sidebar.tsx`: +Incentivos en sidebar
+
+#### Estado Actual:
+| Fase | Estado |
+|------|--------|
+| FASE 0 — Roles y Usuarios (M0) | ✅ COMPLETA (Claude Sonnet 4.6) - 2026-03-22 |
+| FASE 1 — Objetivos (M1) | ✅ COMPLETA (Claude Sonnet 4.6) - 2026-03-22 |
+| FASE 2 — Dashboard y KPIs (M2) | ✅ COMPLETA (Claude Sonnet 4.6) - 2026-03-22 |
+| FASE 3 — Incentivos (M3) | ✅ COMPLETA (Claude Sonnet 4.6) - 2026-03-22 |
+| FASE 4 — Servicio Python de IA (M4) | ⏳ Pendiente |
+| FASE 5 — Mentoring (M6) | ⏳ Pendiente |
+| FASE 6 — LMS (M7) | ⏳ Pendiente |
+
+### Claude Sonnet 4.6 - Sesión 2026-03-22 (FASE 4)
+
+#### Rol: Orquestador IA
+- **Solicitud del usuario**: Continuar con la siguiente tarea del sistema de objetivos hasta completar FASE 4.
+- **Análisis realizado**: FASE 3 completada. Siguiente era FASE 4 — Servicio Python de IA (M4): T-036 a T-041 + T-047.
+- **Decisión de agentes**: Trabajo directo — SQL, Python FastAPI y componentes Next.js bien delimitados.
+
+#### Tareas Realizadas:
+1. **T-036**: Migración SQL `ai_prompts` + `ai_analysis_results` con RLS granular y prompt de verificación seeded.
+2. **T-037**: Estructura FastAPI completa en `ai-service/`: main.py (middleware API Key, CORS), config.py (pydantic-settings), models.py (AnalyzeRequest/Response, ChatRequest/Response), requirements.txt.
+3. **T-038**: Router `/analyze`: descarga evidencias de Storage, extrae texto PDF (pypdf), envía imágenes en base64 a Claude, guarda resultado en `ai_analysis_results`, notifica WhatsApp opcional.
+4. **T-039**: Router `/chat`: chat contextualizado con contenido LMS, usa prompt configurado en Supabase.
+5. **T-040**: `requestAiAnalysis()` en `deliverable-actions.ts` — llama servicio Python desde Server Action con permiso `objetivos.review`.
+6. **T-041**: Página `/ia-verificacion` (log + KPIs + prompts), `AnalysisResultCard`, `PromptEditor`. Sidebar actualizado con sección IA.
+7. **T-047**: `.env.example` documentado en Next.js y ai-service.
+
+#### Archivos Creados/Modificados:
+- `ai-service/`: main.py, config.py, models.py, requirements.txt, .env.example
+- `ai-service/routers/`: analyze.py, chat.py
+- `ai-service/services/`: supabase_client.py, storage.py, ai_client.py, whatsapp.py
+- `web/supabase/migrations/20260322000040_create_ai_schema.sql`
+- `web/src/app/(dashboard)/ia-verificacion/`: ia-actions.ts, page.tsx
+- `web/src/components/ia/`: analysis-result-card.tsx, prompt-editor.tsx
+- `web/src/app/(dashboard)/objetivos/deliverable-actions.ts`: +requestAiAnalysis
+- `web/src/components/layout/app-sidebar.tsx`: +sección IA
+- `web/.env.example`, `web/.env.local`: +PYTHON_AI_SERVICE_URL/KEY
+
+#### Estado Actual:
+| Fase | Estado |
+|------|--------|
+| FASE 0 — Roles y Usuarios (M0) | ✅ COMPLETA |
+| FASE 1 — Objetivos (M1) | ✅ COMPLETA |
+| FASE 2 — Dashboard y KPIs (M2) | ✅ COMPLETA |
+| FASE 3 — Incentivos (M3) | ✅ COMPLETA |
+| FASE 4 — Servicio Python de IA (M4) | ✅ COMPLETA (Claude Sonnet 4.6) - 2026-03-22 |
+| FASE 5 — Mentoring (M6) | ✅ COMPLETA (Claude Sonnet 4.6) - 2026-03-22 |
+| FASE 6 — LMS (M7) | ✅ COMPLETA (Claude Sonnet 4.6) - 2026-03-22 |
+
+---
+
+### Claude Sonnet 4.6 — Sesión 2026-03-22 (FASE 5 — Mentoring)
+
+#### Rol: Orquestador IA
+- **Solicitud del usuario**: Continuar hasta FASE 5 completa (Mentoring — M6)
+- **Análisis realizado**: FASE 4 completada. Siguiente: FASE 5 — Mentoring (T-042, T-043). Incluye migración SQL, Server Actions, componentes y páginas para gestión de pares mentor-mentee y sesiones.
+- **Decisión de agentes**: Trabajo directo — SQL, Server Actions y UI bien delimitados.
+
+#### Tareas Realizadas:
+1. **T-042: Migración SQL** (Tools: MCP Supabase, Write)
+   - Tabla `mentoring_pairs`: pares mentor-mentee con UNIQUE(mentor_id, mentee_id), campos `start_date`, `end_date`, `is_active`, `objectives`
+   - Tabla `mentoring_sessions`: sesiones vinculadas al par, opcionalmente a un objetivo de M1 (`objective_id`), campos `scheduled_at`, `modality`, `agenda`, `topics_covered`, `commitments`, `mentor_rating`, `mentor_notes`, `mentee_rating`, `mentee_feedback`, `status` (scheduled/completed/cancelled)
+   - RLS: mentores/mentees ven sus propios pares; `mentoring.view` ve todos; `mentoring.manage` gestiona todos
+   - Política adicional: "mentor can manage sessions" — el mentor puede CUD sesiones de su propio par
+   - Índices sobre `mentor_id`, `mentee_id`, `pair_id` y `status`
+   - Trigger `updated_at` en ambas tablas
+   - Archivo: `web/supabase/migrations/20260322000050_create_mentoring_schema.sql`
+
+2. **T-043: Server Actions** (Tools: Write)
+   - Archivo: `web/src/app/(dashboard)/mentoring/mentoring-actions.ts`
+   - **Pares**: `getMentoringPairs`, `getMentoringPair`, `createMentoringPair`, `updateMentoringPair`, `deleteMentoringPair`
+   - **Sesiones**: `getSessionsByPair`, `createMentoringSession`, `completeMentoringSession`, `submitMenteeFeedback`, `cancelMentoringSession`
+   - **Reportes**: `getMentoringReport` — KPIs (total/completed/cancelled/scheduled + avg ratings por par)
+   - Fix TypeScript: joins Supabase con `!inner` retornan array — resuelto con patrón `T | T[] | null` + `Array.isArray()` (3 ocurrencias)
+
+3. **T-043: Componentes** (Tools: Write)
+   - `web/src/components/mentoring/pair-card.tsx` — Tarjeta de par: progreso de sesiones (barra), toggle activo/inactivo, botón eliminar, enlace al detalle
+   - `web/src/components/mentoring/new-pair-form.tsx` — Formulario de creación de par: selects mentor/mentee (sin duplicados), fecha inicio, fecha fin opcional, descripción de objetivos del programa
+   - `web/src/components/mentoring/session-form.tsx`:
+     - `NewSessionForm`: formulario para programar sesión (datetime-local, modalidad, agenda, objetivo vinculado opcional de M1)
+     - `SessionRow`: fila de sesión expandible. Mentor puede completarla (temas, compromisos, rating, notas) o cancelarla. Mentee puede dar feedback (rating + texto) tras completarse.
+     - Fix JSX: `"` → `&ldquo;`/`&rdquo;` para evitar error de entidad no escapada
+
+4. **T-043: Páginas** (Tools: Write)
+   - `web/src/app/(dashboard)/mentoring/page.tsx` — Lista de pares con KPIs rápidos (pares activos, total sesiones, sesiones completadas), formulario de nuevo par (si `mentoring.manage`/root), sección pares activos e inactivos
+   - `web/src/app/(dashboard)/mentoring/[pairId]/page.tsx` — Detalle de par: header con nombres y fechas, objetivos del programa, resumen KPIs por par (6 cards), formulario programar sesión (solo mentor), secciones de sesiones programadas/completadas/canceladas. Detecta si el usuario actual es mentor o mentee para mostrar acciones correctas.
+
+5. **Sidebar actualizado** — Sección "Desarrollo Humano" con link a Mentoring (guarded por `mentoring.view`). Ícono `Users2` de Lucide.
+
+6. **Fixes de Panel de Problemas**:
+   - `mentoring/page.tsx`: eliminado import no usado `createMentoringPair`
+   - `incentivos/page.tsx`: eliminados `createClient`, `user` y `deleteIncentiveSchema` no usados
+   - `incentivos/configurar/page.tsx`: eliminado `deleteIncentiveSchema` no usado
+   - `session-form.tsx`: escapadas comillas dobles (`&ldquo;`/`&rdquo;`)
+   - `[pairId]/page.tsx`: eliminada función `RatingStars` definida pero nunca usada
+
+7. **Verificación final**:
+   - `npx tsc --noEmit` → 0 errores TypeScript
+   - `npx next build` → build exitoso, 0 warnings críticos, todas las rutas compiladas incluyendo `/mentoring` y `/mentoring/[pairId]`
+
+#### Archivos Creados/Modificados:
+- `web/supabase/migrations/20260322000050_create_mentoring_schema.sql` (nueva)
+- `web/src/app/(dashboard)/mentoring/mentoring-actions.ts` (nueva)
+- `web/src/app/(dashboard)/mentoring/page.tsx` (nueva)
+- `web/src/app/(dashboard)/mentoring/[pairId]/page.tsx` (nueva)
+- `web/src/components/mentoring/pair-card.tsx` (nueva)
+- `web/src/components/mentoring/new-pair-form.tsx` (nueva)
+- `web/src/components/mentoring/session-form.tsx` (nueva)
+- `web/src/components/layout/app-sidebar.tsx`: +sección "Desarrollo Humano" con Mentoring
+- `web/src/app/(dashboard)/incentivos/page.tsx`: fix imports no usados
+- `web/src/app/(dashboard)/incentivos/configurar/page.tsx`: fix imports no usados
+- `.specs/sistema-objetivos/progreso.txt`: T-042 y T-043 ✅, FASE 5 COMPLETA
+
+#### Estado Final del Sistema de Objetivos (todas las fases):
+| Fase | Módulo | Estado |
+|------|--------|--------|
+| FASE 0 — Roles y Usuarios | M0 | ✅ COMPLETA (Claude Sonnet 4.6) - 2026-03-22 |
+| FASE 1 — Objetivos | M1 | ✅ COMPLETA (Claude Sonnet 4.6) - 2026-03-22 |
+| FASE 2 — Dashboard y KPIs | M2 | ✅ COMPLETA (Claude Sonnet 4.6) - 2026-03-22 |
+| FASE 3 — Incentivos | M3 | ✅ COMPLETA (Claude Sonnet 4.6) - 2026-03-22 |
+| FASE 4 — Servicio Python de IA | M4 | ✅ COMPLETA (Claude Sonnet 4.6) - 2026-03-22 |
+| FASE 5 — Mentoring | M6 | ✅ COMPLETA (Claude Sonnet 4.6) - 2026-03-22 |
+| FASE 6 — LMS | M7 | ✅ COMPLETA (Claude Sonnet 4.6) - 2026-03-22 |
+
+#### Resumen de tareas completadas del sistema de objetivos (T-001 a T-048):
+- **FASE 0** (T-001–T-021): Roles granulares, permisos, usuarios, funciones SQL `is_root`/`has_permission`, RLS, sidebar administración
+- **FASE 1** (T-022–T-027): Departamentos, objetivos, entregables, evidencias, reviews, progress tracking, exportación CSV
+- **FASE 2** (T-028–T-032): Dashboard KPIs, gráficas Recharts (trend, compliance bar), ranking de departamentos, alertas automáticas con deduplicación
+- **FASE 3** (T-033–T-035): Esquemas de incentivos con tiers de bonificación, cálculo automático por período, aprobación y pago, exportación CSV
+- **FASE 4** (T-036–T-041, T-047): Servicio Python FastAPI, análisis Claude claude-sonnet-4-6, extracción PDF/imágenes, notificaciones WhatsApp, log de análisis IA, gestión de prompts configurables
+- **FASE 5** (T-042–T-043): Pares mentor-mentee, sesiones con seguimiento completo, feedback mentee, reportes por par, vinculación con objetivos M1
+- **FASE 6** (T-044–T-045): Esquema LMS (lms_content, lms_quizzes, lms_paths, lms_progress), catálogo de contenidos, quiz interactivo, rutas de aprendizaje con certificación, asistente IA vía chat
+- **Transversales** (T-046–T-048): `database.types.ts` regenerado (122 KB con todos los tipos nuevos), `.env.example` documentado, página `/inicio` con 11 tarjetas de acceso rápido por permisos + panel de alertas
+
+---
+
+### Claude Sonnet 4.6 — Sesión 2026-03-22 (FASE 6 — LMS)
+
+#### Rol: Orquestador IA
+- **Solicitud del usuario**: Continuar hasta FASE 6 completa (LMS — M7)
+- **Análisis realizado**: FASE 5 completada. Siguiente: T-044 (migración SQL LMS) y T-045 (Server Actions + componentes + páginas)
+- **Decisión de agentes**: T-044 directo (migración SQL vía MCP). T-045 delegado al agente `nextjs-developer` por volumen de archivos.
+
+#### Tareas Realizadas:
+1. **T-044: Migración SQL LMS** (Tools: MCP Supabase, Write)
+   - `lms_content`: contenidos pdf/video/text/quiz con `storage_path` y `video_url`, `is_published`
+   - `lms_quizzes`: evaluación JSONB 1:1 con contenido, `min_score` (0-100)
+   - `lms_paths`: rutas de aprendizaje con array `content_ids` y `cert_title`
+   - `lms_progress`: progreso individual con `quiz_score`, `certified`, UNIQUE(user_id, content_id)
+   - RLS: `capacitacion.view` ve publicados; `capacitacion.manage` gestiona todo; usuarios ven su propio progreso
+   - Índices en `is_published`, `category`, `user_id`, `content_id`, `path_id`
+   - Triggers `updated_at` en `lms_content` y `lms_paths`
+   - Archivo: `web/supabase/migrations/20260322000060_create_lms_schema.sql`
+
+2. **T-045: Server Actions, componentes y páginas LMS** (Agente: nextjs-developer)
+   - `lms-actions.ts`: 14 funciones — getLmsContents, getLmsContent, createLmsContent, updateLmsContent, deleteLmsContent, upsertLmsQuiz, getLmsPaths, createLmsPath, updateLmsPath, deleteLmsPath, getMyProgress, startContent, completeContent, getPathProgress
+   - Componentes: `ContentCard` (badge tipo/estado/progreso), `PathProgressBar` (CSS puro), `QuizComponent` (radio buttons + corrección visual + score), `ContentForm` (formulario crear/editar)
+   - Páginas: `/capacitacion` (catálogo con filtro categoría + sección gestión), `/capacitacion/[contentId]` (viewer PDF/video/texto/quiz + `startContent` al montar), `/capacitacion/chat` (asistente IA)
+   - `manage-section.tsx`: Client Component para publicar/despublicar/eliminar rutas
+   - `content-viewer.tsx`: Client Component con lógica de completado y quiz
+   - `lms-chat-panel.tsx`: Client Component con historial de mensajes y fetch interno
+   - `/api/capacitacion/chat/route.ts`: proxy al servicio Python con auth
+   - Sidebar: "Capacitación" en sección "Desarrollo Humano" (ícono `BookOpen`, permiso `capacitacion.view`)
+
+3. **Verificación final**:
+   - `npx tsc --noEmit` → 0 errores
+   - `npx next build` → build exitoso, rutas `/capacitacion`, `/capacitacion/[contentId]`, `/capacitacion/chat` compiladas
+
+#### Archivos Creados/Modificados:
+- `web/supabase/migrations/20260322000060_create_lms_schema.sql` (nueva)
+- `web/src/app/(dashboard)/capacitacion/lms-actions.ts` (nueva)
+- `web/src/app/(dashboard)/capacitacion/page.tsx` (nueva)
+- `web/src/app/(dashboard)/capacitacion/manage-section.tsx` (nueva)
+- `web/src/app/(dashboard)/capacitacion/[contentId]/page.tsx` (nueva)
+- `web/src/app/(dashboard)/capacitacion/[contentId]/content-viewer.tsx` (nueva)
+- `web/src/app/(dashboard)/capacitacion/chat/page.tsx` (nueva)
+- `web/src/app/(dashboard)/capacitacion/chat/lms-chat-panel.tsx` (nueva)
+- `web/src/app/api/capacitacion/chat/route.ts` (nueva)
+- `web/src/components/lms/content-card.tsx` (nueva)
+- `web/src/components/lms/content-form.tsx` (nueva)
+- `web/src/components/lms/path-progress-bar.tsx` (nueva)
+- `web/src/components/lms/quiz-component.tsx` (nueva)
+- `web/src/components/layout/app-sidebar.tsx`: +Capacitación en sección Desarrollo Humano
+- `.specs/sistema-objetivos/progreso.txt`: T-044 y T-045 ✅, FASE 6 COMPLETA
+
+#### Estado Final — TODAS LAS FASES COMPLETADAS:
+| Fase | Módulo | Estado |
+|------|--------|--------|
+| FASE 0 — Roles y Usuarios | M0 | ✅ COMPLETA |
+| FASE 1 — Objetivos | M1 | ✅ COMPLETA |
+| FASE 2 — Dashboard y KPIs | M2 | ✅ COMPLETA |
+| FASE 3 — Incentivos | M3 | ✅ COMPLETA |
+| FASE 4 — Servicio Python de IA | M4 | ✅ COMPLETA |
+| FASE 5 — Mentoring | M6 | ✅ COMPLETA |
+| FASE 6 — LMS | M7 | ✅ COMPLETA |
+
+---
+
+### Claude Sonnet 4.6 — Sesión 2026-03-22 (Tareas Transversales T-046 y T-048)
+
+#### Rol: Orquestador IA
+- **Solicitud del usuario**: Completar tareas T-046 a T-048
+- **Análisis realizado**: T-047 ya estaba ✅ (FASE 4). Pendientes: T-046 (tipos TypeScript) y T-048 (página /inicio)
+- **Decisión de agentes**: Trabajo directo — regeneración de tipos vía MCP + página Server Component
+
+#### Tareas Realizadas:
+1. **T-046: Regenerar tipos TypeScript** (Tools: MCP Supabase, Node.js script)
+   - `generate_typescript_types` vía MCP supaGuadianaObj
+   - Archivo `web/src/types/database.types.ts` actualizado (122 KB)
+   - Todas las tablas nuevas presentes: lms_content, lms_quizzes, lms_paths, lms_progress, mentoring_pairs, mentoring_sessions, incentive_schemas, incentive_records, ai_prompts, ai_analysis_results ✅
+   - `npx tsc --noEmit` → 0 errores
+
+2. **T-048: Página /inicio** (Tools: Write, Edit)
+   - Server Component con verificación de permisos en paralelo (`Promise.all`)
+   - Grid de 11 tarjetas de acceso rápido por módulo: Dashboard, Objetivos, Incentivos, Mentoring, Capacitación, Análisis IA, Formularios, Asignaciones, Resultados, Usuarios, Roles
+   - Cada tarjeta solo visible si el usuario tiene el permiso correspondiente (o es root)
+   - Panel de alertas pendientes no leídas: muestra hasta 5 con severidad visual (critical/warning/info)
+   - Enlace al Dashboard cuando hay más de 5 alertas
+   - Mensaje de confirmación "Sin alertas pendientes" cuando no hay ninguna
+   - `npx next build` → 0 errores, `/inicio` compilado
+
+#### Archivos Modificados:
+- `web/src/types/database.types.ts`: regenerado con 122 KB de tipos completos
+- `web/src/app/(dashboard)/inicio/page.tsx`: implementación completa
+- `.specs/sistema-objetivos/progreso.txt`: T-046, T-047 (ya hecho) y T-048 ✅ + "TODAS LAS TAREAS COMPLETADAS"
+
+#### Estado Final — PROYECTO COMPLETO:
+Todas las tareas del sistema de objetivos (T-001 a T-048) han sido completadas.
+
+---
+
+### Claude (glm-4.7) - Sesión 2026-03-23 (MÓDULO M4 - ASISTENTE DE IA)
+
+#### Rol: Orquestador IA
+- **Solicitud del usuario**: Implementar el módulo M4 (Asistente de IA) según las especificaciones en `.specs/asistente-ia/`. Trabajar en una tarea a la vez hasta completar la FASE 0 o FASE 1.
+- **Análisis realizado**: Revisé los archivos de especificación (requirement.md, design.md, tasks.md). La Fase 0 (configuración externa de API) no se puede hacer en código, por lo que comencé con la Fase 1: Infraestructura Base.
+- **Decisión de agentes**: Trabajo directo — tareas bien delimitadas de SQL, TypeScript y Server Actions.
+
+#### Tareas Realizadas:
+1. **T-M4-002: Crear migración de base de datos** (Herramientas: MCP Supabase, Write)
+   - Creado: `supabase/migrations/20260324000010_complete_ai_schema.sql`
+   - Tablas creadas: `ai_analysis_log`, `ai_recommendations`, `ai_settings`, `ai_chat_sessions`, `ai_chat_messages`
+   - Permiso agregado: `ia.analyze`
+   - RLS policies configuradas usando `has_permission()` e `is_root()`
+   - Función auxiliar: `get_ai_setting()`
+
+2. **T-M4-003: Crear tipos TypeScript compartidos** (Herramientas: Write)
+   - Creado: `src/lib/ai/types.ts`
+   - Tipos: ClaudeMessage, ClaudeResponse, AgentConfig, AgentResult, EvidenceAnalysisResult, ObjectiveVerificationResult, TrainingRecommendation, ChatSession, etc.
+
+3. **T-M4-004: Implementar Claude Client** (Herramientas: Bash, Write)
+   - Instalada: `@anthropic-ai/sdk`
+   - Creado: `src/lib/ai/claude-client.ts`
+   - Clase `ClaudeClient` con métodos: `chat()`, `analyzeImage()`, `chatStream()`
+
+4. **T-M4-005: Crear System Prompt** (Herramientas: Write)
+   - Creado: `src/lib/ai/prompts/system-prompt.md`
+   - Prompt GUADIANA con identidad, propósito, personalidad y reglas
+
+5. **T-M4-006: Implementar Base Agent** (Herramientas: Write)
+   - Creado: `src/lib/ai/agents/base-agent.ts`
+   - Clase abstracta con `executePrompt()` y parseo JSON
+
+6. **T-M4-007: Crear Server Actions base** (Herramientas: Write, Edit)
+   - Creado: `src/app/(dashboard)/ia/analyze-actions.ts`
+   - Funciones: `isIAAvailable()`, `getIASettings()`, `updateIASetting()`, `getIAStats()`
+   - Helper: `loadSystemPrompt()` para obtener prompts desde BD
+
+#### Agentes Especializados Utilizados:
+- Ninguno — Trabajo directo en tareas de infraestructura.
+
+#### Errores Encontrados y Soluciones:
+- **Problema**: Error SQL `relation "user_permissions" does not exist`
+  - **Solución**: Cambié a usar `has_permission()` e `is_root()` ya existentes
+  - **Herramientas**: MCP Supabase, Edit
+  - **Archivos**: `20260324000010_complete_ai_schema.sql`
+
+- **Problema**: Tabla `department_members` no existe
+  - **Solución**: Simplifiqué políticas RLS para no usar esa tabla
+  - **Herramientas**: MCP Supabase, Edit
+  - **Archivos**: `20260324000010_complete_ai_schema.sql`
+
+- **Problema**: Errores TypeScript en ActionResult
+  - **Solución**: Agregué tipos genéricos correctos
+  - **Herramientas**: Bash (tsc), Edit
+  - **Archivos**: `src/app/(dashboard)/ia/analyze-actions.ts`
+
+#### Archivos Modificados/Creados:
+- `supabase/migrations/20260324000010_complete_ai_schema.sql`: Migración completa del schema IA
+- `src/lib/ai/types.ts`: Tipos TypeScript compartidos
+- `src/lib/ai/claude-client.ts`: Cliente de Anthropic Claude
+- `src/lib/ai/prompts/system-prompt.md`: Prompt del sistema GUADIANA
+- `src/lib/ai/agents/base-agent.ts`: Clase base para agentes
+- `src/app/(dashboard)/ia/analyze-actions.ts`: Server Actions base
+- `.specs/asistente-ia/progreso.txt`: Archivo de seguimiento
+
+#### Estado Actual Módulo M4:
+- ✅ Fase 1 (Infraestructura Base) COMPLETADA
+- 🔄 Fase 2 (Agente de Evidencias) PENDIENTE
+- 🔄 Fase 3 (Agente de Objetivos) PENDIENTE
+- 🔄 Fase 4 (Recomendador de Capacitación) PENDIENTE
+- 🔄 Fase 5 (Chat de Asistencia) PENDIENTE
+- 🔄 Fase 6 (Integración y Testing) PENDIENTE

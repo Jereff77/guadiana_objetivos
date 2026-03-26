@@ -1,0 +1,27 @@
+# Progreso - Módulo M4: Asistente de IA para Guadiana Objetivos
+
+## Fase 0: Configuración Inicial
+- [T-M4-001] Configurar API de Anthropic (externa - requiere cuenta y API key)
+
+## Fase 1: Infraestructura Base
+- [x] [T-M4-002] Crear migración de base de datos ✓ COMPLETADO
+  - Creado: 20260324000010_complete_ai_schema.sql
+  - Tablas creadas: ai_analysis_log, ai_recommendations, ai_settings, ai_chat_sessions, ai_chat_messages
+  - Permiso agregado: ia.analyze
+  - RLS policies configuradas
+  - Función auxiliar: get_ai_setting()
+- [x] [T-M4-003] Crear tipos TypeScript compartidos ✓ COMPLETADO
+  - Creado: src/lib/ai/types.ts
+  - Todos los tipos definidos
+- [x] [T-M4-004] Implementar Claude Client ✓ COMPLETADO
+  - Creado: src/lib/ai/claude-client.ts
+  - Instalada dependencia: @anthropic-ai/sdk
+- [x] [T-M4-005] Crear System Prompt ✓ COMPLETADO
+  - Creado: src/lib/ai/prompts/system-prompt.md
+- [x] [T-M4-006] Implementar Base Agent ✓ COMPLETADO
+  - Creado: src/lib/ai/agents/base-agent.ts
+- [x] [T-M4-007] Crear Server Actions base ✓ COMPLETADO
+  - Creado: src/app/(dashboard)/ia/analyze-actions.ts
+  - Funciones: isIAAvailable, getIASettings, updateIASetting, getIAStats
+
+## Fase 1: COMPLETADA ✓

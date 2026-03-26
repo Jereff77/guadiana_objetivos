@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "supaGuadiana": {
+      "type": "http",
+      "url": "https://mcp.supabase.com",
+      "headers": {
+        "Authorization": "Bearer sbp_02f36f4d67893f38010b44231798292c4abd4f56"
+      }
+    }
+  }
+}

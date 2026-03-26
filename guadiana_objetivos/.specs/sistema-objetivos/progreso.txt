@@ -1,0 +1,89 @@
+FASE 0 — Sistema de Usuarios y Roles Granular (M0)
+====================================================
+[✅] T-001: Migración SQL — Tablas del sistema de roles (platform_modules, roles, role_permissions, role_change_log) — 2026-03-22
+[✅] T-002: Migración SQL — Actualizar tabla profiles (role_id, phone, whatsapp, avatar_url, last_seen) — 2026-03-22
+[✅] T-003: Migración SQL — Funciones SQL de permisos (is_root, has_permission, current_user_role_id, handle_new_user) — 2026-03-22
+[✅] T-004: Migración SQL — RLS para tablas M0 — 2026-03-22
+[✅] T-005: Migración de datos — Roles actuales a nuevo sistema (5 roles + permisos + update profiles) — 2026-03-22
+[✅] T-006: Helper de permisos en Next.js (permissions.ts) — 2026-03-22
+[✅] T-007: Server Actions — Gestión de roles (role-actions.ts) — 2026-03-22
+[✅] T-008: Server Actions — Gestión de usuarios (user-actions.ts) — 2026-03-22
+[✅] T-009: Componente — PermissionsMatrix — 2026-03-22
+[✅] T-010: Componente — RolesTable — 2026-03-22
+[✅] T-011: Componente — RoleForm — 2026-03-22
+[✅] T-012: Página — /roles — 2026-03-22
+[✅] T-013: Páginas — /roles/nuevo y /roles/[id] — 2026-03-22
+[✅] T-014: Componente — UsersTable — 2026-03-22
+[✅] T-015: Componente — UserProfileForm — 2026-03-22
+[✅] T-016: Componente — UserRoleSelector — 2026-03-22
+[✅] T-017: Página — /usuarios — 2026-03-22
+[✅] T-018: Página — /usuarios/[id] — 2026-03-22
+[✅] T-019: Página — /sin-acceso — 2026-03-22
+[✅] T-020: Actualizar sidebar con sección Administración — 2026-03-22
+[✅] T-021: Actualizar M5 para usar has_permission() (RLS migrado) — 2026-03-22
+
+FASE 0 COMPLETA AL 100% ✅ — 2026-03-22
+Usuario jereff@aceleremos.com marcado como root manualmente.
+
+FASE 1 — Sistema de Objetivos (M1)
+====================================================
+[✅] T-022: Migración SQL — Esquema M1 (departments, objectives, objective_deliverables, objective_evidences, objective_reviews, objective_progress, system_alerts) — 2026-03-22
+[✅] T-023: Server Actions — Gestión de departamentos (dept-actions.ts) — 2026-03-22
+[✅] T-024: Server Actions — Gestión de objetivos (objective-actions.ts) — 2026-03-22
+[✅] T-025: Server Actions — Gestión de entregables y evidencias (deliverable-actions.ts) — 2026-03-22
+[✅] T-026: Componentes — ObjectiveCard, DeliverableRow, EvidenceUploader, ReviewPanel, DepartmentsGrid — 2026-03-22
+[✅] T-027: Páginas — /objetivos, /objetivos/[deptId], /objetivos/configurar — 2026-03-22
+
+FASE 1 COMPLETA AL 100% ✅ — 2026-03-22
+
+FASE 2 — Dashboard y KPIs (M2)
+====================================================
+[✅] T-028: Server Actions — Datos de dashboard (getDashboardKpis, getDeptTrend, getDepartmentRanking, getActiveAlerts, markAlertRead) — 2026-03-22
+[✅] T-029: Componentes — DeptKpiCard, RankingTable, AlertPanel + ObjectiveTrendChart + ComplianceBarChart en kpi-charts.tsx — 2026-03-22
+[✅] T-030: Página — /dashboard con KPIs, gráfica, ranking y alertas — 2026-03-22
+[✅] T-031: Exportación — /api/objetivos/export (CSV con filtro mes/año, requiere dashboard.export) — 2026-03-22
+[✅] T-032: Lógica de alertas automáticas — checkAndCreateAlerts ampliado con deduplicación, deadline_approaching y period_closed — 2026-03-22
+
+FASE 2 COMPLETA AL 100% ✅ — 2026-03-22
+
+FASE 3 — Incentivos (M3)
+====================================================
+[✅] T-033: Migración SQL — Tablas de incentivos (incentive_schemas, incentive_records) + RLS + triggers — 2026-03-22
+[✅] T-034: Server Actions — Incentivos (incentive-actions.ts): createIncentiveSchema, updateIncentiveSchema, deleteIncentiveSchema, calculateIncentivesForPeriod, approveIncentiveRecord, markIncentiveRecordAsPaid, getMyIncentiveHistory, getAllIncentiveRecords, getIncentiveSummary — 2026-03-22
+[✅] T-035: Componentes y páginas — IncentiveSchemaForm, IncentiveRecordRow, IncentiveSchemasList + /incentivos, /incentivos/configurar, /incentivos/calcular + /api/incentivos/export + sidebar actualizado — 2026-03-22
+
+FASE 3 COMPLETA AL 100% ✅ — 2026-03-22
+
+FASE 4 — Servicio Python de IA (M4)
+====================================================
+[✅] T-036: Migración SQL — Tablas IA (ai_prompts, ai_analysis_results) + RLS + seed prompt verificación — 2026-03-22
+[✅] T-037: Estructura del servicio Python — FastAPI: main.py, config.py, models.py, services/ (supabase_client, storage, ai_client, whatsapp), requirements.txt, .env.example — 2026-03-22
+[✅] T-038: Router /analyze — Descarga evidencias de Storage, extrae texto de PDFs, envía imágenes en base64 a Claude, guarda resultado en ai_analysis_results, notifica WhatsApp opcional — 2026-03-22
+[✅] T-039: Router /chat — Chat contextualizado con contenido LMS, usa prompt de Supabase, devuelve sources — 2026-03-22
+[✅] T-040: Server Action requestAiAnalysis — Llama al servicio Python desde deliverable-actions.ts, requiere objetivos.review, revalida /ia-verificacion — 2026-03-22
+[✅] T-041: Componentes y página — AnalysisResultCard, PromptEditor + /ia-verificacion (log + KPIs + gestión de prompts) + sidebar actualizado con sección IA — 2026-03-22
+[✅] T-047: Variables de entorno — .env.example (Next.js) y ai-service/.env.example documentados — 2026-03-22
+
+FASE 4 COMPLETA AL 100% ✅ — 2026-03-22
+
+FASE 5 — Mentoring (M6)
+====================================================
+[✅] T-042: Migración SQL — Tablas de mentoring (mentoring_pairs, mentoring_sessions) + RLS + índices + trigger updated_at — 2026-03-22
+[✅] T-043: Server Actions, componentes y páginas — mentoring-actions.ts (getMentoringPairs, createMentoringPair, updateMentoringPair, deleteMentoringPair, getSessionsByPair, createMentoringSession, completeMentoringSession, submitMenteeFeedback, cancelMentoringSession, getMentoringReport) + PairCard, NewPairForm, NewSessionForm, SessionRow + /mentoring, /mentoring/[pairId] + sidebar actualizado con sección Desarrollo Humano — 2026-03-22
+
+FASE 5 COMPLETA AL 100% ✅ — 2026-03-22
+
+FASE 6 — LMS (M7)
+====================================================
+[✅] T-044: Migración SQL — Tablas LMS (lms_content, lms_quizzes, lms_paths, lms_progress) + RLS + índices + triggers updated_at — 2026-03-22
+[✅] T-045: Server Actions, componentes y páginas LMS — lms-actions.ts (getLmsContents, getLmsContent, createLmsContent, updateLmsContent, deleteLmsContent, upsertLmsQuiz, getLmsPaths, createLmsPath, updateLmsPath, deleteLmsPath, getMyProgress, startContent, completeContent, getPathProgress) + ContentCard, PathProgressBar, QuizComponent, ContentForm + /capacitacion, /capacitacion/[contentId], /capacitacion/chat + /api/capacitacion/chat + sidebar actualizado — 2026-03-22
+
+FASE 6 COMPLETA AL 100% ✅ — 2026-03-22
+
+Tareas Transversales
+====================================================
+[✅] T-046: Regenerar tipos TypeScript — database.types.ts actualizado con todas las tablas nuevas (lms_*, mentoring_*, incentive_*, ai_*) — 2026-03-22
+[✅] T-047: Variables de entorno — .env.example (Next.js) y ai-service/.env.example documentados — 2026-03-22 (completado en FASE 4)
+[✅] T-048: Actualizar página /inicio — tarjetas de acceso rápido a 11 módulos según permisos + panel de alertas pendientes — 2026-03-22
+
+TODAS LAS TAREAS COMPLETADAS ✅ — 2026-03-22

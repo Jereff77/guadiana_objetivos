@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import { requirePermission } from '@/lib/permissions'
 
 export const metadata: Metadata = { title: 'Resultados' }
 import { Download, BarChart2 } from 'lucide-react'
@@ -16,6 +17,8 @@ const inputClass =
   'h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring'
 
 export default async function ResultadosPage({ searchParams }: PageProps) {
+  await requirePermission('resultados.view')
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { requirePermission } from '@/lib/permissions'
 import { Header } from '@/components/layout/header'
 
 export const metadata: Metadata = { title: 'Asignaciones' }
@@ -8,6 +9,8 @@ import { AssignmentsTable } from '@/components/asignaciones/assignments-table'
 import { CreateAssignmentDialog } from '@/components/asignaciones/create-assignment-dialog'
 
 export default async function AsignacionesPage() {
+  await requirePermission('asignaciones.view')
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
