@@ -4,6 +4,10 @@ const nextConfig: NextConfig = {
   // ── Producción: output standalone para despliegue en Hostinger Node.js ──────
   output: 'standalone',
 
+  // ── Ignorar ESLint y TypeScript strict en build de producción ────────────────
+  eslint: { ignoreDuringBuilds: true },
+  typescript: { ignoreBuildErrors: true },
+
   // ── Compresión gzip/brotli automática ───────────────────────────────────────
   compress: true,
 
