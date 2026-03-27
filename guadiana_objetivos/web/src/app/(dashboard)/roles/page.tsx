@@ -1,5 +1,4 @@
-import { requirePermission } from '@/lib/permissions'
-import { checkPermission } from '@/lib/permissions'
+import { requirePermission, checkPermission, checkIsRoot } from '@/lib/permissions'
 import { getAllRoles } from './role-actions'
 import { RolesTable } from '@/components/roles/roles-table'
 import Link from 'next/link'
@@ -9,10 +8,14 @@ export const metadata = { title: 'Roles — Guadiana' }
 export default async function RolesPage() {
   await requirePermission('roles.view')
 
-  const [roles, canManage] = await Promise.all([
+  const [allRoles, canManage, isRoot] = await Promise.all([
     getAllRoles(),
     checkPermission('roles.manage'),
+    checkIsRoot(),
   ])
+
+  // Ocultar el rol root si el viewer no es root
+  const roles = isRoot ? allRoles : allRoles.filter((r) => !r.is_root)
 
   return (
     <div className="space-y-6">

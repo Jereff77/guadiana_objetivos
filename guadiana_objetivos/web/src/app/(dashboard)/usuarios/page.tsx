@@ -34,26 +34,37 @@ export default async function UsuariosPage() {
       is_active,
       whatsapp,
       last_seen,
-      roles(name)
+      roles(name, is_root)
     `)
     .order('full_name')
 
-  const users = (profiles ?? []).map((p) => {
-    const roleData = p.roles
-    const roleName = roleData && typeof roleData === 'object' && 'name' in roleData
-      ? (roleData as { name: string }).name
-      : null
+  const users = (profiles ?? [])
+    .filter((p) => {
+      // Ocultar usuarios root si el viewer no es root
+      if (!isRoot) {
+        const roleData = p.roles
+        if (roleData && typeof roleData === 'object' && 'is_root' in roleData) {
+          if ((roleData as { is_root: boolean }).is_root) return false
+        }
+      }
+      return true
+    })
+    .map((p) => {
+      const roleData = p.roles
+      const roleName = roleData && typeof roleData === 'object' && 'name' in roleData
+        ? (roleData as { name: string }).name
+        : null
 
-    return {
-      id: p.id,
-      full_name: p.full_name,
-      email: '',  // El email solo está en auth.users (no expuesto en SELECT sin service_role)
-      role_name: roleName,
-      is_active: p.is_active ?? true,
-      whatsapp: p.whatsapp,
-      last_seen: p.last_seen,
-    }
-  })
+      return {
+        id: p.id,
+        full_name: p.full_name,
+        email: '',  // El email solo está en auth.users (no expuesto en SELECT sin service_role)
+        role_name: roleName,
+        is_active: p.is_active ?? true,
+        whatsapp: p.whatsapp,
+        last_seen: p.last_seen,
+      }
+    })
 
   return (
     <div className="space-y-6">

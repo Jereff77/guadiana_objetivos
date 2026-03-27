@@ -1,8 +1,8 @@
-import { requirePermission } from '@/lib/permissions'
+import { requirePermission, checkIsRoot } from '@/lib/permissions'
 import { createClient } from '@/lib/supabase/server'
 import { getRoleWithPermissions } from '../role-actions'
 import { RoleForm } from '@/components/roles/role-form'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 
 export const metadata = { title: 'Editar rol — Guadiana' }
@@ -15,12 +15,16 @@ export default async function EditarRolPage({ params }: PageProps) {
   await requirePermission('roles.manage')
 
   const { id } = await params
-  const [role, supabase] = await Promise.all([
+  const [role, supabase, isRoot] = await Promise.all([
     getRoleWithPermissions(id),
     createClient(),
+    checkIsRoot(),
   ])
 
   if (!role) notFound()
+
+  // Solo root puede ver/editar el rol root
+  if (role.is_root && !isRoot) redirect('/sin-acceso')
 
   const { data: modules } = await supabase
     .from('platform_modules')
