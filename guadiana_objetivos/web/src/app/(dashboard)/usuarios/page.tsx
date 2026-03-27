@@ -1,6 +1,7 @@
 import { requirePermission, checkPermission, checkIsRoot } from '@/lib/permissions'
 import { createClient } from '@/lib/supabase/server'
 import { UsersTable } from '@/components/usuarios/users-table'
+import Link from 'next/link'
 
 export const metadata = { title: 'Usuarios — Guadiana' }
 
@@ -75,6 +76,15 @@ export default async function UsuariosPage() {
             Gestiona los usuarios y sus permisos de acceso.
           </p>
         </div>
+        {(canEdit || isRoot) && (
+          <Link
+            href="/usuarios/nuevo"
+            className="inline-flex items-center rounded-md bg-brand-blue text-white
+              px-4 py-2 text-sm font-medium hover:bg-brand-blue/90 transition-colors"
+          >
+            + Nuevo usuario
+          </Link>
+        )}
       </div>
 
       <UsersTable

@@ -256,24 +256,85 @@ export async function changeUserRole(
   return {}
 }
 
-/**
- * Invitar usuario por email. Requiere users.edit.
- */
-export async function inviteUser(
+// ─── Crear usuario ────────────────────────────────────────────────────────────
+
+export interface CreateUserData {
   email: string
-): Promise<{ error?: string }> {
-  if (!(await hasPermission('users.edit')) && !(await isRoot())) {
-    return { error: 'Sin permiso para invitar usuarios' }
+  password: string
+  fullName: string
+  roleId?: string
+}
+
+/**
+ * Crear un nuevo usuario desde el panel de administración.
+ * Requiere permiso users.edit o rol root.
+ * Usa el cliente admin (service_role) para crear el auth.user.
+ */
+export async function createUser(
+  data: CreateUserData
+): Promise<{ error?: string; userId?: string }> {
+  const canCreate = (await hasPermission('users.edit')) || (await isRoot())
+  if (!canCreate) return { error: 'Sin permiso para crear usuarios' }
+
+  const email = data.email.trim().toLowerCase()
+  const fullName = data.fullName.trim()
+
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+    return { error: 'Correo electrónico inválido' }
+  if (!fullName || fullName.length < 2)
+    return { error: 'El nombre debe tener al menos 2 caracteres' }
+  if (!data.password || data.password.length < 8)
+    return { error: 'La contraseña debe tener al menos 8 caracteres' }
+
+  // Validar rol si se especificó
+  if (data.roleId) {
+    const supabase = await createClient()
+    const { data: role } = await supabase
+      .from('roles')
+      .select('is_root, is_active')
+      .eq('id', data.roleId)
+      .single()
+
+    if (!role) return { error: 'El rol seleccionado no existe' }
+    if (!role.is_active) return { error: 'El rol no está activo' }
+    if (role.is_root && !(await isRoot())) return { error: 'Solo root puede asignar el rol root' }
   }
 
+  // Crear auth user con cliente admin (service_role)
+  const { createAdminClient } = await import('@/lib/supabase/admin')
+  const adminClient = createAdminClient()
+
+  const { data: authData, error: authError } = await adminClient.auth.admin.createUser({
+    email,
+    password: data.password,
+    email_confirm: true,  // el admin ya validó el email, no necesita verificación
+  })
+
+  if (authError) {
+    if (authError.message.toLowerCase().includes('already'))
+      return { error: 'Ya existe un usuario con ese correo electrónico' }
+    return { error: authError.message }
+  }
+
+  const userId = authData.user.id
+
+  // Actualizar profile con full_name y role_id
+  // upsert como fallback defensivo por si el trigger aún no se ejecutó
   const supabase = await createClient()
+  const { error: profileError } = await supabase
+    .from('profiles')
+    .upsert({
+      id: userId,
+      full_name: fullName,
+      ...(data.roleId ? { role_id: data.roleId } : {}),
+      is_active: true,
+      updated_at: new Date().toISOString(),
+    }, { onConflict: 'id' })
 
-  // Supabase Auth admin invite — solo funciona con service role en producción
-  // En desarrollo usamos signUp con password temporal
-  const { error } = await supabase.auth.admin?.inviteUserByEmail?.(email) ?? { error: null }
-
-  if (error) return { error: (error as { message: string }).message }
+  if (profileError) {
+    console.error('[createUser] profile upsert failed:', profileError.message)
+  }
 
   revalidatePath('/usuarios')
-  return {}
+  return { userId }
 }
