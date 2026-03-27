@@ -33,24 +33,24 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
 
   const { pathname } = request.nextUrl
-  const isAuthRoute =
+
+  // Rutas públicas que no requieren autenticación
+  const isPublicRoute =
     pathname.startsWith('/login') ||
     pathname.startsWith('/forgot-password') ||
-    pathname.startsWith('/auth')
-  const isDashboardRoute = pathname.startsWith('/dashboard') ||
-    pathname.startsWith('/formularios') ||
-    pathname.startsWith('/asignaciones') ||
-    pathname.startsWith('/resultados') ||
-    pathname.startsWith('/configuracion')
+    pathname.startsWith('/auth') ||
+    pathname.startsWith('/api/health')
 
-  // Redirect unauthenticated users to login
-  if (!user && isDashboardRoute) {
-    return NextResponse.redirect(new URL('/login', request.url))
+  // Redirigir usuarios no autenticados al login (cualquier ruta privada)
+  if (!user && !isPublicRoute) {
+    const loginUrl = new URL('/login', request.url)
+    loginUrl.searchParams.set('redirectTo', pathname)
+    return NextResponse.redirect(loginUrl)
   }
 
-  // Redirect authenticated users away from auth pages
-  if (user && isAuthRoute) {
-    return NextResponse.redirect(new URL('/dashboard', request.url))
+  // Redirigir usuarios autenticados fuera de páginas de auth
+  if (user && (pathname.startsWith('/login') || pathname.startsWith('/forgot-password'))) {
+    return NextResponse.redirect(new URL('/inicio', request.url))
   }
 
   return response
