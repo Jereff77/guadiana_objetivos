@@ -3,7 +3,6 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
-  LayoutDashboard,
   FileText,
   ClipboardList,
   BarChart3,
@@ -54,7 +53,6 @@ export function AppSidebar({ permissions = [], isRoot = false, user }: AppSideba
   ]
 
   const procesosItems: NavItem[] = [
-    { title: 'Dashboard',    href: '/dashboard',    icon: LayoutDashboard, permission: 'dashboard.view' },
     { title: 'Formularios',  href: '/formularios',  icon: FileText,        permission: 'formularios.view' },
     { title: 'Asignaciones', href: '/asignaciones', icon: ClipboardList,   permission: 'asignaciones.view' },
     { title: 'Resultados',   href: '/resultados',   icon: BarChart3,       permission: 'resultados.view' },
