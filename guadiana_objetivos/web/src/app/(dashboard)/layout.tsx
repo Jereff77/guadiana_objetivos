@@ -43,9 +43,24 @@ export default async function DashboardLayout({ children }: { children: ReactNod
     checkIsRoot(),
   ])
 
+  // Cargar config del sistema para el sidebar
+  const { data: configRows } = await supabaseUser
+    .from('system_config')
+    .select('key, value')
+    .in('key', ['empresa_nombre', 'branding_logo_url'])
+
+  const configMap: Record<string, string | null> = {}
+  for (const row of configRows ?? []) configMap[row.key] = row.value
+
   return (
     <div className="flex h-screen overflow-hidden">
-      <AppSidebar permissions={permissions} isRoot={isRoot} user={userProfile} />
+      <AppSidebar
+        permissions={permissions}
+        isRoot={isRoot}
+        user={userProfile}
+        companyName={configMap['empresa_nombre'] ?? undefined}
+        logoUrl={configMap['branding_logo_url'] ?? null}
+      />
       <div className="flex-1 flex flex-col overflow-hidden">
         {previewRoleName && <PreviewBanner roleName={previewRoleName} />}
         <main className="flex-1 overflow-y-auto p-6">

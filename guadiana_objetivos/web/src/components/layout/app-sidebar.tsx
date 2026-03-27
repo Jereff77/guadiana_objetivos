@@ -15,6 +15,7 @@ import {
   BrainCircuit,
   Users2,
   BookOpen,
+  Settings2,
 } from 'lucide-react'
 import { logout } from '@/app/(auth)/login/actions'
 import { cn } from '@/lib/utils'
@@ -23,6 +24,8 @@ interface AppSidebarProps {
   permissions?: string[]
   isRoot?: boolean
   user?: { full_name: string | null; avatar_url: string | null; email: string | null } | null
+  companyName?: string
+  logoUrl?: string | null
 }
 
 interface NavItem {
@@ -32,7 +35,7 @@ interface NavItem {
   permission?: string
 }
 
-export function AppSidebar({ permissions = [], isRoot = false, user }: AppSidebarProps) {
+export function AppSidebar({ permissions = [], isRoot = false, user, companyName, logoUrl }: AppSidebarProps) {
   const pathname = usePathname()
 
   const has = (key?: string) => {
@@ -68,8 +71,9 @@ export function AppSidebar({ permissions = [], isRoot = false, user }: AppSideba
   ]
 
   const configItems: NavItem[] = [
-    { title: 'Usuarios', href: '/usuarios', icon: Users,       permission: 'users.view' },
-    { title: 'Roles',    href: '/roles',    icon: ShieldCheck, permission: 'roles.view' },
+    { title: 'Usuarios', href: '/usuarios',              icon: Users,       permission: 'users.view' },
+    { title: 'Roles',    href: '/roles',                 icon: ShieldCheck, permission: 'roles.view' },
+    { title: 'Sistema',  href: '/configuracion/sistema', icon: Settings2,   permission: 'config.edit' },
   ]
 
   const visibleObjetivos   = objetivosItems.filter(i => has(i.permission))
@@ -82,18 +86,25 @@ export function AppSidebar({ permissions = [], isRoot = false, user }: AppSideba
     <aside className="flex flex-col h-screen w-56 shrink-0 border-r bg-sidebar text-sidebar-foreground">
 
       {/* Logo */}
-      <div className="border-b border-sidebar-border px-3 py-3 shrink-0">
-        <Link href="/inicio" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-          <div
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-white font-bold text-sm"
-            style={{ backgroundColor: '#004B8D' }}
-          >
-            G
-          </div>
-          <div className="flex flex-col overflow-hidden">
-            <span className="text-sm font-semibold leading-tight truncate">Guadiana</span>
-            <span className="text-xs text-muted-foreground leading-tight truncate">Plataforma</span>
-          </div>
+      <div className="border-b border-sidebar-border px-3 py-4 shrink-0">
+        <Link href="/inicio" className="flex flex-col items-center gap-2 hover:opacity-80 transition-opacity">
+          {logoUrl ? (
+            <img
+              src={logoUrl}
+              alt={companyName ?? 'Logo'}
+              className="h-12 w-auto max-w-full object-contain"
+            />
+          ) : (
+            <div
+              className="flex h-12 w-12 items-center justify-center rounded-xl text-white font-bold text-xl"
+              style={{ backgroundColor: '#004B8D' }}
+            >
+              {(companyName ?? 'G').charAt(0).toUpperCase()}
+            </div>
+          )}
+          <span className="text-sm font-semibold leading-tight truncate text-center w-full">
+            {companyName ?? 'Guadiana'}
+          </span>
         </Link>
       </div>
 

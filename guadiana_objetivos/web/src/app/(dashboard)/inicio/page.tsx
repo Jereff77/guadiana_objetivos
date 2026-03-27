@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { checkPermission, checkIsRoot } from '@/lib/permissions'
 import { getActiveAlerts } from '@/app/(dashboard)/dashboard/dashboard-actions'
+import { createClient } from '@/lib/supabase/server'
 import {
   TrendingUp,
   Target,
@@ -162,6 +163,20 @@ const ALL_MODULES: ModuleCard[] = [
 export default async function InicioPage() {
   const isRoot = await checkIsRoot()
 
+  // Cargar nombre y logo desde system_config
+  const supabase = await createClient()
+  const { data: configRows } = await supabase
+    .from('system_config')
+    .select('key, value')
+    .in('key', ['empresa_nombre', 'empresa_slogan', 'branding_logo_url'])
+
+  const cfg: Record<string, string | null> = {}
+  for (const row of configRows ?? []) cfg[row.key] = row.value
+
+  const companyName = cfg['empresa_nombre'] ?? 'Guadiana'
+  const companySlogan = cfg['empresa_slogan'] ?? null
+  const logoUrl = cfg['branding_logo_url'] ?? null
+
   // Verificar permisos en paralelo para todos los módulos con permiso
   const permissionKeys = [...new Set(ALL_MODULES.map((m) => m.permission).filter(Boolean))] as string[]
   const permResults = await Promise.all(
@@ -184,12 +199,28 @@ export default async function InicioPage() {
 
   return (
     <div className="space-y-8">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Bienvenido</h1>
-        <p className="text-muted-foreground text-sm mt-1">
-          Plataforma de Gestión — Llantas y Rines del Guadiana
-        </p>
+      {/* Header con logo de empresa */}
+      <div className="flex flex-col gap-2">
+        {logoUrl ? (
+          <img
+            src={logoUrl}
+            alt={companyName}
+            className="h-20 w-auto object-contain"
+          />
+        ) : (
+          <div
+            className="h-20 w-20 rounded-xl flex items-center justify-center text-white text-3xl font-bold"
+            style={{ backgroundColor: '#004B8D' }}
+          >
+            {companyName.charAt(0).toUpperCase()}
+          </div>
+        )}
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">{companyName}</h1>
+          {companySlogan && (
+            <p className="text-muted-foreground text-sm mt-0.5">{companySlogan}</p>
+          )}
+        </div>
       </div>
 
       {/* Alertas pendientes */}
