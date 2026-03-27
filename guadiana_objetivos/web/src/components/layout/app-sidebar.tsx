@@ -16,6 +16,12 @@ import {
   Users2,
   BookOpen,
   Settings2,
+  MessageSquare,
+  CalendarClock,
+  ScrollText,
+  Wrench,
+  BookMarked,
+  Shield,
 } from 'lucide-react'
 import { logout } from '@/app/(auth)/login/actions'
 import { cn } from '@/lib/utils'
@@ -66,8 +72,17 @@ export function AppSidebar({ permissions = [], isRoot = false, user, companyName
     { title: 'Capacitación', href: '/capacitacion', icon: BookOpen,  permission: 'capacitacion.view' },
   ]
 
+  const comunicacionItems: NavItem[] = [
+    { title: 'Chat', href: '/chat', icon: MessageSquare, permission: 'chat.view' },
+  ]
+
   const iaItems: NavItem[] = [
-    { title: 'Análisis IA', href: '/ia-verificacion', icon: BrainCircuit, permission: 'ia.view' },
+    { title: 'Análisis IA',   href: '/ia-verificacion', icon: BrainCircuit,  permission: 'ia.view' },
+    { title: 'Tareas',        href: '/ia/tareas',        icon: CalendarClock, permission: 'ia.view' },
+    { title: 'Habilidades',   href: '/ia/habilidades',   icon: BookMarked,    permission: 'ia.configure' },
+    { title: 'Herramientas',  href: '/ia/herramientas',  icon: Wrench,        permission: 'ia.configure' },
+    { title: 'Políticas',     href: '/ia/politicas',     icon: Shield,        permission: 'ia.configure' },
+    { title: 'Auditoría',     href: '/ia/auditoria',     icon: ScrollText,    permission: 'ia.configure' },
   ]
 
   const configItems: NavItem[] = [
@@ -76,11 +91,12 @@ export function AppSidebar({ permissions = [], isRoot = false, user, companyName
     { title: 'Sistema',  href: '/configuracion/sistema', icon: Settings2,   permission: 'config.edit' },
   ]
 
-  const visibleObjetivos   = objetivosItems.filter(i => has(i.permission))
-  const visibleProcesos    = procesosItems.filter(i => has(i.permission))
-  const visibleDesarrollo  = desarrolloItems.filter(i => has(i.permission))
-  const visibleIa          = iaItems.filter(i => has(i.permission))
-  const visibleConfig      = configItems.filter(i => has(i.permission))
+  const visibleObjetivos     = objetivosItems.filter(i => has(i.permission))
+  const visibleProcesos      = procesosItems.filter(i => has(i.permission))
+  const visibleDesarrollo    = desarrolloItems.filter(i => has(i.permission))
+  const visibleComunicacion  = comunicacionItems.filter(i => has(i.permission))
+  const visibleIa            = iaItems.filter(i => has(i.permission))
+  const visibleConfig        = configItems.filter(i => has(i.permission))
 
   return (
     <aside className="flex flex-col h-screen w-56 shrink-0 border-r bg-sidebar text-sidebar-foreground">
@@ -124,6 +140,11 @@ export function AppSidebar({ permissions = [], isRoot = false, user, companyName
         {/* Desarrollo Humano */}
         {visibleDesarrollo.length > 0 && (
           <NavGroup label="Desarrollo Humano" items={visibleDesarrollo} isActive={isActive} />
+        )}
+
+        {/* Comunicación */}
+        {visibleComunicacion.length > 0 && (
+          <NavGroup label="Comunicación" items={visibleComunicacion} isActive={isActive} />
         )}
 
         {/* IA */}

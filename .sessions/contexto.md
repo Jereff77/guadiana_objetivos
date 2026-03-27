@@ -1064,3 +1064,95 @@ Errores resueltos:
 - OK Tabla system_config + bucket system-assets en Supabase
 - OK Seccion Configuracion -> Sistema con 3 pestanas (Empresa, Branding, SMTP)
 - OK Sidebar y pagina de inicio muestran logo/nombre/slogan dinamico desde BD
+
+---
+
+### Claude Sonnet 4.6 - Sesión 2026-03-27 (continuación — Chat + IA sidebar)
+
+#### Rol: Orquestador IA
+- **Solicitud del usuario**: (1) Implementar sistema de chat interno estilo WhatsApp; (2) Corregir items de IA desaparecidos del sidebar; (3) Corregir bug al iniciar conversación directa (modal se cerraba sin abrir el chat); (4) Rediseñar el directorio de usuarios del chat (sin modal, lista alfabética con reordenamiento por actividad); (5) Agregar permiso de privacidad para ocultar usuario del directorio
+- **Decisión de agentes**: Trabajo directo. Implementación completa de frontend + backend + BD sin agentes especializados.
+
+#### Tareas Realizadas:
+
+1. **Sistema de Chat completo (M5)** (Herramientas: Write, Edit, MCP Supabase execute_sql)
+   - Tablas: `chat_rooms`, `chat_room_members`, `chat_messages`, `chat_message_files`
+   - Funciones SQL SECURITY DEFINER: `get_or_create_direct_room`, `is_room_member`, `is_room_admin`
+   - Trigger `trg_update_room_timestamp` — actualiza `updated_at` del room al recibir mensaje
+   - Realtime habilitado en `chat_messages` y `chat_room_members`
+   - Bucket privado `chat-files` con políticas RLS de Storage
+   - Permiso `chat.view` insertado en `platform_modules`
+   - Server Actions en `chat-actions.ts`: getRooms, getMessages, sendMessage, editMessage, deleteMessage, getOrCreateDirectRoom, createGroup, addGroupMember, removeGroupMember, setGroupAdmin, updateGroupName, getGroupMembers, getFileSignedUrl, getAllUsers
+
+2. **Componentes del Chat** (Herramientas: Write)
+   - `src/components/chat/room-list.tsx` — panel izquierdo con lista de rooms y selector de usuario
+   - `src/components/chat/message-view.tsx` — vista de mensajes con Realtime, edición y eliminación (ventana 20 min)
+   - `src/components/chat/message-input.tsx` — textarea + emoji picker (60 emojis hardcoded, sin lib) + adjuntos hasta 10MB
+   - `src/components/chat/group-create-dialog.tsx` — modal para crear grupos con selector de miembros
+   - `src/components/chat/group-manage-dialog.tsx` — gestión de grupos para admins (agregar/quitar/promover miembros, renombrar, salir)
+   - `src/app/(dashboard)/chat/chat-page-client.tsx` — layout dos columnas con Realtime de membresías
+   - `src/app/(dashboard)/chat/page.tsx` — server component con guard de permiso
+
+3. **Sidebar: sección Comunicación** (Herramientas: Edit)
+   - Añadido grupo "Comunicación" con ítem Chat (permiso: `chat.view`) usando icono `MessageSquare`
+
+4. **Bug fix: IA items desaparecidos del sidebar** (Herramientas: Glob, Bash, Edit)
+   - Detectado que las páginas `/ia/auditoria`, `/ia/herramientas`, `/ia/politicas`, `/ia/habilidades`, `/ia/tareas` existían pero no estaban en el sidebar
+   - Restaurados 6 ítems en `iaItems`: Análisis IA + Tareas (`ia.view`), Habilidades + Herramientas + Políticas + Auditoría (`ia.configure`)
+   - Añadidos íconos: `CalendarClock`, `BookMarked`, `Wrench`, `Shield`, `ScrollText`
+
+5. **Bug fix: chat directo no abría conversación** (Herramientas: Edit)
+   - Causa: `onDirectSelect(u.id)` no se awaiteaba antes de cerrar el modal → la room se creaba pero el modal cerraba inmediatamente sin actualizar estado
+   - Fix: cambio a `startTransition(async () => { await onDirectSelect(u.id); setShowUserPicker(false) })`
+   - Agregado spinner `Loader2` y estado `disabled` durante la operación
+   - Tipo de prop `onDirectSelect` actualizado a `(userId: string) => Promise<void>`
+
+6. **Rediseño directorio de chat** (Herramientas: Write, Edit)
+   - Eliminado el modal de selección de usuario
+   - Panel izquierdo ahora tiene dos secciones: "Conversaciones" (rooms, orden por actividad reciente) + "Contactos" (usuarios sin conversación activa, orden alfabético)
+   - Al hacer click en un contacto: spinner en su avatar → crea room → contacto se mueve a Conversaciones
+   - Búsqueda única que filtra ambas secciones simultáneamente
+
+7. **Permiso de privacidad chat.hidden** (Herramientas: MCP execute_sql, Write, Edit)
+   - BD: columna `chat_hidden BOOLEAN DEFAULT false` en `profiles`
+   - Permiso `chat.hidden` — "Privacidad en chat (ocultarse del directorio)"
+   - Lógica: usuarios ocultos NO aparecen en "Contactos" SALVO que ya exista conversación directa con ellos
+   - Toggle de visibilidad: botón ojo/ojo-tachado en header del chat, solo visible si tiene permiso `chat.hidden`
+   - Acciones: `toggleChatHidden()`, `getCurrentUserChatHidden()`
+   - Estado ámbar (oculto) / normal (visible) con feedback visual
+
+8. **Bug fix: función SQL faltante** (Herramientas: MCP execute_sql)
+   - `get_or_create_direct_room` no estaba aplicada en BD (migración local sin ejecutar)
+   - Aplicada via MCP junto con `update_room_on_message` trigger
+
+9. **Bug fix: React hydration error** (Herramientas: Edit)
+   - Causa: extensión del navegador (ColorZilla u otra) inyectaba `cz-shortcut-listen="true"` en `<body>`
+   - Fix: `suppressHydrationWarning` en `<body>` de `src/app/layout.tsx`
+
+#### Archivos Creados:
+- `web/src/app/(dashboard)/chat/page.tsx`
+- `web/src/app/(dashboard)/chat/chat-page-client.tsx`
+- `web/src/app/(dashboard)/chat/chat-actions.ts`
+- `web/src/components/chat/room-list.tsx`
+- `web/src/components/chat/message-view.tsx`
+- `web/src/components/chat/message-input.tsx`
+- `web/src/components/chat/group-create-dialog.tsx`
+- `web/src/components/chat/group-manage-dialog.tsx`
+- `web/supabase/migrations/20260329000001_create_chat.sql`
+- `web/supabase/migrations/20260329000002_chat_hidden.sql`
+
+#### Archivos Modificados:
+- `web/src/components/layout/app-sidebar.tsx` — sección Comunicación + IA items restaurados + imports nuevos
+- `web/src/app/layout.tsx` — `suppressHydrationWarning` en `<body>`
+
+#### Estado Final:
+- ✅ Sistema de Chat completo: directo 1:1 y grupos
+- ✅ Realtime via Supabase Realtime (primer uso en el proyecto)
+- ✅ Archivos adjuntos (imágenes con preview, documentos con descarga)
+- ✅ Emoji picker personalizado (sin librería externa)
+- ✅ Edición/eliminación de mensajes (ventana 20 min)
+- ✅ Grupos con admin, agregar/quitar miembros, asignar admins, salir
+- ✅ Directorio de contactos sin modal: lista alfabética con reordenamiento por actividad
+- ✅ Privacidad chat.hidden: directores/usuarios especiales pueden ocultarse del directorio
+- ✅ IA sidebar restaurado: 6 ítems visibles según permiso ia.view / ia.configure
+- ✅ Hydration error resuelto con suppressHydrationWarning
