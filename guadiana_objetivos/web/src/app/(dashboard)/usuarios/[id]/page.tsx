@@ -2,6 +2,7 @@ import { checkPermission, checkIsRoot } from '@/lib/permissions'
 import { createClient } from '@/lib/supabase/server'
 import { UserProfileForm } from '@/components/usuarios/user-profile-form'
 import { UserRoleSelector } from '@/components/usuarios/user-role-selector'
+import { ChangePasswordForm } from '@/components/usuarios/change-password-form'
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 
@@ -69,6 +70,7 @@ export default async function UsuarioPerfilPage({ params }: PageProps) {
 
   const canEditProfile = isSelf || canEdit || isRoot
   const canChangeThisRole = !targetIsRoot && (canChangeRole || isRoot) && !isSelf
+  const canChangePassword = isSelf || canEdit || isRoot
 
   return (
     <div className="space-y-8 max-w-2xl">
@@ -121,6 +123,14 @@ export default async function UsuarioPerfilPage({ params }: PageProps) {
             roles={roles}
             viewerIsRoot={isRoot}
           />
+        </section>
+      )}
+
+      {/* Cambiar contraseña */}
+      {canChangePassword && (
+        <section className="space-y-4">
+          <h2 className="text-base font-semibold border-b pb-2">Cambiar contraseña</h2>
+          <ChangePasswordForm userId={id} />
         </section>
       )}
 

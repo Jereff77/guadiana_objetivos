@@ -256,6 +256,57 @@ export async function changeUserRole(
   return {}
 }
 
+// ─── Cambiar contraseña ───────────────────────────────────────────────────────
+
+/**
+ * Cambiar la contraseña de un usuario.
+ * El propio usuario puede cambiar la suya; admins con users.edit o root pueden cambiar la de cualquiera.
+ */
+export async function changeUserPassword(
+  userId: string,
+  newPassword: string
+): Promise<{ error?: string }> {
+  const currentId = await getCurrentUserId()
+  const isSelf = currentId === userId
+  const canChange = isSelf || (await hasPermission('users.edit')) || (await isRoot())
+
+  if (!canChange) return { error: 'Sin permiso para cambiar la contraseña' }
+
+  if (!newPassword || newPassword.length < 8) {
+    return { error: 'La contraseña debe tener al menos 8 caracteres' }
+  }
+
+  // Verificar que el objetivo no sea root a menos que el solicitante también sea root
+  if (!isSelf) {
+    const supabase = await createClient()
+    const { data: targetProfile } = await supabase
+      .from('profiles')
+      .select('roles(is_root)')
+      .eq('id', userId)
+      .single()
+
+    const targetIsRoot = targetProfile?.roles &&
+      typeof targetProfile.roles === 'object' &&
+      'is_root' in targetProfile.roles &&
+      (targetProfile.roles as { is_root: boolean }).is_root
+
+    if (targetIsRoot && !(await isRoot())) {
+      return { error: 'No puedes cambiar la contraseña de un usuario root' }
+    }
+  }
+
+  const { createAdminClient } = await import('@/lib/supabase/admin')
+  const adminClient = createAdminClient()
+
+  const { error } = await adminClient.auth.admin.updateUserById(userId, {
+    password: newPassword,
+  })
+
+  if (error) return { error: error.message }
+
+  return {}
+}
+
 // ─── Crear usuario ────────────────────────────────────────────────────────────
 
 export interface CreateUserData {
