@@ -8,6 +8,7 @@ import {
   type ChatMessage, type ChatRoom,
 } from '@/app/(dashboard)/chat/chat-actions'
 import { MessageInput, type PendingFile } from '@/components/chat/message-input'
+import { useChatNotifications } from '@/components/chat/chat-notification-provider'
 
 interface MessageViewProps {
   room: ChatRoom
@@ -205,6 +206,12 @@ export function MessageView({ room, currentUserId }: MessageViewProps) {
   const [editContent, setEditContent] = useState('')
   const bottomRef = useRef<HTMLDivElement>(null)
   const supabase = createClient()
+  const { markRead } = useChatNotifications()
+
+  // Marcar como leído al abrir la sala y al recibir nuevos mensajes
+  useEffect(() => {
+    markRead(room.id)
+  }, [room.id, messages.length])
 
   // Cargar mensajes iniciales
   useEffect(() => {

@@ -25,6 +25,7 @@ import {
 } from 'lucide-react'
 import { logout } from '@/app/(auth)/login/actions'
 import { cn } from '@/lib/utils'
+import { useChatNotifications } from '@/components/chat/chat-notification-provider'
 
 interface AppSidebarProps {
   permissions?: string[]
@@ -39,10 +40,12 @@ interface NavItem {
   href: string
   icon: React.ElementType
   permission?: string
+  badge?: number
 }
 
 export function AppSidebar({ permissions = [], isRoot = false, user, companyName, logoUrl }: AppSidebarProps) {
   const pathname = usePathname()
+  const { totalUnread } = useChatNotifications()
 
   const has = (key?: string) => {
     if (isRoot) return true
@@ -73,7 +76,7 @@ export function AppSidebar({ permissions = [], isRoot = false, user, companyName
   ]
 
   const comunicacionItems: NavItem[] = [
-    { title: 'Chat', href: '/chat', icon: MessageSquare, permission: 'chat.view' },
+    { title: 'Chat', href: '/chat', icon: MessageSquare, permission: 'chat.view', badge: totalUnread || undefined },
   ]
 
   const iaItems: NavItem[] = [
@@ -226,7 +229,15 @@ function NavGroup({
                 style={active ? { backgroundColor: '#194D95' } : undefined}
               >
                 <Icon className="h-4 w-4 shrink-0" />
-                <span className="truncate">{item.title}</span>
+                <span className="truncate flex-1">{item.title}</span>
+                {item.badge && item.badge > 0 && (
+                  <span className={cn(
+                    'shrink-0 min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-bold flex items-center justify-center',
+                    active ? 'bg-white text-[#194D95]' : 'bg-red-500 text-white'
+                  )}>
+                    {item.badge > 99 ? '99+' : item.badge}
+                  </span>
+                )}
               </Link>
             </li>
           )

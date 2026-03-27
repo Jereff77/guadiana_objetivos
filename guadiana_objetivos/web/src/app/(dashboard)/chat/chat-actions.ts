@@ -404,6 +404,33 @@ export async function getGroupMembers(
   })
 }
 
+// ── No leídos ─────────────────────────────────────────────────────────────────
+
+export async function markRoomAsRead(roomId: string): Promise<void> {
+  const supabase = await createClient()
+  const uid = await getCurrentUserId()
+  await supabase
+    .from('chat_room_members')
+    .update({ last_read_at: new Date().toISOString() })
+    .eq('room_id', roomId)
+    .eq('user_id', uid)
+}
+
+export async function getUnreadCounts(): Promise<Record<string, number>> {
+  const supabase = await createClient()
+  const uid = await getCurrentUserId()
+  if (!uid) return {}
+
+  const { data } = await supabase.rpc('get_chat_unread_counts')
+  if (!data) return {}
+
+  const result: Record<string, number> = {}
+  for (const row of data as { room_id: string; unread_count: number }[]) {
+    result[row.room_id] = row.unread_count
+  }
+  return result
+}
+
 // ── Archivos ──────────────────────────────────────────────────────────────────
 
 export async function getFileSignedUrl(

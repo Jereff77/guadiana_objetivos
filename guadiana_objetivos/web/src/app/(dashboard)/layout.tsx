@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { cookies } from 'next/headers'
 import { AppSidebar } from '@/components/layout/app-sidebar'
 import { PreviewBanner } from '@/components/layout/preview-banner'
+import { ChatNotificationProvider } from '@/components/chat/chat-notification-provider'
 import { getUserPermissions, checkIsRoot } from '@/lib/permissions'
 import { createClient } from '@/lib/supabase/server'
 
@@ -53,20 +54,22 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   for (const row of configRows ?? []) configMap[row.key] = row.value
 
   return (
-    <div className="flex h-screen overflow-hidden">
-      <AppSidebar
-        permissions={permissions}
-        isRoot={isRoot}
-        user={userProfile}
-        companyName={configMap['empresa_nombre'] ?? undefined}
-        logoUrl={configMap['branding_logo_url'] ?? null}
-      />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {previewRoleName && <PreviewBanner roleName={previewRoleName} />}
-        <main className="flex-1 overflow-y-auto p-6">
-          {children}
-        </main>
+    <ChatNotificationProvider currentUserId={user?.id ?? ''}>
+      <div className="flex h-screen overflow-hidden">
+        <AppSidebar
+          permissions={permissions}
+          isRoot={isRoot}
+          user={userProfile}
+          companyName={configMap['empresa_nombre'] ?? undefined}
+          logoUrl={configMap['branding_logo_url'] ?? null}
+        />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          {previewRoleName && <PreviewBanner roleName={previewRoleName} />}
+          <main className="flex-1 overflow-y-auto p-6">
+            {children}
+          </main>
+        </div>
       </div>
-    </div>
+    </ChatNotificationProvider>
   )
 }
