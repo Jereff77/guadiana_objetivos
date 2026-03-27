@@ -318,10 +318,9 @@ export async function createUser(
 
   const userId = authData.user.id
 
-  // Actualizar profile con full_name y role_id
-  // upsert como fallback defensivo por si el trigger aún no se ejecutó
-  const supabase = await createClient()
-  const { error: profileError } = await supabase
+  // Actualizar profile con full_name y role_id usando el admin client
+  // (el cliente anon puede ser bloqueado por RLS en INSERT)
+  const { error: profileError } = await adminClient
     .from('profiles')
     .upsert({
       id: userId,

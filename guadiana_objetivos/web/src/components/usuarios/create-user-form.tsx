@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { Eye, EyeOff } from 'lucide-react'
 import { createUser } from '@/app/(dashboard)/usuarios/user-actions'
 
 interface Role {
@@ -21,6 +22,7 @@ export function CreateUserForm({ roles }: CreateUserFormProps) {
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [roleId, setRoleId] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -97,19 +99,29 @@ export function CreateUserForm({ roles }: CreateUserFormProps) {
         <label htmlFor="password" className="block text-sm font-medium mb-1.5">
           Contraseña inicial <span className="text-red-500">*</span>
         </label>
-        <input
-          id="password"
-          type="password"
-          required
-          minLength={8}
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          disabled={saving}
-          placeholder="Mínimo 8 caracteres"
-          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm
-            placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand-blue/30
-            disabled:opacity-60 disabled:cursor-not-allowed"
-        />
+        <div className="relative">
+          <input
+            id="password"
+            type={showPassword ? 'text' : 'password'}
+            required
+            minLength={8}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            disabled={saving}
+            placeholder="Mínimo 8 caracteres"
+            className="w-full rounded-md border border-input bg-background px-3 py-2 pr-10 text-sm
+              placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand-blue/30
+              disabled:opacity-60 disabled:cursor-not-allowed"
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword((v) => !v)}
+            className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground hover:text-foreground"
+            tabIndex={-1}
+          >
+            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          </button>
+        </div>
         <p className="text-xs text-muted-foreground mt-1">
           El usuario podrá cambiarla después desde su perfil.
         </p>
