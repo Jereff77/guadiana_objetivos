@@ -23,6 +23,7 @@ import { cn } from '@/lib/utils'
 interface AppSidebarProps {
   permissions?: string[]
   isRoot?: boolean
+  user?: { full_name: string | null; avatar_url: string | null; email: string | null } | null
 }
 
 interface NavItem {
@@ -32,7 +33,7 @@ interface NavItem {
   permission?: string
 }
 
-export function AppSidebar({ permissions = [], isRoot = false }: AppSidebarProps) {
+export function AppSidebar({ permissions = [], isRoot = false, user }: AppSidebarProps) {
   const pathname = usePathname()
 
   const has = (key?: string) => {
@@ -128,8 +129,26 @@ export function AppSidebar({ permissions = [], isRoot = false }: AppSidebarProps
 
       </nav>
 
-      {/* Cerrar sesión — pegado al fondo */}
-      <div className="shrink-0 border-t border-sidebar-border px-2 py-2">
+      {/* Usuario + Cerrar sesión — pegado al fondo */}
+      <div className="shrink-0 border-t border-sidebar-border px-2 py-2 space-y-1">
+        {user && (
+          <Link
+            href="/usuarios/perfil"
+            className="flex items-center gap-2 rounded-md px-3 py-2 hover:bg-sidebar-accent/60 transition-colors"
+          >
+            <div className="h-7 w-7 shrink-0 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ backgroundColor: '#004B8D' }}>
+              {(user.full_name ?? user.email ?? '?').charAt(0).toUpperCase()}
+            </div>
+            <div className="flex flex-col overflow-hidden">
+              <span className="text-xs font-medium truncate leading-tight">
+                {user.full_name ?? user.email ?? 'Usuario'}
+              </span>
+              {user.full_name && (
+                <span className="text-[10px] text-muted-foreground truncate leading-tight">{user.email}</span>
+              )}
+            </div>
+          </Link>
+        )}
         <form action={logout}>
           <button
             type="submit"

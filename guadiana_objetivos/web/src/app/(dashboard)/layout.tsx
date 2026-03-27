@@ -21,6 +21,23 @@ export default async function DashboardLayout({ children }: { children: ReactNod
     previewRoleName = data?.name ?? null
   }
 
+  const supabaseUser = await createClient()
+  const { data: { user } } = await supabaseUser.auth.getUser()
+
+  let userProfile: { full_name: string | null; avatar_url: string | null; email: string | null } | null = null
+  if (user) {
+    const { data: profile } = await supabaseUser
+      .from('profiles')
+      .select('full_name, avatar_url')
+      .eq('id', user.id)
+      .single()
+    userProfile = {
+      full_name: profile?.full_name ?? null,
+      avatar_url: profile?.avatar_url ?? null,
+      email: user.email ?? null,
+    }
+  }
+
   const [permissions, isRoot] = await Promise.all([
     getUserPermissions(),
     checkIsRoot(),
@@ -28,7 +45,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
 
   return (
     <div className="flex h-screen overflow-hidden">
-      <AppSidebar permissions={permissions} isRoot={isRoot} />
+      <AppSidebar permissions={permissions} isRoot={isRoot} user={userProfile} />
       <div className="flex-1 flex flex-col overflow-hidden">
         {previewRoleName && <PreviewBanner roleName={previewRoleName} />}
         <main className="flex-1 overflow-y-auto p-6">
