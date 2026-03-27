@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useCallback } from 'react'
-import { Send, Paperclip, Smile, X, FileText } from 'lucide-react'
+import { Send, Paperclip, Smile, X, FileText, FileSpreadsheet, Archive, File } from 'lucide-react'
 
 // ── Emoji picker data ─────────────────────────────────────────────────────────
 
@@ -12,6 +12,25 @@ const EMOJIS = [
   '🎉','🎊','🎁','🏆','🥇','💯','🚀','⭐','💡','🔔','📌','📎',
   '✅','❌','⚠️','ℹ️','🔒','🔓','🔑','🔗','📧','📞','🕐','📅',
 ]
+
+// ── Tipos de archivo ──────────────────────────────────────────────────────────
+
+function getFileTypeInfo(mimeType: string, fileName: string) {
+  const ext = fileName.split('.').pop()?.toLowerCase() ?? ''
+  if (mimeType.startsWith('image/'))
+    return { Icon: File, color: '#10b981', label: 'IMG' }
+  if (mimeType === 'application/pdf' || ext === 'pdf')
+    return { Icon: FileText, color: '#ef4444', label: 'PDF' }
+  if (['doc', 'docx'].includes(ext) || mimeType.includes('word'))
+    return { Icon: FileText, color: '#2563eb', label: 'Word' }
+  if (['xls', 'xlsx', 'csv'].includes(ext) || mimeType.includes('sheet') || mimeType.includes('excel'))
+    return { Icon: FileSpreadsheet, color: '#16a34a', label: 'Excel' }
+  if (['ppt', 'pptx'].includes(ext) || mimeType.includes('presentation') || mimeType.includes('powerpoint'))
+    return { Icon: FileText, color: '#ea580c', label: 'PPT' }
+  if (['zip', 'rar', '7z', 'tar', 'gz'].includes(ext) || mimeType.includes('zip') || mimeType.includes('archive') || mimeType.includes('compressed'))
+    return { Icon: Archive, color: '#7c3aed', label: 'ZIP' }
+  return { Icon: File, color: '#6b7280', label: ext.toUpperCase() || 'FILE' }
+}
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -108,14 +127,18 @@ export function MessageInput({ onSend, disabled }: MessageInputProps) {
               {f.previewUrl ? (
                 <img src={f.previewUrl} alt={f.name}
                   className="h-16 w-16 object-cover rounded-md border border-border" />
-              ) : (
-                <div className="h-16 w-16 flex flex-col items-center justify-center rounded-md border border-border bg-muted gap-1 px-1">
-                  <FileText className="h-5 w-5 text-muted-foreground shrink-0" />
-                  <span className="text-[9px] text-muted-foreground truncate w-full text-center leading-none">
-                    {f.name}
-                  </span>
-                </div>
-              )}
+              ) : (() => {
+                const { Icon, color, label } = getFileTypeInfo(f.type, f.name)
+                return (
+                  <div className="h-16 w-16 flex flex-col items-center justify-center rounded-md border border-border bg-muted gap-1 px-1">
+                    <Icon className="h-5 w-5 shrink-0" style={{ color }} />
+                    <span className="text-[9px] font-bold shrink-0" style={{ color }}>{label}</span>
+                    <span className="text-[8px] text-muted-foreground truncate w-full text-center leading-none">
+                      {f.name}
+                    </span>
+                  </div>
+                )
+              })()}
               <button
                 onClick={() => removeFile(f.id)}
                 className="absolute -top-1.5 -right-1.5 h-4 w-4 rounded-full bg-destructive text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
@@ -171,7 +194,7 @@ export function MessageInput({ onSend, disabled }: MessageInputProps) {
           ref={fileInputRef}
           type="file"
           multiple
-          accept="image/*,.pdf,.doc,.docx,.xls,.xlsx"
+          accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar,.7z,.tar,.gz,.csv,.txt"
           className="hidden"
           onChange={handleFileChange}
         />

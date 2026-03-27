@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Pencil, Trash2, Check, X, Download, FileText, Image } from 'lucide-react'
+import { Pencil, Trash2, Check, X, Download, FileText, FileSpreadsheet, Archive, File } from 'lucide-react'
 import {
   getMessages, sendMessage, editMessage, deleteMessage, getFileSignedUrl,
   type ChatMessage, type ChatRoom,
@@ -27,6 +27,21 @@ function isWithin20Min(iso: string) {
 
 function isImage(mime: string) {
   return mime.startsWith('image/')
+}
+
+function getFileTypeInfo(mimeType: string, fileName: string) {
+  const ext = fileName.split('.').pop()?.toLowerCase() ?? ''
+  if (mimeType === 'application/pdf' || ext === 'pdf')
+    return { Icon: FileText, color: '#fca5a5', label: 'PDF' }
+  if (['doc', 'docx'].includes(ext) || mimeType.includes('word'))
+    return { Icon: FileText, color: '#93c5fd', label: 'Word' }
+  if (['xls', 'xlsx', 'csv'].includes(ext) || mimeType.includes('sheet') || mimeType.includes('excel'))
+    return { Icon: FileSpreadsheet, color: '#86efac', label: 'Excel' }
+  if (['ppt', 'pptx'].includes(ext) || mimeType.includes('presentation') || mimeType.includes('powerpoint'))
+    return { Icon: FileText, color: '#fdba74', label: 'PPT' }
+  if (['zip', 'rar', '7z', 'tar', 'gz'].includes(ext) || mimeType.includes('zip') || mimeType.includes('archive') || mimeType.includes('compressed'))
+    return { Icon: Archive, color: '#c4b5fd', label: 'ZIP' }
+  return { Icon: File, color: '#d1d5db', label: ext.toUpperCase() || 'FILE' }
 }
 
 // ── Componente de archivo ─────────────────────────────────────────────────────
@@ -58,16 +73,21 @@ function FileAttachment({ storagePath, fileName, mimeType, fileSize }: {
     )
   }
 
+  const { Icon, color, label } = getFileTypeInfo(mimeType, fileName)
+
   return (
     <a
       href={url ?? '#'}
       download={fileName}
       target="_blank"
       rel="noopener noreferrer"
-      className="flex items-center gap-2 rounded-md border border-white/20 bg-white/10 px-3 py-2 hover:bg-white/20 transition-colors max-w-[220px]"
+      className="flex items-center gap-2 rounded-md border border-white/20 bg-white/10 px-3 py-2 hover:bg-white/20 transition-colors max-w-[240px]"
     >
-      <FileText className="h-5 w-5 shrink-0" />
-      <div className="flex flex-col overflow-hidden">
+      <div className="flex flex-col items-center shrink-0">
+        <Icon className="h-5 w-5" style={{ color }} />
+        <span className="text-[8px] font-bold mt-0.5" style={{ color }}>{label}</span>
+      </div>
+      <div className="flex flex-col overflow-hidden flex-1">
         <span className="text-xs font-medium truncate">{fileName}</span>
         <span className="text-[10px] opacity-70">{sizeLabel}</span>
       </div>
