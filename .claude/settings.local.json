@@ -41,7 +41,22 @@
       "Bash(node:*)",
       "Bash(dir:*)",
       "Bash(grep -r \"permission\\\\|permiso\" 'D:\\\\Clientes\\\\Guadiana\\\\2026\\\\app Objetivos\\\\guadiana_objetivos\\\\guadiana_objetivos\\\\web\\\\src' --include=*.ts --include=*.tsx -l)",
-      "Bash(grep -r \"\\\\[contentId\\\\]\\\\|/capacitacion/$\" 'D:/Clientes/Guadiana/2026/app Objetivos/guadiana_objetivos/guadiana_objetivos/web/src' --include=*.tsx --include=*.ts -l)"
+      "Bash(grep -r \"\\\\[contentId\\\\]\\\\|/capacitacion/$\" 'D:/Clientes/Guadiana/2026/app Objetivos/guadiana_objetivos/guadiana_objetivos/web/src' --include=*.tsx --include=*.ts -l)",
+      "mcp__playwright__browser_navigate",
+      "mcp__playwright__browser_wait_for",
+      "mcp__playwright__browser_click",
+      "mcp__playwright__browser_type",
+      "mcp__playwright__browser_snapshot",
+      "Bash(find 'D:\\\\Clientes\\\\Guadiana\\\\2026\\\\app Objetivos\\\\guadiana_objetivos\\\\guadiana_objetivos\\\\web' -maxdepth 1 -name *.env* -o -name .env*)",
+      "Bash(find 'D:\\\\Clientes\\\\Guadiana\\\\2026\\\\app Objetivos\\\\guadiana_objetivos\\\\guadiana_objetivos\\\\web\\\\src\\\\app\\\\\\(dashboard\\)' -type d -name *config* -o -name *setting*)",
+      "Bash(find 'D:\\\\Clientes\\\\Guadiana\\\\2026\\\\app Objetivos\\\\guadiana_objetivos\\\\guadiana_objetivos\\\\web\\\\src\\\\app\\\\\\(dashboard\\)' -type f -path *configurar*)",
+      "Bash(find 'D:\\\\Clientes\\\\Guadiana\\\\2026\\\\app Objetivos\\\\guadiana_objetivos' -name supabase.json -o -name .env* -o -name config.json)",
+      "mcp__playwright__browser_take_screenshot",
+      "Bash(find \"/d/Clientes/Guadiana/2026/app Objetivos/guadiana_objetivos/guadiana_objetivos/web/src/app/\\(dashboard\\)\" -type d)",
+      "Bash('/d/Clientes/Guadiana/2026/app Objetivos/guadiana_objetivos/.sessions/contexto.md':*)",
+      "Bash(find:*)",
+      "Bash(xargs grep:*)",
+      "Bash(grep -E \"\\\\.\\(ts|tsx|js|jsx|json\\)$\")"
     ]
   }
 }
