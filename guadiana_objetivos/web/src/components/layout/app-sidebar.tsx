@@ -39,6 +39,7 @@ interface AppSidebarProps {
   user?: { full_name: string | null; avatar_url: string | null; email: string | null } | null
   companyName?: string
   logoUrl?: string | null
+  appVersion?: string
 }
 
 interface NavItem {
@@ -55,7 +56,7 @@ interface NavGroupDef {
   items: NavItem[]
 }
 
-export function AppSidebar({ permissions = [], isRoot = false, user, companyName, logoUrl }: AppSidebarProps) {
+export function AppSidebar({ permissions = [], isRoot = false, user, companyName, logoUrl, appVersion }: AppSidebarProps) {
   const pathname = usePathname()
   const { totalUnread } = useChatNotifications()
   const [openGroup, setOpenGroup] = useState<string | null>(null)
@@ -211,6 +212,11 @@ export function AppSidebar({ permissions = [], isRoot = false, user, companyName
             <span>Cerrar sesión</span>
           </button>
         </form>
+        {appVersion && (
+          <p className="text-center text-[10px] text-muted-foreground/50 pb-1 select-none">
+            v{appVersion}
+          </p>
+        )}
       </div>
     </aside>
   )

@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { cookies } from 'next/headers'
 import { AppSidebar } from '@/components/layout/app-sidebar'
+import { version } from '../../../package.json'
 import { PreviewBanner } from '@/components/layout/preview-banner'
 import { ChatNotificationProvider } from '@/components/chat/chat-notification-provider'
 import { getUserPermissions, checkIsRoot } from '@/lib/permissions'
@@ -62,6 +63,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
           user={userProfile}
           companyName={configMap['empresa_nombre'] ?? undefined}
           logoUrl={configMap['branding_logo_url'] ?? null}
+          appVersion={version}
         />
         <div className="flex-1 flex flex-col overflow-hidden">
           {previewRoleName && <PreviewBanner roleName={previewRoleName} />}
