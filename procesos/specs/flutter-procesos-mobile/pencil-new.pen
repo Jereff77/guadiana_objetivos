@@ -1,0 +1,2390 @@
+{
+  "version": "2.10",
+  "children": [
+    {
+      "type": "frame",
+      "id": "ZX5jJ",
+      "x": 0,
+      "y": 0,
+      "name": "Login Screen",
+      "width": 375,
+      "height": 812,
+      "fill": "#F8F9FA",
+      "layout": "vertical",
+      "children": [
+        {
+          "type": "frame",
+          "id": "rq38H",
+          "name": "Status Bar",
+          "width": "fill_container",
+          "height": 62,
+          "padding": [
+            8,
+            16
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "XbLVq",
+              "name": "Time",
+              "fill": "#212529",
+              "content": "9:41",
+              "fontFamily": "Inter",
+              "fontSize": 14,
+              "fontWeight": "600"
+            },
+            {
+              "type": "frame",
+              "id": "yHNNx",
+              "name": "Status Icons",
+              "gap": 4,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "HHNMx",
+                  "name": "Signal",
+                  "fill": "#212529",
+                  "content": "●●●",
+                  "fontFamily": "Inter",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "Xeck5",
+                  "name": "WiFi",
+                  "fill": "#212529",
+                  "content": "▲",
+                  "fontFamily": "Inter",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "HAG9f",
+                  "name": "Battery",
+                  "fill": "#212529",
+                  "content": "🔋",
+                  "fontFamily": "Inter",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "Lqxnz",
+          "name": "App Content",
+          "width": "fill_container",
+          "height": "fill_container",
+          "layout": "vertical",
+          "gap": 32,
+          "padding": [
+            24,
+            24,
+            32,
+            24
+          ],
+          "justifyContent": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "0sdlI",
+              "name": "Logo Section",
+              "layout": "vertical",
+              "gap": 8,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "ellipse",
+                  "id": "ESf4J",
+                  "name": "Logo",
+                  "fill": "#004B8D",
+                  "width": 80,
+                  "height": 80
+                },
+                {
+                  "type": "text",
+                  "id": "baezk",
+                  "name": "App Title",
+                  "fill": "#212529",
+                  "content": "Guadiana Procesos",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 24,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "tOf27",
+                  "name": "Subtitle",
+                  "fill": "#6C757D",
+                  "content": "Sistema de Gestión de Formularios",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "XH4nF",
+              "name": "Login Form",
+              "layout": "vertical",
+              "gap": 16,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "UPDTa",
+                  "name": "Email Label",
+                  "fill": "#212529",
+                  "content": "Email",
+                  "fontFamily": "Inter",
+                  "fontSize": 12,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "frame",
+                  "id": "O2ldZ",
+                  "name": "Email Field",
+                  "width": "fill_container",
+                  "height": 48,
+                  "fill": "#FFFFFF",
+                  "cornerRadius": 8,
+                  "padding": [
+                    0,
+                    16
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "9KBi5",
+                      "name": "Email Placeholder",
+                      "fill": "#6C757D",
+                      "content": "tu@email.com",
+                      "fontFamily": "Inter",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "LI0Fs",
+                  "name": "Password Label",
+                  "fill": "#212529",
+                  "content": "Contraseña",
+                  "fontFamily": "Inter",
+                  "fontSize": 12,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "frame",
+                  "id": "ecaEF",
+                  "name": "Password Field",
+                  "width": "fill_container",
+                  "height": 48,
+                  "fill": "#FFFFFF",
+                  "cornerRadius": 8,
+                  "padding": [
+                    0,
+                    16
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "9YaRY",
+                      "name": "Password Placeholder",
+                      "fill": "#6C757D",
+                      "content": "••••••••",
+                      "fontFamily": "Inter",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "JhIG3",
+                  "name": "Forgot Password",
+                  "fill": "#004B8D",
+                  "content": "¿Olvidaste tu contraseña?",
+                  "textAlign": "right",
+                  "fontFamily": "Inter",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "hdNkd",
+              "name": "Login Button",
+              "width": "fill_container",
+              "height": 48,
+              "fill": "#004B8D",
+              "cornerRadius": 8,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "NNn7Z",
+                  "name": "Button Label",
+                  "fill": "#FFFFFF",
+                  "content": "Iniciar Sesión",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "600"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "tSiXT",
+      "x": 400,
+      "y": 0,
+      "name": "Forms List Screen",
+      "width": 375,
+      "height": 812,
+      "fill": "#F8F9FA",
+      "layout": "vertical",
+      "children": [
+        {
+          "type": "frame",
+          "id": "Gz1AL",
+          "name": "Status Bar",
+          "width": "fill_container",
+          "height": 62,
+          "padding": [
+            8,
+            16
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "bgOOG",
+              "name": "Time",
+              "fill": "#212529",
+              "content": "9:41",
+              "fontFamily": "Inter",
+              "fontSize": 14,
+              "fontWeight": "600"
+            },
+            {
+              "type": "frame",
+              "id": "0xCjn",
+              "name": "Status Icons",
+              "gap": 4,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "cDLas",
+                  "name": "Signal",
+                  "fill": "#212529",
+                  "content": "●●●",
+                  "fontFamily": "Inter",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "lPj8r",
+                  "name": "WiFi",
+                  "fill": "#212529",
+                  "content": "▲",
+                  "fontFamily": "Inter",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "Srk89",
+                  "name": "Battery",
+                  "fill": "#212529",
+                  "content": "🔋",
+                  "fontFamily": "Inter",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "rhrsf",
+          "name": "App Header",
+          "width": "fill_container",
+          "height": 56,
+          "fill": "#FFFFFF",
+          "padding": [
+            16,
+            24
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "uWMjn",
+              "name": "Header Title",
+              "fill": "#212529",
+              "content": "Mis Formularios",
+              "fontFamily": "Inter",
+              "fontSize": 18,
+              "fontWeight": "700"
+            },
+            {
+              "type": "frame",
+              "id": "jE7Et",
+              "name": "Sync Icon",
+              "width": 40,
+              "height": 40,
+              "fill": "#004B8D",
+              "cornerRadius": 20,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "nZTil",
+                  "name": "Sync",
+                  "fill": "#FFFFFF",
+                  "content": "↻",
+                  "fontFamily": "Inter",
+                  "fontSize": 18,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "axuEA",
+          "name": "Forms Content",
+          "width": "fill_container",
+          "height": "fill_container",
+          "layout": "vertical",
+          "gap": 16,
+          "padding": 16,
+          "children": [
+            {
+              "type": "frame",
+              "id": "ibdgx",
+              "name": "Form Card 1",
+              "width": "fill_container",
+              "fill": "#FFFFFF",
+              "cornerRadius": 12,
+              "layout": "vertical",
+              "gap": 8,
+              "padding": 16,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "oN3m8",
+                  "name": "Card Header",
+                  "width": "fill_container",
+                  "justifyContent": "space_between",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "4Ue66",
+                      "name": "Form Title",
+                      "fill": "#212529",
+                      "content": "Checklist de Seguridad",
+                      "fontFamily": "Inter",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Ow5lE",
+                      "name": "Progress Badge",
+                      "height": 24,
+                      "fill": "#FFF3CD",
+                      "cornerRadius": 12,
+                      "padding": [
+                        0,
+                        12
+                      ],
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "9QrbY",
+                          "name": "Badge Text",
+                          "fill": "#FFC107",
+                          "content": "En progreso",
+                          "fontFamily": "Inter",
+                          "fontSize": 10,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "pIc7R",
+                  "name": "Form Description",
+                  "fill": "#6C757D",
+                  "content": "Evaluación mensual de seguridad en sucursal",
+                  "fontFamily": "Inter",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "WJ4dl",
+                  "name": "Progress Section",
+                  "layout": "vertical",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "u8HoO",
+                      "name": "Progress Bar",
+                      "width": "fill_container",
+                      "height": 6,
+                      "fill": "#E9ECEF",
+                      "cornerRadius": 3
+                    },
+                    {
+                      "type": "frame",
+                      "id": "X2aW9",
+                      "name": "Progress Fill",
+                      "width": 96,
+                      "height": 6,
+                      "fill": "#004B8D",
+                      "cornerRadius": 3
+                    },
+                    {
+                      "type": "text",
+                      "id": "CPeNz",
+                      "name": "Progress Text",
+                      "fill": "#6C757D",
+                      "content": "65% completado",
+                      "fontFamily": "Inter",
+                      "fontSize": 11,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "fVUoq",
+              "name": "Form Card 2",
+              "width": "fill_container",
+              "fill": "#FFFFFF",
+              "cornerRadius": 12,
+              "layout": "vertical",
+              "gap": 8,
+              "padding": 16,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "mOeDr",
+                  "name": "Card Header",
+                  "width": "fill_container",
+                  "justifyContent": "space_between",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "aOiXU",
+                      "name": "Form Title",
+                      "fill": "#212529",
+                      "content": "Inventario Diario",
+                      "fontFamily": "Inter",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "4tZaO",
+                      "name": "Completed Badge",
+                      "height": 24,
+                      "fill": "#D4EDDA",
+                      "cornerRadius": 12,
+                      "padding": [
+                        0,
+                        12
+                      ],
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "DbltJ",
+                          "name": "Badge Text",
+                          "fill": "#28A745",
+                          "content": "Completado",
+                          "fontFamily": "Inter",
+                          "fontSize": 10,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "GUkrk",
+                  "name": "Form Description",
+                  "fill": "#6C757D",
+                  "content": "Registro de inventario de productos",
+                  "fontFamily": "Inter",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "TLhoL",
+                  "name": "Progress Section",
+                  "layout": "vertical",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "ZtMjR",
+                      "name": "Progress Bar",
+                      "width": "fill_container",
+                      "height": 6,
+                      "fill": "#E9ECEF",
+                      "cornerRadius": 3
+                    },
+                    {
+                      "type": "frame",
+                      "id": "V646r",
+                      "name": "Progress Fill",
+                      "width": 144,
+                      "height": 6,
+                      "fill": "#28A745",
+                      "cornerRadius": 3
+                    },
+                    {
+                      "type": "text",
+                      "id": "bgLEC",
+                      "name": "Progress Text",
+                      "fill": "#6C757D",
+                      "content": "100% completado",
+                      "fontFamily": "Inter",
+                      "fontSize": 11,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "73K8q",
+      "x": 800,
+      "y": 0,
+      "name": "Form Detail Screen",
+      "width": 375,
+      "height": 812,
+      "fill": "#F8F9FA",
+      "layout": "vertical",
+      "children": [
+        {
+          "type": "frame",
+          "id": "p1LVl",
+          "name": "Status Bar",
+          "width": "fill_container",
+          "height": 62,
+          "padding": [
+            8,
+            16
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "DskRT",
+              "name": "Time",
+              "fill": "#212529",
+              "content": "9:41",
+              "fontFamily": "Inter",
+              "fontSize": 14,
+              "fontWeight": "600"
+            },
+            {
+              "type": "frame",
+              "id": "UoQIh",
+              "name": "Status Icons",
+              "gap": 4,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "voOYP",
+                  "name": "Signal",
+                  "fill": "#212529",
+                  "content": "●●●",
+                  "fontFamily": "Inter",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "xObAz",
+                  "name": "WiFi",
+                  "fill": "#212529",
+                  "content": "▲",
+                  "fontFamily": "Inter",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "LaW4d",
+                  "name": "Battery",
+                  "fill": "#212529",
+                  "content": "🔋",
+                  "fontFamily": "Inter",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "CaHWN",
+          "name": "Detail Header",
+          "width": "fill_container",
+          "height": 56,
+          "fill": "#FFFFFF",
+          "padding": [
+            16,
+            16,
+            16,
+            8
+          ],
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "KeuMj",
+              "name": "Back Button",
+              "width": 40,
+              "height": 40,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "GbYDJ",
+                  "name": "Back Icon",
+                  "fill": "#212529",
+                  "content": "←",
+                  "fontFamily": "Inter",
+                  "fontSize": 20,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "DbLE2",
+              "name": "Detail Title",
+              "fill": "#212529",
+              "content": "Checklist de Seguridad",
+              "fontFamily": "Inter",
+              "fontSize": 16,
+              "fontWeight": "700"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "tqRMH",
+          "name": "Detail Content",
+          "width": "fill_container",
+          "height": "fill_container",
+          "layout": "vertical",
+          "gap": 24,
+          "padding": 16,
+          "children": [
+            {
+              "type": "frame",
+              "id": "ZpOCW",
+              "name": "Section 1",
+              "width": "fill_container",
+              "fill": "#FFFFFF",
+              "cornerRadius": 12,
+              "layout": "vertical",
+              "gap": 16,
+              "padding": 16,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "thwGf",
+                  "name": "Section Title",
+                  "fill": "#212529",
+                  "content": "1. Información General",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "frame",
+                  "id": "hV4AV",
+                  "name": "Question 1",
+                  "layout": "vertical",
+                  "gap": 8,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "S88hc",
+                      "name": "Question Label",
+                      "fill": "#212529",
+                      "content": "¿Se realizó la apertura de sucursal según protocolo?",
+                      "fontFamily": "Inter",
+                      "fontSize": 13,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "xYwzH",
+                      "name": "Options",
+                      "gap": 8,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "XefwA",
+                          "name": "Yes Option",
+                          "height": 36,
+                          "fill": "#E7F1FF",
+                          "cornerRadius": 8,
+                          "padding": [
+                            0,
+                            16
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "H3570",
+                              "name": "Yes",
+                              "fill": "#004B8D",
+                              "content": "✓ Sí",
+                              "fontFamily": "Inter",
+                              "fontSize": 12,
+                              "fontWeight": "600"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "1ttgD",
+                          "name": "No Option",
+                          "height": 36,
+                          "fill": "#FFFFFF",
+                          "cornerRadius": 8,
+                          "stroke": {
+                            "align": "center",
+                            "thickness": 1,
+                            "fill": "#DEE2E6"
+                          },
+                          "padding": [
+                            0,
+                            16
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "RGTPU",
+                              "name": "No",
+                              "fill": "#6C757D",
+                              "content": "✗ No",
+                              "fontFamily": "Inter",
+                              "fontSize": 12,
+                              "fontWeight": "600"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "QNRFi",
+              "name": "Section 2",
+              "width": "fill_container",
+              "fill": "#FFFFFF",
+              "cornerRadius": 12,
+              "layout": "vertical",
+              "gap": 16,
+              "padding": 16,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "8U7s1",
+                  "name": "Section Title",
+                  "fill": "#212529",
+                  "content": "2. Equipos de Seguridad",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "frame",
+                  "id": "A04r7",
+                  "name": "Question 2",
+                  "layout": "vertical",
+                  "gap": 8,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "x9IiE",
+                      "name": "Question Label",
+                      "fill": "#212529",
+                      "content": "¿Extintores están vigentes y accesibles? *",
+                      "fontFamily": "Inter",
+                      "fontSize": 13,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "ebTM5",
+                      "name": "Text Field",
+                      "width": "fill_container",
+                      "height": 80,
+                      "fill": "#F8F9FA",
+                      "cornerRadius": 8,
+                      "padding": 8,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "iGLrT",
+                          "name": "Placeholder",
+                          "fill": "#6C757D",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Observaciones...",
+                          "fontFamily": "Inter",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "C3hpu",
+          "name": "Action Buttons",
+          "width": "fill_container",
+          "height": 64,
+          "fill": "#FFFFFF",
+          "gap": 16,
+          "padding": 16,
+          "children": [
+            {
+              "type": "frame",
+              "id": "rZvVq",
+              "name": "Cancel Button",
+              "width": "fill_container",
+              "height": 48,
+              "fill": "#F8F9FA",
+              "cornerRadius": 8,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "sxGev",
+                  "name": "Cancel Label",
+                  "fill": "#6C757D",
+                  "content": "Descartar",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "b1c1J",
+              "name": "Complete Button",
+              "width": "fill_container",
+              "height": 48,
+              "fill": "#004B8D",
+              "cornerRadius": 8,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "P1QRy",
+                  "name": "Complete Label",
+                  "fill": "#FFFFFF",
+                  "content": "Completar",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "600"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "7lgNR",
+      "x": 1200,
+      "y": 0,
+      "name": "Form Summary Screen",
+      "width": 375,
+      "height": 812,
+      "fill": "#F8F9FA",
+      "layout": "vertical",
+      "children": [
+        {
+          "type": "frame",
+          "id": "IojD4",
+          "name": "Status Bar",
+          "width": "fill_container",
+          "height": 62,
+          "padding": [
+            8,
+            16
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "a5WoZ",
+              "name": "Time",
+              "fill": "#212529",
+              "content": "9:41",
+              "fontFamily": "Inter",
+              "fontSize": 14,
+              "fontWeight": "600"
+            },
+            {
+              "type": "frame",
+              "id": "dvJa1",
+              "name": "Status Icons",
+              "gap": 4,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "8UtVW",
+                  "name": "Signal",
+                  "fill": "#212529",
+                  "content": "●●●",
+                  "fontFamily": "Inter",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "pPIOr",
+                  "name": "WiFi",
+                  "fill": "#212529",
+                  "content": "▲",
+                  "fontFamily": "Inter",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "eLDtW",
+                  "name": "Battery",
+                  "fill": "#212529",
+                  "content": "🔋",
+                  "fontFamily": "Inter",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "UTlm6",
+          "name": "Summary Header",
+          "width": "fill_container",
+          "height": 56,
+          "fill": "#28A745",
+          "padding": 16,
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "johdq",
+              "name": "Success Icon",
+              "width": 32,
+              "height": 32,
+              "fill": "#FFFFFF",
+              "cornerRadius": 16,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "m0uME",
+                  "name": "Check",
+                  "fill": "#28A745",
+                  "content": "✓",
+                  "fontFamily": "Inter",
+                  "fontSize": 18,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "gg0XV",
+              "name": "Summary Title",
+              "fill": "#FFFFFF",
+              "content": "¡Formulario Completado!",
+              "fontFamily": "Inter",
+              "fontSize": 16,
+              "fontWeight": "700"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "cS2jK",
+          "name": "Summary Content",
+          "width": "fill_container",
+          "height": "fill_container",
+          "layout": "vertical",
+          "gap": 16,
+          "padding": 16,
+          "children": [
+            {
+              "type": "frame",
+              "id": "Nv3Tg",
+              "name": "Summary Card",
+              "width": "fill_container",
+              "fill": "#FFFFFF",
+              "cornerRadius": 12,
+              "layout": "vertical",
+              "gap": 16,
+              "padding": 16,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "iHwnX",
+                  "name": "Card Title",
+                  "fill": "#212529",
+                  "content": "Resumen de Respuestas",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "frame",
+                  "id": "yqoCs",
+                  "name": "Summary Item 1",
+                  "width": "fill_container",
+                  "gap": 12,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "0gzQq",
+                      "name": "Bullet",
+                      "width": 6,
+                      "height": 6,
+                      "fill": "#004B8D",
+                      "cornerRadius": 3
+                    },
+                    {
+                      "type": "text",
+                      "id": "nbKlB",
+                      "name": "Question",
+                      "fill": "#212529",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Apertura de sucursal según protocolo",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "0dNKU",
+                      "name": "Answer",
+                      "fill": "#28A745",
+                      "content": "Sí",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "HVuZF",
+                  "name": "Summary Item 2",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "ExR5X",
+                      "name": "Item Header",
+                      "gap": 12,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "e7PbO",
+                          "name": "Bullet",
+                          "width": 6,
+                          "height": 6,
+                          "fill": "#004B8D",
+                          "cornerRadius": 3
+                        },
+                        {
+                          "type": "text",
+                          "id": "fghEw",
+                          "name": "Question",
+                          "fill": "#212529",
+                          "content": "Extintores están vigentes y accesibles",
+                          "fontFamily": "Inter",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "kD8l0",
+                      "name": "Required Asterisk",
+                      "width": 12,
+                      "height": 12,
+                      "justifyContent": "center",
+                      "alignItems": "center"
+                    },
+                    {
+                      "type": "text",
+                      "id": "wj48b",
+                      "name": "Asterisk",
+                      "fill": "#DC3545",
+                      "content": "*",
+                      "fontFamily": "Inter",
+                      "fontSize": 16,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "vIGys",
+                      "name": "Answer",
+                      "fill": "#6C757D",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Los extintores están en su ubicación correcta y con vigencia al día. Se verificó fecha de vencimiento.",
+                      "fontFamily": "Inter",
+                      "fontSize": 11,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "Ob0Z3",
+              "name": "Meta Info",
+              "width": "fill_container",
+              "fill": "#FFFFFF",
+              "cornerRadius": 12,
+              "layout": "vertical",
+              "gap": 8,
+              "padding": 16,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "3kxv8",
+                  "name": "Date Label",
+                  "fill": "#6C757D",
+                  "content": "Fecha y hora de completado:",
+                  "fontFamily": "Inter",
+                  "fontSize": 11,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "text",
+                  "id": "7ctYQ",
+                  "name": "Date Value",
+                  "fill": "#212529",
+                  "content": "13 de abril, 2026 - 09:41 AM",
+                  "fontFamily": "Inter",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "R0l5b",
+          "name": "Summary Actions",
+          "width": "fill_container",
+          "height": 72,
+          "fill": "#FFFFFF",
+          "gap": 16,
+          "padding": 16,
+          "children": [
+            {
+              "type": "frame",
+              "id": "wK2mD",
+              "name": "Edit Button",
+              "width": "fill_container",
+              "height": 48,
+              "fill": "#F8F9FA",
+              "cornerRadius": 8,
+              "stroke": {
+                "align": "center",
+                "thickness": 1,
+                "fill": "#DEE2E6"
+              },
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "5iAEw",
+                  "name": "Edit Label",
+                  "fill": "#6C757D",
+                  "content": "Editar Respuestas",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "5gFLm",
+              "name": "Confirm Button",
+              "width": "fill_container",
+              "height": 48,
+              "fill": "#28A745",
+              "cornerRadius": 8,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "evTwp",
+                  "name": "Confirm Label",
+                  "fill": "#FFFFFF",
+                  "content": "Confirmar Envío",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "600"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "g3XHR",
+      "x": 0,
+      "y": 965,
+      "name": "Flow Diagram",
+      "width": 1528,
+      "height": 419,
+      "fill": "#E9ECEF",
+      "cornerRadius": 16,
+      "padding": 24,
+      "children": [
+        {
+          "type": "text",
+          "id": "eWqCP",
+          "name": "Flow Title",
+          "fill": "#212529",
+          "content": "Flujo de Navegación de la App Móvil",
+          "textAlign": "center",
+          "fontFamily": "Inter",
+          "fontSize": 20,
+          "fontWeight": "700"
+        },
+        {
+          "type": "frame",
+          "id": "t7sYY",
+          "name": "Flow Content",
+          "width": "fill_container",
+          "height": "fill_container",
+          "gap": 16,
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "H0lWt",
+              "name": "Login Flow",
+              "width": 320,
+              "fill": "#FFFFFF",
+              "cornerRadius": 12,
+              "layout": "vertical",
+              "gap": 12,
+              "padding": 16,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "ellipse",
+                  "id": "L5pMv",
+                  "name": "Flow Icon",
+                  "fill": "#004B8D",
+                  "width": 48,
+                  "height": 48
+                },
+                {
+                  "type": "text",
+                  "id": "Qb7n3",
+                  "name": "Flow Title",
+                  "fill": "#212529",
+                  "content": "1. Login",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "VcKzD",
+                  "name": "Flow Desc",
+                  "fill": "#6C757D",
+                  "content": "Autenticación con email y contraseña",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 11,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "Yb15C",
+                  "name": "Arrow",
+                  "fill": "#004B8D",
+                  "content": "↓",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 24,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "SpLwT",
+              "name": "Forms Flow",
+              "width": 320,
+              "fill": "#FFFFFF",
+              "cornerRadius": 12,
+              "layout": "vertical",
+              "gap": 12,
+              "padding": 16,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "ellipse",
+                  "id": "Te3FD",
+                  "name": "Flow Icon",
+                  "fill": "#004B8D",
+                  "width": 48,
+                  "height": 48
+                },
+                {
+                  "type": "text",
+                  "id": "UGsbx",
+                  "name": "Flow Title",
+                  "fill": "#212529",
+                  "content": "2. Mis Formularios",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "R3ihr",
+                  "name": "Flow Desc",
+                  "fill": "#6C757D",
+                  "content": "Lista de formularios asignados con progreso",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 11,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "Z1mug",
+                  "name": "Arrow",
+                  "fill": "#004B8D",
+                  "content": "↓",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 24,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "gsaV4",
+              "name": "Detail Flow",
+              "width": 320,
+              "fill": "#FFFFFF",
+              "cornerRadius": 12,
+              "layout": "vertical",
+              "gap": 12,
+              "padding": 16,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "ellipse",
+                  "id": "9Ww3F",
+                  "name": "Flow Icon",
+                  "fill": "#004B8D",
+                  "width": 48,
+                  "height": 48
+                },
+                {
+                  "type": "text",
+                  "id": "nFn2x",
+                  "name": "Flow Title",
+                  "fill": "#212529",
+                  "content": "3. Responder Formulario",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "5AcrG",
+                  "name": "Flow Desc",
+                  "fill": "#6C757D",
+                  "content": "Completar preguntas sección por sección",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 11,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "Vs9Ql",
+                  "name": "Arrow",
+                  "fill": "#004B8D",
+                  "content": "↓",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 24,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "SOjuU",
+              "name": "Summary Flow",
+              "width": 320,
+              "fill": "#FFFFFF",
+              "cornerRadius": 12,
+              "layout": "vertical",
+              "gap": 12,
+              "padding": 16,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "ellipse",
+                  "id": "L3y4o",
+                  "name": "Flow Icon",
+                  "fill": "#28A745",
+                  "width": 48,
+                  "height": 48
+                },
+                {
+                  "type": "text",
+                  "id": "nkNxO",
+                  "name": "Flow Title",
+                  "fill": "#212529",
+                  "content": "4. Resumen y Confirmar",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "6ELUB",
+                  "name": "Flow Desc",
+                  "fill": "#6C757D",
+                  "content": "Revisar respuestas y confirmar envío",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 11,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "10UB5",
+                  "name": "Arrow",
+                  "fill": "#28A745",
+                  "content": "↓",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 24,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "PChJJ",
+              "name": "Sync Flow",
+              "width": 320,
+              "fill": "#FFFFFF",
+              "cornerRadius": 12,
+              "layout": "vertical",
+              "gap": 12,
+              "padding": 16,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "ellipse",
+                  "id": "aSF3g",
+                  "name": "Flow Icon",
+                  "fill": "#6C757D",
+                  "width": 48,
+                  "height": 48
+                },
+                {
+                  "type": "text",
+                  "id": "jkwiR",
+                  "name": "Flow Title",
+                  "fill": "#212529",
+                  "content": "5. Sincronización",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "EpWbE",
+                  "name": "Flow Desc",
+                  "fill": "#6C757D",
+                  "content": "Sincronizar con Supabase (automático)",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 11,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "y5dQQ",
+      "x": 0,
+      "y": 0,
+      "name": "Login Screen Pro",
+      "width": 375,
+      "height": 812,
+      "fill": "#FFFFFF",
+      "layout": "vertical",
+      "children": [
+        {
+          "type": "frame",
+          "id": "ArHSk",
+          "name": "Status Bar",
+          "width": "fill_container",
+          "height": 44,
+          "padding": [
+            8,
+            24,
+            8,
+            16
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "hldF0",
+              "name": "Time",
+              "fill": "#000000",
+              "content": "9:41",
+              "fontFamily": "Inter",
+              "fontSize": 15,
+              "fontWeight": "600"
+            },
+            {
+              "type": "frame",
+              "id": "c0tki",
+              "name": "Status Icons",
+              "gap": 6,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "w9sso",
+                  "name": "Signal",
+                  "fill": "#000000",
+                  "content": "●●●",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "gWFUo",
+                  "name": "WiFi",
+                  "fill": "#000000",
+                  "content": "▲",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "OShZu",
+                  "name": "Battery",
+                  "fill": "#000000",
+                  "content": "🔋",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "1vUdv",
+          "name": "App Content",
+          "width": "fill_container",
+          "height": "fill_container",
+          "layout": "vertical",
+          "gap": 48,
+          "padding": [
+            48,
+            32
+          ],
+          "justifyContent": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "OiZcB",
+              "name": "Logo Section",
+              "layout": "vertical",
+              "gap": 20,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "uLtmc",
+                  "name": "Logo Container",
+                  "width": 96,
+                  "height": 96,
+                  "fill": "#004B8D",
+                  "cornerRadius": 24,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "74Bdl",
+                      "name": "Logo Icon",
+                      "fill": "#FFFFFF",
+                      "content": "G",
+                      "fontFamily": "Inter",
+                      "fontSize": 48,
+                      "fontWeight": "700"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "qr2LT",
+                  "name": "App Title",
+                  "fill": "#004B8D",
+                  "content": "Guadiana",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 32,
+                  "fontWeight": "800"
+                },
+                {
+                  "type": "text",
+                  "id": "BtWB3",
+                  "name": "Subtitle",
+                  "fill": "#6B7280",
+                  "content": "Sistema de Gestión de Formularios",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 16,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "rF8hi",
+              "name": "Welcome Section",
+              "layout": "vertical",
+              "gap": 12,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "2omMI",
+                  "name": "Welcome",
+                  "fill": "#111827",
+                  "content": "Bienvenido de nuevo",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 28,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "LhvdR",
+                  "name": "Subtitle",
+                  "fill": "#6B7280",
+                  "content": "Inicia sesión para continuar",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 16,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "PZWrW",
+              "name": "Login Form",
+              "layout": "vertical",
+              "gap": 24,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "xDvks",
+                  "name": "Email Section",
+                  "layout": "vertical",
+                  "gap": 12,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "UT5BO",
+                      "name": "Email Label",
+                      "fill": "#374151",
+                      "content": "Email",
+                      "fontFamily": "Inter",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "iKzvk",
+                      "name": "Email Field",
+                      "width": "fill_container",
+                      "height": 56,
+                      "fill": "#F9FAFB",
+                      "cornerRadius": 16,
+                      "stroke": {
+                        "align": "center",
+                        "thickness": 2,
+                        "fill": "#E5E7EB"
+                      },
+                      "padding": [
+                        0,
+                        20
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "pmKBp",
+                          "name": "Email Placeholder",
+                          "fill": "#9CA3AF",
+                          "content": "tu@email.com",
+                          "fontFamily": "Inter",
+                          "fontSize": 16,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "ex8BM",
+                          "name": "Email Icon",
+                          "fill": "#D1D5DB",
+                          "content": "✉",
+                          "fontFamily": "Inter",
+                          "fontSize": 20,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "joWyE",
+                  "name": "Password Section",
+                  "layout": "vertical",
+                  "gap": 12,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "I5dME",
+                      "name": "Password Label",
+                      "fill": "#374151",
+                      "content": "Contraseña",
+                      "fontFamily": "Inter",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "n2zZL",
+                      "name": "Password Field",
+                      "width": "fill_container",
+                      "height": 56,
+                      "fill": "#F9FAFB",
+                      "cornerRadius": 16,
+                      "stroke": {
+                        "align": "center",
+                        "thickness": 2,
+                        "fill": "#E5E7EB"
+                      },
+                      "padding": [
+                        0,
+                        20
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "xMAPW",
+                          "name": "Password Placeholder",
+                          "fill": "#9CA3AF",
+                          "content": "••••••••••",
+                          "fontFamily": "Inter",
+                          "fontSize": 16,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "FnMCO",
+                          "name": "Lock Icon",
+                          "fill": "#D1D5DB",
+                          "content": "🔒",
+                          "fontFamily": "Inter",
+                          "fontSize": 20,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "4zehN",
+                  "name": "Forgot Password",
+                  "fill": "#004B8D",
+                  "content": "¿Olvidaste tu contraseña?",
+                  "textAlign": "right",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "C99WV",
+              "name": "Login Button",
+              "width": "fill_container",
+              "height": 56,
+              "fill": "#004B8D",
+              "cornerRadius": 16,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "g7txA",
+                  "name": "Button Label",
+                  "fill": "#FFFFFF",
+                  "content": "Iniciar Sesión",
+                  "fontFamily": "Inter",
+                  "fontSize": 17,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "7Cwi6",
+              "name": "Divider",
+              "width": "fill_container",
+              "height": 24,
+              "gap": 16,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "OCckF",
+                  "name": "Line Left",
+                  "width": "fill_container",
+                  "height": 1,
+                  "fill": "#E5E7EB"
+                },
+                {
+                  "type": "text",
+                  "id": "uhvi6",
+                  "name": "Or",
+                  "fill": "#9CA3AF",
+                  "content": "O",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "frame",
+                  "id": "yoILm",
+                  "name": "Line Right",
+                  "width": "fill_container",
+                  "height": 1,
+                  "fill": "#E5E7EB"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "j1AEm",
+              "name": "Signup Link",
+              "fill": "#6B7280",
+              "content": "¿No tienes cuenta? Regístrate desde la web",
+              "textAlign": "center",
+              "fontFamily": "Inter",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "ARwpk",
+      "x": 400,
+      "y": 0,
+      "name": "Forms List Pro",
+      "width": 375,
+      "height": 812,
+      "fill": "#FFFFFF",
+      "layout": "vertical",
+      "children": [
+        {
+          "type": "frame",
+          "id": "zzSNi",
+          "name": "Status Bar",
+          "width": "fill_container",
+          "height": 44,
+          "padding": [
+            8,
+            24,
+            8,
+            16
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "iUUrB",
+              "name": "Time",
+              "fill": "#000000",
+              "content": "9:41",
+              "fontFamily": "Inter",
+              "fontSize": 15,
+              "fontWeight": "600"
+            },
+            {
+              "type": "frame",
+              "id": "A3hrD",
+              "name": "Status Icons",
+              "gap": 6,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "nKLp8",
+                  "name": "Signal",
+                  "fill": "#000000",
+                  "content": "●",
+                  "fontFamily": "Inter",
+                  "fontSize": 10,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "cW0mU",
+                  "name": "WiFi",
+                  "fill": "#000000",
+                  "content": "▲",
+                  "fontFamily": "Inter",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "UGc92",
+                  "name": "Battery",
+                  "fill": "#000000",
+                  "content": "100%",
+                  "fontFamily": "Inter",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "PeWOi",
+          "name": "App Header",
+          "width": "fill_container",
+          "fill": "#FFFFFF",
+          "layout": "vertical",
+          "gap": 20,
+          "padding": [
+            20,
+            24
+          ],
+          "children": [
+            {
+              "type": "text",
+              "id": "nsmWW",
+              "name": "Header Title",
+              "fill": "#000000",
+              "content": "Mis Formularios",
+              "fontFamily": "Inter",
+              "fontSize": 32,
+              "fontWeight": "700"
+            },
+            {
+              "type": "text",
+              "id": "SymTN",
+              "name": "Header Subtitle",
+              "fill": "#6B7280",
+              "content": "3 formularios asignados",
+              "fontFamily": "Inter",
+              "fontSize": 15,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "aZvqu",
+          "name": "Forms Content",
+          "width": "fill_container",
+          "height": "fill_container",
+          "layout": "vertical",
+          "gap": 20,
+          "padding": [
+            0,
+            20,
+            20,
+            20
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "HRFht",
+              "name": "Form Card 1",
+              "width": "fill_container",
+              "fill": "#FFFFFF",
+              "cornerRadius": 16,
+              "layout": "vertical",
+              "gap": 16,
+              "padding": 20,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "Znbp6",
+                  "name": "Card Header",
+                  "width": "fill_container",
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "3KEi6",
+                      "name": "Form Title",
+                      "fill": "#000000",
+                      "content": "Checklist de Seguridad",
+                      "fontFamily": "Inter",
+                      "fontSize": 20,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "bILpQ",
+                      "name": "Menu",
+                      "fill": "#9CA3AF",
+                      "content": "...",
+                      "fontFamily": "Inter",
+                      "fontSize": 24,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "xVMx4",
+                  "name": "Card Body",
+                  "layout": "vertical",
+                  "gap": 12,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "9a0Re",
+                      "name": "Form Description",
+                      "fill": "#6B7280",
+                      "content": "Evaluacion mensual de seguridad en sucursal",
+                      "fontFamily": "Inter",
+                      "fontSize": 15,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "3p7Dc",
+                      "name": "Card Meta",
+                      "width": "fill_container",
+                      "gap": 8,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "PKzD7",
+                          "name": "Date Badge",
+                          "width": "fit_content(0)",
+                          "height": 28,
+                          "fill": "#EFF6FF",
+                          "cornerRadius": 8,
+                          "padding": [
+                            0,
+                            12
+                          ],
+                          "justifyContent": "center",
+                          "alignItems": "center"
+                        },
+                        {
+                          "type": "text",
+                          "id": "e9qQ3",
+                          "name": "Date",
+                          "fill": "#004B8D",
+                          "content": "15 Abr",
+                          "fontFamily": "Inter",
+                          "fontSize": 13,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "7DGs4",
+                      "name": "Progress Section",
+                      "layout": "vertical",
+                      "gap": 8,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "TFB0x",
+                          "name": "Progress Bar",
+                          "width": "fill_container",
+                          "height": 6,
+                          "fill": "#F3F4F6",
+                          "cornerRadius": 3
+                        },
+                        {
+                          "type": "frame",
+                          "id": "ZG8co",
+                          "name": "Progress Fill",
+                          "width": 117,
+                          "height": 6,
+                          "fill": "#004B8D",
+                          "cornerRadius": 3
+                        },
+                        {
+                          "type": "text",
+                          "id": "m46hz",
+                          "name": "Progress Text",
+                          "fill": "#004B8D",
+                          "content": "65% completado",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "eYFoK",
+                      "name": "Continue Button",
+                      "width": "fill_container",
+                      "height": 48,
+                      "fill": "#004B8D",
+                      "cornerRadius": 12,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "4ibCV",
+                          "name": "Continue",
+                          "fill": "#FFFFFF",
+                          "content": "Continuar",
+                          "fontFamily": "Inter",
+                          "fontSize": 16,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variables": {
+    "background-color": {
+      "type": "color",
+      "value": "#F8F9FA"
+    },
+    "border-color": {
+      "type": "color",
+      "value": "#DEE2E6"
+    },
+    "error-color": {
+      "type": "color",
+      "value": "#DC3545"
+    },
+    "primary-color": {
+      "type": "color",
+      "value": "#004B8D"
+    },
+    "primary-light": {
+      "type": "color",
+      "value": "#194D95"
+    },
+    "radius-lg": {
+      "type": "number",
+      "value": 12
+    },
+    "radius-md": {
+      "type": "number",
+      "value": 8
+    },
+    "radius-sm": {
+      "type": "number",
+      "value": 4
+    },
+    "radius-xl": {
+      "type": "number",
+      "value": 16
+    },
+    "secondary-color": {
+      "type": "color",
+      "value": "#6C757D"
+    },
+    "spacing-lg": {
+      "type": "number",
+      "value": 24
+    },
+    "spacing-md": {
+      "type": "number",
+      "value": 16
+    },
+    "spacing-sm": {
+      "type": "number",
+      "value": 8
+    },
+    "spacing-xl": {
+      "type": "number",
+      "value": 32
+    },
+    "spacing-xs": {
+      "type": "number",
+      "value": 4
+    },
+    "success-color": {
+      "type": "color",
+      "value": "#28A745"
+    },
+    "surface-color": {
+      "type": "color",
+      "value": "#FFFFFF"
+    },
+    "text-primary": {
+      "type": "color",
+      "value": "#212529"
+    },
+    "text-secondary": {
+      "type": "color",
+      "value": "#6C757D"
+    },
+    "warning-color": {
+      "type": "color",
+      "value": "#FFC107"
+    }
+  }
+}
