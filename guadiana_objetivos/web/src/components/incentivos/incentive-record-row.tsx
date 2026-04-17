@@ -83,15 +83,15 @@ export function IncentiveRecordRow({ record, canApprove = false, showUser = true
           <p className="font-semibold">{Number(record.completion_pct).toFixed(1)}%</p>
         </div>
         <div>
-          <p className="text-xs text-muted-foreground">Monto base</p>
+          <p className="text-xs text-muted-foreground">Bono máximo</p>
           <p className="font-semibold">${Number(record.base_amount).toLocaleString('es-MX', { minimumFractionDigits: 2 })}</p>
         </div>
         <div>
-          <p className="text-xs text-muted-foreground">Bono</p>
+          <p className="text-xs text-muted-foreground">% del bono</p>
           <p className="font-semibold">{Number(record.bonus_pct).toFixed(0)}%</p>
         </div>
         <div>
-          <p className="text-xs text-muted-foreground">Total calculado</p>
+          <p className="text-xs text-muted-foreground">Bono ganado</p>
           <p className="font-bold text-primary">${Number(record.calculated_amount).toLocaleString('es-MX', { minimumFractionDigits: 2 })}</p>
         </div>
       </div>

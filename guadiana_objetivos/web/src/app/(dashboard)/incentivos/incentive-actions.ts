@@ -16,7 +16,8 @@ export interface IncentiveSchema {
   id: string
   department_id: string | null
   role_id: string | null
-  base_amount: number
+  base_amount: number   // sueldo base (informativo)
+  bonus_amount: number  // bono máximo al 100% de cumplimiento
   tiers: IncentiveTier[]
   valid_from: string
   valid_to: string | null
@@ -56,7 +57,8 @@ export interface IncentiveRecord {
 export interface CreateIncentiveSchemaData {
   department_id: string | null
   role_id: string | null
-  base_amount: number
+  base_amount: number   // sueldo base
+  bonus_amount: number  // bono máximo al 100%
   tiers: IncentiveTier[]
   valid_from: string
   valid_to?: string | null
@@ -121,7 +123,10 @@ export async function createIncentiveSchema(
   }
 
   if (!formData.base_amount || formData.base_amount <= 0) {
-    return { success: false, error: 'El monto base debe ser mayor a 0.' }
+    return { success: false, error: 'El sueldo base debe ser mayor a 0.' }
+  }
+  if (!formData.bonus_amount || formData.bonus_amount <= 0) {
+    return { success: false, error: 'El monto del bono debe ser mayor a 0.' }
   }
   if (!formData.valid_from) {
     return { success: false, error: 'La fecha de inicio es requerida.' }
@@ -136,6 +141,7 @@ export async function createIncentiveSchema(
       department_id: formData.department_id,
       role_id: formData.role_id,
       base_amount: formData.base_amount,
+      bonus_amount: formData.bonus_amount,
       tiers: formData.tiers,
       valid_from: formData.valid_from,
       valid_to: formData.valid_to ?? null,
@@ -263,7 +269,8 @@ export async function calculateIncentivesForPeriod(
     const schema = schemas[0]
     const tiers: IncentiveTier[] = Array.isArray(schema.tiers) ? schema.tiers : []
     const bonusPct = applyTier(tiers, completion)
-    const calculatedAmount = schema.base_amount * (1 + bonusPct / 100)
+    // bonus_amount = bono máximo; tier.bonus_pct = % del bono máximo que se gana
+    const calculatedAmount = schema.bonus_amount * (bonusPct / 100)
 
     // Obtener usuarios del departamento (los que tienen objetivos asignados)
     const { data: assignees } = await supabase
@@ -292,7 +299,7 @@ export async function calculateIncentivesForPeriod(
         month,
         year,
         completion_pct: completion,
-        base_amount: schema.base_amount,
+        base_amount: schema.bonus_amount, // bono máximo al momento del cálculo
         bonus_pct: bonusPct,
         calculated_amount: calculatedAmount,
         status: 'draft' as const,
@@ -322,7 +329,6 @@ export async function calculateIncentivesForPeriod(
     }
   }
 
-  revalidatePath('/incentivos')
   return { success: true, data: { created, updated } }
 }
 

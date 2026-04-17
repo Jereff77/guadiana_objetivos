@@ -1156,3 +1156,57 @@ Errores resueltos:
 - ✅ Privacidad chat.hidden: directores/usuarios especiales pueden ocultarse del directorio
 - ✅ IA sidebar restaurado: 6 ítems visibles según permiso ia.view / ia.configure
 - ✅ Hydration error resuelto con suppressHydrationWarning
+
+---
+
+### Claude Sonnet 4.6 – Sesión 2026-04-17 (Fixes y rediseño modelo Incentivos)
+
+#### Rol: Orquestador IA
+- **Solicitud del usuario**: (1) Fix "Calcular incentivos" no hacía nada visible. (2) Fix error `revalidatePath during render`. (3) Fix esquema recién creado no aparecía en la lista. (4) Rediseñar modelo de incentivos: sueldo base + bono máximo separados, fórmula correcta.
+- **Análisis realizado**: Se identificaron 3 bugs independientes en el módulo de incentivos y un error conceptual en el modelo de cálculo. Todos resueltos directamente sin agentes especializados.
+- **Decisión de agentes**: Trabajo directo.
+
+#### Tareas Realizadas:
+
+1. **Fix: "Calcular incentivos" no mostraba resultado** (Herramientas: Edit)
+   - La página `/incentivos/calcular` calculaba y redirigía con `?calc=ok&msg=...` pero la página principal nunca leía esos params.
+   - `page.tsx` (`/incentivos`): añadido `calc` y `msg` a `searchParams`, banner condicional verde/rojo con el resultado.
+   - `calcular/page.tsx`: mensaje mejorado cuando retorna 0 registros ("No se encontraron datos de avance u esquemas activos").
+
+2. **Fix: `revalidatePath` durante render (Runtime Error)** (Herramientas: Edit)
+   - `calculateIncentivesForPeriod` en `incentive-actions.ts` llamaba `revalidatePath('/incentivos')` desde dentro de un Server Component render, lo cual Next.js 15 no permite.
+   - Solución: eliminar `revalidatePath` — el `redirect()` posterior ya fuerza un re-fetch fresco de la página.
+
+3. **Fix: esquema creado no aparecía al volver** (Herramientas: Edit)
+   - `incentive-schema-form.tsx` llamaba `router.push('/incentivos/configurar')` tras crear, pero como el usuario ya estaba en esa ruta, Next.js 15 servía la caché del router sin refetchear.
+   - Solución: reemplazar `router.push(...)` por `router.refresh()` + reset manual de todos los campos del formulario.
+
+4. **Rediseño modelo de cálculo de incentivos** (Herramientas: Write, Edit)
+   - **Modelo anterior**: `base_amount` único, fórmula `base × (1 + bonus_pct/100)` — incorrecto conceptualmente.
+   - **Modelo nuevo**: `base_amount` = sueldo base (informativo), `bonus_amount` = bono máximo al 100% (nuevo campo), `tiers.bonus_pct` = % del bono máximo que se gana, fórmula `calculated_amount = bonus_amount × (bonus_pct / 100)`.
+   - Migración: `20260417000001_add_bonus_amount_to_incentive_schemas.sql` — `ALTER TABLE incentive_schemas ADD COLUMN bonus_amount NUMERIC(10,2) NOT NULL DEFAULT 0`.
+   - `incentive-actions.ts`: interfaces `IncentiveSchema` y `CreateIncentiveSchemaData` actualizadas con `bonus_amount`; validación añadida; fórmula corregida; `recordData.base_amount` guarda `schema.bonus_amount` como referencia histórica.
+   - `incentive-schema-form.tsx`: nuevo campo "Bono máximo al 100%" junto a "Sueldo base", reset incluye el nuevo campo, texto de ayuda de tiers actualizado.
+   - `incentive-schemas-list.tsx`: muestra "Sueldo base" y "Bono máximo" por separado.
+   - `incentive-record-row.tsx`: etiquetas actualizadas a "Bono máximo", "% del bono" y "Bono ganado".
+
+#### Errores Encontrados y Soluciones:
+- **Runtime Error `revalidatePath during render`**: Next.js 15 prohíbe `revalidatePath` en renders de Server Components. Solución: eliminarlo (el redirect cubre la necesidad).
+- **`bonus_amount column not found in schema cache`**: la migración no había sido aplicada en Supabase. Solución: ejecutar SQL directo en Supabase SQL Editor.
+
+#### Archivos Modificados:
+- `guadiana_objetivos/web/src/app/(dashboard)/incentivos/page.tsx`: banner resultado cálculo + nuevos searchParams
+- `guadiana_objetivos/web/src/app/(dashboard)/incentivos/calcular/page.tsx`: mensaje 0 registros mejorado + fórmula mensaje
+- `guadiana_objetivos/web/src/app/(dashboard)/incentivos/incentive-actions.ts`: interfaces + validación + fórmula + `revalidatePath` eliminado
+- `guadiana_objetivos/web/src/components/incentivos/incentive-schema-form.tsx`: campo bonus_amount + router.refresh + reset
+- `guadiana_objetivos/web/src/components/incentivos/incentive-schemas-list.tsx`: muestra sueldo base y bono máximo
+- `guadiana_objetivos/web/src/components/incentivos/incentive-record-row.tsx`: etiquetas actualizadas
+
+#### Archivos Creados:
+- `guadiana_objetivos/web/supabase/migrations/20260417000001_add_bonus_amount_to_incentive_schemas.sql`
+
+#### Estado Final:
+- ✅ Cálculo de incentivos muestra banner con resultado (éxito/error)
+- ✅ Sin error `revalidatePath during render`
+- ✅ Esquemas recién creados aparecen inmediatamente en la lista
+- ✅ Modelo correcto: sueldo base + bono máximo + fórmula `bonus_amount × (tier_pct / 100)`

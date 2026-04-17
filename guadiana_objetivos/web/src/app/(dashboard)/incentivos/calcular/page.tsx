@@ -18,8 +18,12 @@ export default async function IncentivosCalcularPage({ searchParams }: PageProps
 
   // Redirigir de vuelta a incentivos con estado del cálculo
   const status = result.success ? 'ok' : 'error'
+  const created = result.data?.created ?? 0
+  const updated = result.data?.updated ?? 0
   const message = result.success
-    ? `Calculado: ${result.data?.created ?? 0} nuevos, ${result.data?.updated ?? 0} actualizados.`
+    ? created === 0 && updated === 0
+      ? 'No se encontraron datos de avance u esquemas activos para el período.'
+      : `Calculado: ${created} nuevos, ${updated} actualizados.`
     : (result.error ?? 'Error al calcular.')
 
   redirect(`/incentivos?month=${month}&year=${year}&calc=${status}&msg=${encodeURIComponent(message)}`)

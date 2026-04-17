@@ -91,7 +91,9 @@ export function IncentiveSchemasList({ schemas, departments, roles }: IncentiveS
                   </span>
                 </div>
                 <p className="text-sm text-muted-foreground mt-0.5">
-                  Monto base: ${Number(schema.base_amount).toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+                  Sueldo base: ${Number(schema.base_amount).toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+                  {' · '}
+                  Bono máximo: ${Number(schema.bonus_amount).toLocaleString('es-MX', { minimumFractionDigits: 2 })}
                   {' · '}
                   Desde: {new Date(schema.valid_from).toLocaleDateString('es-MX')}
                   {schema.valid_to && ` · Hasta: ${new Date(schema.valid_to).toLocaleDateString('es-MX')}`}

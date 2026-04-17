@@ -9,7 +9,7 @@ const MONTHS = ['', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
   'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
 
 interface PageProps {
-  searchParams: Promise<{ month?: string; year?: string }>
+  searchParams: Promise<{ month?: string; year?: string; calc?: string; msg?: string }>
 }
 
 function SummaryCard({ label, value, sub }: { label: string; value: string; sub?: string }) {
@@ -29,6 +29,8 @@ export default async function IncentivosPage({ searchParams }: PageProps) {
   const now = new Date()
   const month = params.month ? Number(params.month) : now.getMonth() + 1
   const year = params.year ? Number(params.year) : now.getFullYear()
+  const calc = params.calc
+  const calcMsg = params.msg ? decodeURIComponent(params.msg) : undefined
 
   const [canManage, canApprove, isRoot] = await Promise.all([
     checkPermission('incentivos.manage'),
@@ -82,6 +84,17 @@ export default async function IncentivosPage({ searchParams }: PageProps) {
           )}
         </div>
       </div>
+
+      {/* Banner resultado cálculo */}
+      {calc && calcMsg && (
+        <div className={`rounded-md border px-4 py-3 text-sm ${
+          calc === 'ok'
+            ? 'bg-green-50 border-green-200 text-green-800 dark:bg-green-950 dark:border-green-800 dark:text-green-300'
+            : 'bg-red-50 border-red-200 text-red-800 dark:bg-red-950 dark:border-red-800 dark:text-red-300'
+        }`}>
+          {calc === 'ok' ? '✓ ' : '✗ '}{calcMsg}
+        </div>
+      )}
 
       {/* Filtro de período */}
       <form className="flex items-center gap-3 flex-wrap">

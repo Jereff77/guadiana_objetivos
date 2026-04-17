@@ -37,6 +37,7 @@ export function IncentiveSchemaForm({ schema, departments, roles }: IncentiveSch
   const [departmentId, setDepartmentId] = useState<string>(schema?.department_id ?? '')
   const [roleId, setRoleId] = useState<string>(schema?.role_id ?? '')
   const [baseAmount, setBaseAmount] = useState<string>(String(schema?.base_amount ?? ''))
+  const [bonusAmount, setBonusAmount] = useState<string>(String(schema?.bonus_amount ?? ''))
   const [validFrom, setValidFrom] = useState<string>(schema?.valid_from ?? '')
   const [validTo, setValidTo] = useState<string>(schema?.valid_to ?? '')
   const [tiers, setTiers] = useState<IncentiveTier[]>(
@@ -65,6 +66,7 @@ export function IncentiveSchemaForm({ schema, departments, roles }: IncentiveSch
       department_id: departmentId || null,
       role_id: roleId || null,
       base_amount: Number(baseAmount),
+      bonus_amount: Number(bonusAmount),
       tiers,
       valid_from: validFrom,
       valid_to: validTo || null,
@@ -83,8 +85,16 @@ export function IncentiveSchemaForm({ schema, departments, roles }: IncentiveSch
           setError(result.error ?? 'Error al crear.')
           return
         }
+        // Resetear formulario tras crear
+        setDepartmentId('')
+        setRoleId('')
+        setBaseAmount('')
+        setBonusAmount('')
+        setValidFrom('')
+        setValidTo('')
+        setTiers([{ min_pct: 80, max_pct: 89, bonus_pct: 50 }, { min_pct: 90, max_pct: 100, bonus_pct: 100 }])
       }
-      router.push('/incentivos/configurar')
+      router.refresh()
     })
   }
 
@@ -129,21 +139,40 @@ export function IncentiveSchemaForm({ schema, departments, roles }: IncentiveSch
         </select>
       </div>
 
-      {/* Monto base */}
-      <div>
-        <label className="block text-sm font-medium mb-1">
-          Monto base <span className="text-red-500">*</span>
-        </label>
-        <input
-          type="number"
-          min="0"
-          step="0.01"
-          required
-          className="w-full rounded-md border bg-background px-3 py-2 text-sm"
-          value={baseAmount}
-          onChange={(e) => setBaseAmount(e.target.value)}
-          placeholder="Ej: 5000.00"
-        />
+      {/* Sueldo base y Bono máximo */}
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            Sueldo base <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="number"
+            min="0"
+            step="0.01"
+            required
+            className="w-full rounded-md border bg-background px-3 py-2 text-sm"
+            value={baseAmount}
+            onChange={(e) => setBaseAmount(e.target.value)}
+            placeholder="Ej: 5000.00"
+          />
+          <p className="text-xs text-muted-foreground mt-1">Salario fijo del empleado.</p>
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            Bono máximo al 100% <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="number"
+            min="0"
+            step="0.01"
+            required
+            className="w-full rounded-md border bg-background px-3 py-2 text-sm"
+            value={bonusAmount}
+            onChange={(e) => setBonusAmount(e.target.value)}
+            placeholder="Ej: 2000.00"
+          />
+          <p className="text-xs text-muted-foreground mt-1">Bono al cumplir el 100%.</p>
+        </div>
       </div>
 
       {/* Vigencia */}
@@ -241,7 +270,7 @@ export function IncentiveSchemaForm({ schema, departments, roles }: IncentiveSch
         </div>
 
         <p className="text-xs text-muted-foreground mt-2">
-          Ejemplo: De 80% a 89% → bono del 50% sobre el monto base.
+          Ejemplo: cumplimiento 80–89% → gana el 50% del bono máximo. Cumplimiento 90–100% → gana el 100% del bono máximo.
         </p>
       </div>
 
