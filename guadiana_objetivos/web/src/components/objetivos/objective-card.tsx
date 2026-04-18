@@ -5,7 +5,7 @@ import Link from 'next/link'
 interface ObjectiveCardProps {
   objective: {
     id: string
-    department_id: string
+    org_department_id: string
     title: string
     description: string | null
     month: number
@@ -87,7 +87,7 @@ export function ObjectiveCard({ objective, canManage, onDelete }: ObjectiveCardP
       {canManage && objective.status === 'active' && (
         <div className="flex items-center gap-3 pt-1 border-t">
           <Link
-            href={`/objetivos/configurar?dept=${objective.department_id}&obj=${objective.id}`}
+            href={`/objetivos/configurar?dept=${objective.org_department_id}&obj=${objective.id}`}
             className="text-xs text-brand-blue hover:underline"
           >
             Editar

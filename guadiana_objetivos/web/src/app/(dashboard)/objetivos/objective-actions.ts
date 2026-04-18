@@ -19,7 +19,7 @@ export interface ObjectiveData {
 
 export interface Objective {
   id: string
-  department_id: string
+  org_department_id: string
   title: string
   description: string | null
   month: number
@@ -34,18 +34,10 @@ export interface Objective {
   completion_pct?: number
 }
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
-async function assertManage() {
-  const supabase = await createClient()
-  const { data } = await supabase.rpc('has_permission', { permission_key: 'objetivos.manage' })
-  if (!data) redirect('/sin-acceso')
-}
-
 // ─── Lectura ──────────────────────────────────────────────────────────────────
 
 export async function getObjectivesByDept(
-  deptId: string,
+  orgDeptId: string,
   month?: number,
   year?: number
 ): Promise<Objective[]> {
@@ -54,7 +46,7 @@ export async function getObjectivesByDept(
   let query = supabase
     .from('objectives')
     .select('*')
-    .eq('department_id', deptId)
+    .eq('org_department_id', orgDeptId)
     .order('weight', { ascending: false })
 
   if (month) query = query.eq('month', month)
@@ -77,17 +69,17 @@ export async function getObjective(id: string): Promise<Objective | null> {
 // ─── Escritura ────────────────────────────────────────────────────────────────
 
 export async function createObjective(
-  deptId: string,
+  orgDeptId: string,
   data: ObjectiveData
 ): Promise<{ error?: string; id?: string }> {
-  await assertManage()
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
 
   const { data: obj, error } = await supabase
     .from('objectives')
     .insert({
-      department_id: deptId,
+      org_department_id: orgDeptId,
       title: data.title.trim(),
       description: data.description?.trim() || null,
       month: data.month,
@@ -96,18 +88,19 @@ export async function createObjective(
       target_value: data.target_value ?? null,
       evidence_type: data.evidence_type,
       checklist_id: data.checklist_id || null,
-      created_by: user?.id,
+      created_by: user.id,
     })
     .select('id')
     .single()
 
   if (error) {
     if (error.code === '23505') return { error: 'Ya existe un objetivo con ese título en este período' }
+    if (error.code === '42501') return { error: 'No tienes permiso para crear objetivos en este departamento' }
     return { error: error.message }
   }
 
   revalidatePath('/objetivos')
-  revalidatePath(`/objetivos/${deptId}`)
+  revalidatePath(`/objetivos/${orgDeptId}`)
   return { id: obj.id }
 }
 
@@ -115,7 +108,6 @@ export async function updateObjective(
   id: string,
   data: Partial<ObjectiveData>
 ): Promise<{ error?: string }> {
-  await assertManage()
   const supabase = await createClient()
 
   const { error } = await supabase
@@ -133,22 +125,23 @@ export async function updateObjective(
     })
     .eq('id', id)
 
-  if (error) return { error: error.message }
+  if (error) {
+    if (error.code === '42501') return { error: 'No tienes permiso para editar este objetivo' }
+    return { error: error.message }
+  }
 
-  // Obtener dept_id para revalidar
-  const { data: obj } = await supabase.from('objectives').select('department_id').eq('id', id).single()
+  const { data: obj } = await supabase.from('objectives').select('org_department_id').eq('id', id).single()
   revalidatePath('/objetivos')
-  if (obj) revalidatePath(`/objetivos/${obj.department_id}`)
+  if (obj) revalidatePath(`/objetivos/${obj.org_department_id}`)
   return {}
 }
 
 export async function deleteObjective(id: string): Promise<{ error?: string }> {
-  await assertManage()
   const supabase = await createClient()
 
   const { data: obj } = await supabase
     .from('objectives')
-    .select('department_id, status')
+    .select('org_department_id, status')
     .eq('id', id)
     .single()
 
@@ -157,31 +150,31 @@ export async function deleteObjective(id: string): Promise<{ error?: string }> {
   }
 
   const { error } = await supabase.from('objectives').delete().eq('id', id)
-  if (error) return { error: error.message }
+  if (error) {
+    if (error.code === '42501') return { error: 'No tienes permiso para eliminar este objetivo' }
+    return { error: error.message }
+  }
 
   revalidatePath('/objetivos')
-  if (obj) revalidatePath(`/objetivos/${obj.department_id}`)
+  if (obj) revalidatePath(`/objetivos/${obj.org_department_id}`)
   return {}
 }
 
-/**
- * Clonar objetivos de un período a otro para un departamento.
- */
 export async function cloneObjectives(
-  deptId: string,
+  orgDeptId: string,
   fromMonth: number,
   fromYear: number,
   toMonth: number,
   toYear: number
 ): Promise<{ error?: string; count?: number }> {
-  await assertManage()
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
 
   const { data: source } = await supabase
     .from('objectives')
     .select('title, description, weight, target_value, evidence_type, checklist_id')
-    .eq('department_id', deptId)
+    .eq('org_department_id', orgDeptId)
     .eq('month', fromMonth)
     .eq('year', fromYear)
 
@@ -190,7 +183,7 @@ export async function cloneObjectives(
   }
 
   const clones = source.map((o) => ({
-    department_id: deptId,
+    org_department_id: orgDeptId,
     title: o.title,
     description: o.description,
     month: toMonth,
@@ -199,53 +192,51 @@ export async function cloneObjectives(
     target_value: o.target_value,
     evidence_type: o.evidence_type,
     checklist_id: o.checklist_id,
-    created_by: user?.id,
+    created_by: user.id,
   }))
 
   const { error } = await supabase.from('objectives').insert(clones)
-  if (error) return { error: error.message }
+  if (error) {
+    if (error.code === '42501') return { error: 'No tienes permiso para crear objetivos en este departamento' }
+    return { error: error.message }
+  }
 
   revalidatePath('/objetivos')
-  revalidatePath(`/objetivos/${deptId}`)
+  revalidatePath(`/objetivos/${orgDeptId}`)
   return { count: clones.length }
 }
 
-/**
- * Cerrar el período de objetivos de un departamento.
- * Los objetivos cerrados son inmutables.
- */
 export async function closeObjectivesPeriod(
-  deptId: string,
+  orgDeptId: string,
   month: number,
   year: number
 ): Promise<{ error?: string }> {
-  await assertManage()
   const supabase = await createClient()
 
   const { error } = await supabase
     .from('objectives')
     .update({ status: 'closed', updated_at: new Date().toISOString() })
-    .eq('department_id', deptId)
+    .eq('org_department_id', orgDeptId)
     .eq('month', month)
     .eq('year', year)
     .eq('status', 'active')
 
-  if (error) return { error: error.message }
+  if (error) {
+    if (error.code === '42501') return { error: 'No tienes permiso para cerrar objetivos en este departamento' }
+    return { error: error.message }
+  }
 
   revalidatePath('/objetivos')
-  revalidatePath(`/objetivos/${deptId}`)
+  revalidatePath(`/objetivos/${orgDeptId}`)
   return {}
 }
 
-/**
- * Calcular y persistir el % de cumplimiento de un objetivo.
- */
 export async function calculateObjectiveProgress(objectiveId: string): Promise<number> {
   const supabase = await createClient()
 
   const { data: obj } = await supabase
     .from('objectives')
-    .select('department_id, month, year')
+    .select('org_department_id, month, year')
     .eq('id', objectiveId)
     .single()
 
@@ -261,11 +252,9 @@ export async function calculateObjectiveProgress(objectiveId: string): Promise<n
   const approved = deliverables.filter((d) => d.status === 'approved').length
   const pct = Math.round((approved / deliverables.length) * 100)
 
-  // Upsert en objective_progress
   await supabase.from('objective_progress').upsert(
     {
       objective_id: objectiveId,
-      department_id: obj.department_id,
       month: obj.month,
       year: obj.year,
       completion_pct: pct,
@@ -277,13 +266,9 @@ export async function calculateObjectiveProgress(objectiveId: string): Promise<n
   return pct
 }
 
-/**
- * Generar alertas automáticas para el período dado.
- */
 export async function checkAndCreateAlerts(month: number, year: number): Promise<void> {
   const supabase = await createClient()
 
-  // Alertas ya existentes hoy para deduplicar
   const today = new Date().toISOString().split('T')[0]
   const { data: existing } = await supabase
     .from('system_alerts')
@@ -307,10 +292,9 @@ export async function checkAndCreateAlerts(month: number, year: number): Promise
     if (!existingSet.has(key)) alerts.push(alert)
   }
 
-  // 1. Objetivos con cumplimiento < 70%
   const { data: progress } = await supabase
     .from('objective_progress')
-    .select('objective_id, department_id, completion_pct')
+    .select('objective_id, completion_pct')
     .eq('month', month)
     .eq('year', year)
 
@@ -328,7 +312,6 @@ export async function checkAndCreateAlerts(month: number, year: number): Promise
     }
   }
 
-  // 2. Entregables próximos a vencer (≤2 días) sin evidencia
   const in2days = new Date()
   in2days.setDate(in2days.getDate() + 2)
 
@@ -351,10 +334,9 @@ export async function checkAndCreateAlerts(month: number, year: number): Promise
     })
   }
 
-  // 3. Período cerrado con cumplimiento < 80%
   const { data: closedObjectives } = await supabase
     .from('objectives')
-    .select('id, title, department_id')
+    .select('id, title, org_department_id')
     .eq('month', month)
     .eq('year', year)
     .eq('status', 'closed')

@@ -1,220 +1,217 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
-import { revalidatePath } from 'next/cache'
-import { redirect } from 'next/navigation'
 
-export interface DepartmentData {
-  name: string
-  description?: string
-  manager_id?: string | null
-}
+// ─── Tipos ───────────────────────────────────────────────────────────────────
 
-export interface Department {
+export interface OrgDeptForObjectives {
   id: string
   name: string
-  description: string | null
-  manager_id: string | null
-  manager_name: string | null
-  is_active: boolean
-  created_at: string
-  objective_count?: number
+  color: string
+  responsible_id: string | null
+  responsible_name: string | null
+  responsible_position_name: string | null
+  userCanManage: boolean        // puede crear/editar objetivos
+  userCanCreateDeliverables: boolean  // puede crear entregables
+  userRole: 'direction' | 'dept_responsible' | 'area_responsible' | 'member' | 'none'
 }
 
-async function assertManage() {
-  const supabase = await createClient()
-  // Permite acceso con departamentos.manage O con objetivos.manage (retrocompatible)
-  const [{ data: deptPerm }, { data: objPerm }] = await Promise.all([
-    supabase.rpc('has_permission', { permission_key: 'departamentos.manage' }),
-    supabase.rpc('has_permission', { permission_key: 'objetivos.manage' }),
-  ])
-  if (!deptPerm && !objPerm) redirect('/sin-acceso')
+export interface AssignableUser {
+  id: string
+  full_name: string | null
+  avatar_url: string | null
+  position_name: string | null
+  source: 'dept_responsible' | 'dept_member' | 'area_responsible' | 'area_member'
 }
 
-/**
- * Obtiene los departamentos según los permisos del usuario:
- * - objetivos.manage o departamentos.manage: todos los departamentos
- * - objetivos.view.assigned: solo departamentos con entregables asignados al usuario
- * - objetivos.view: todos los departamentos (solo lectura)
- */
-export async function getDepartments(): Promise<Department[]> {
+export interface OrgContext {
+  userId: string
+  isRoot: boolean
+  isDirectionResponsible: boolean
+  responsibleDeptIds: string[]
+  responsibleAreaIds: string[]
+  responsibleAreaDeptIds: string[]
+  memberDeptIds: string[]
+  memberAreaDeptIds: string[]
+}
+
+// ─── OrgContext ───────────────────────────────────────────────────────────────
+
+export async function getOrgContext(): Promise<OrgContext | null> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return []
+  if (!user) return null
 
-  // Verificar permisos en orden de especificidad
   const [
-    { data: canManage },
-    { data: canViewAssigned },
-    { data: canView },
+    { data: root },
+    { data: direction },
+    { data: responsibleDepts },
+    { data: responsibleAreas },
+    { data: deptMemberships },
+    { data: areaMemberships },
   ] = await Promise.all([
-    supabase.rpc('has_permission', { permission_key: 'objetivos.manage' }),
-    supabase.rpc('has_permission', { permission_key: 'objetivos.view.assigned' }),
-    supabase.rpc('has_permission', { permission_key: 'objetivos.view' }),
+    supabase.rpc('is_root'),
+    supabase.from('org_direction').select('responsible_id').limit(1).maybeSingle(),
+    supabase.from('org_departments').select('id').eq('responsible_id', user.id),
+    supabase.from('org_areas').select('id, department_id').eq('responsible_id', user.id),
+    supabase.from('org_department_members').select('department_id').eq('user_id', user.id),
+    supabase.from('org_members').select('area_id, org_areas(department_id)').eq('user_id', user.id),
   ])
 
-  // Si puede gestionar, retorna todos los departamentos
-  if (canManage) {
-    return fetchAllDepartments(supabase)
+  return {
+    userId: user.id,
+    isRoot: root === true,
+    isDirectionResponsible: direction?.responsible_id === user.id,
+    responsibleDeptIds: (responsibleDepts ?? []).map((d) => d.id),
+    responsibleAreaIds: (responsibleAreas ?? []).map((a) => a.id),
+    responsibleAreaDeptIds: [
+      ...new Set((responsibleAreas ?? []).map((a) => a.department_id).filter(Boolean)),
+    ] as string[],
+    memberDeptIds: (deptMemberships ?? []).map((m) => m.department_id),
+    memberAreaDeptIds: [
+      ...new Set(
+        (areaMemberships ?? [])
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .map((m) => ((m as any).org_areas as { department_id: string } | null)?.department_id)
+          .filter(Boolean)
+      ),
+    ] as string[],
   }
-
-  // Si solo puede ver asignados, filtrar por entregables
-  if (canViewAssigned) {
-    return getDepartmentsWithAssignments(supabase, user.id)
-  }
-
-  // Si puede ver todos (view), retorna todos los departamentos
-  if (canView) {
-    return fetchAllDepartments(supabase)
-  }
-
-  return []
 }
 
-/**
- * Obtiene todos los departamentos con información de manager
- */
-async function fetchAllDepartments(supabase: any): Promise<Department[]> {
-  const { data } = await supabase
-    .from('departments')
+// ─── Departamentos accesibles por el usuario ──────────────────────────────────
+
+export async function getDepartmentsForUser(): Promise<OrgDeptForObjectives[]> {
+  const supabase = await createClient()
+  const ctx = await getOrgContext()
+  if (!ctx) return []
+
+  // Obtener todos los departamentos accesibles (RLS filtra automáticamente via obj_select)
+  const { data: depts } = await supabase
+    .from('org_departments')
     .select(`
-      id, name, description, manager_id, is_active, created_at,
-      profiles(full_name)
+      id, name, color, responsible_id,
+      profiles!org_departments_responsible_id_fkey(full_name, avatar_url),
+      org_positions!org_departments_responsible_position_id_fkey(title)
     `)
-    .eq('is_active', true)
     .order('name')
 
-  if (!data) return []
+  if (!depts) return []
 
-  return data.map((d: any) => {
-    const mgr = d.profiles
+  const canManageAll = ctx.isRoot || ctx.isDirectionResponsible
+
+  return depts.map((d: any) => {
+    const resp = d.profiles as { full_name: string | null; avatar_url: string | null } | null
+    const pos = d.org_positions as { title: string } | null
+
+    const isDeptResponsible = ctx.responsibleDeptIds.includes(d.id)
+    const isAreaResponsibleHere = ctx.responsibleAreaDeptIds.includes(d.id)
+    const isMemberHere = ctx.memberDeptIds.includes(d.id) || ctx.memberAreaDeptIds.includes(d.id)
+
+    let userRole: OrgDeptForObjectives['userRole'] = 'none'
+    if (canManageAll) userRole = 'direction'
+    else if (isDeptResponsible) userRole = 'dept_responsible'
+    else if (isAreaResponsibleHere) userRole = 'area_responsible'
+    else if (isMemberHere) userRole = 'member'
+
+    const userCanManage = canManageAll || isDeptResponsible
+    const userCanCreateDeliverables = userCanManage || isAreaResponsibleHere
+
     return {
       id: d.id,
       name: d.name,
-      description: d.description,
-      manager_id: d.manager_id,
-      manager_name:
-        mgr && typeof mgr === 'object' && 'full_name' in mgr
-          ? (mgr as { full_name: string | null }).full_name
-          : null,
-      is_active: d.is_active,
-      created_at: d.created_at,
+      color: d.color ?? '#6366f1',
+      responsible_id: d.responsible_id,
+      responsible_name: resp?.full_name ?? null,
+      responsible_position_name: pos?.title ?? null,
+      userCanManage,
+      userCanCreateDeliverables,
+      userRole,
     }
   })
 }
 
-/**
- * Obtiene solo los departamentos donde el usuario tiene entregables asignados
- */
-async function getDepartmentsWithAssignments(supabase: any, userId: string): Promise<Department[]> {
-  // Obtener departamentos únicos donde el usuario tiene entregables asignados
-  const { data: deliverables } = await supabase
-    .from('objective_deliverables')
-    .select('objective_id!inner')
-    .eq('assignee_id', userId)
+// ─── Usuarios asignables dentro de un org_department ─────────────────────────
 
-  if (!deliverables || deliverables.length === 0) return []
+export async function getAssignableUsersForDept(orgDeptId: string): Promise<AssignableUser[]> {
+  const supabase = await createClient()
 
-  // Obtener los department_id de los objetivos
-  const objectiveIds = deliverables.map((d: any) => d.objective_id)
-  const { data: objectives } = await supabase
-    .from('objectives')
-    .select('department_id')
-    .in('id', objectiveIds)
+  const users: AssignableUser[] = []
+  const seen = new Set<string>()
 
-  if (!objectives || objectives.length === 0) return []
-
-  const deptIds = [...new Set(objectives.map((o: any) => o.department_id))]
-
-  // Obtener los departamentos
-  const { data: departments } = await supabase
-    .from('departments')
-    .select(`
-      id, name, description, manager_id, is_active, created_at,
-      profiles(full_name)
-    `)
-    .in('id', deptIds)
-    .eq('is_active', true)
-    .order('name')
-
-  if (!departments) return []
-
-  return departments.map((d: any) => {
-    const mgr = d.profiles
-    return {
-      id: d.id,
-      name: d.name,
-      description: d.description,
-      manager_id: d.manager_id,
-      manager_name:
-        mgr && typeof mgr === 'object' && 'full_name' in mgr
-          ? (mgr as { full_name: string | null }).full_name
-          : null,
-      is_active: d.is_active,
-      created_at: d.created_at,
+  function addUser(
+    id: string,
+    full_name: string | null,
+    avatar_url: string | null,
+    position_name: string | null,
+    source: AssignableUser['source']
+  ) {
+    if (!seen.has(id)) {
+      seen.add(id)
+      users.push({ id, full_name, avatar_url, position_name, source })
     }
-  })
-}
-
-export async function createDepartment(data: DepartmentData): Promise<{ error?: string; id?: string }> {
-  await assertManage()
-  const supabase = await createClient()
-
-  const { data: dept, error } = await supabase
-    .from('departments')
-    .insert({
-      name: data.name.trim(),
-      description: data.description?.trim() || null,
-      manager_id: data.manager_id || null,
-    })
-    .select('id')
-    .single()
-
-  if (error) return { error: error.message }
-
-  revalidatePath('/objetivos')
-  return { id: dept.id }
-}
-
-export async function updateDepartment(id: string, data: Partial<DepartmentData> & { is_active?: boolean }): Promise<{ error?: string }> {
-  await assertManage()
-  const supabase = await createClient()
-
-  const { error } = await supabase
-    .from('departments')
-    .update({
-      ...(data.name !== undefined ? { name: data.name.trim() } : {}),
-      ...(data.description !== undefined ? { description: data.description?.trim() || null } : {}),
-      ...(data.manager_id !== undefined ? { manager_id: data.manager_id || null } : {}),
-      ...(data.is_active !== undefined ? { is_active: data.is_active } : {}),
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', id)
-
-  if (error) return { error: error.message }
-
-  revalidatePath('/objetivos')
-  return {}
-}
-
-export async function deleteDepartment(id: string): Promise<{ error?: string }> {
-  await assertManage()
-  const supabase = await createClient()
-
-  // Verificar que no tenga objetivos activos
-  const { count } = await supabase
-    .from('objectives')
-    .select('id', { count: 'exact', head: true })
-    .eq('department_id', id)
-    .eq('status', 'active')
-
-  if (count && count > 0) {
-    return { error: `No se puede eliminar: tiene ${count} objetivo(s) activo(s)` }
   }
 
-  const { error } = await supabase.from('departments').delete().eq('id', id)
-  if (error) return { error: error.message }
+  // 1. Responsable del departamento
+  const { data: dept } = await supabase
+    .from('org_departments')
+    .select(`
+      responsible_id,
+      profiles!org_departments_responsible_id_fkey(full_name, avatar_url),
+      org_positions!org_departments_responsible_position_id_fkey(title)
+    `)
+    .eq('id', orgDeptId)
+    .maybeSingle()
 
-  revalidatePath('/objetivos')
-  return {}
+  if (dept?.responsible_id) {
+    const p = (dept as any).profiles as { full_name: string | null; avatar_url: string | null } | null
+    const pos = (dept as any).org_positions as { title: string } | null
+    addUser(dept.responsible_id, p?.full_name ?? null, p?.avatar_url ?? null, pos?.title ?? null, 'dept_responsible')
+  }
+
+  // 2. Miembros directos del departamento
+  const { data: deptMembers } = await supabase
+    .from('org_department_members')
+    .select(`
+      user_id,
+      profiles!org_department_members_user_id_fkey(full_name, avatar_url),
+      org_positions!org_department_members_position_id_fkey(title)
+    `)
+    .eq('department_id', orgDeptId)
+
+  for (const m of deptMembers ?? []) {
+    const p = (m as any).profiles as { full_name: string | null; avatar_url: string | null } | null
+    const pos = (m as any).org_positions as { title: string } | null
+    addUser(m.user_id, p?.full_name ?? null, p?.avatar_url ?? null, pos?.title ?? null, 'dept_member')
+  }
+
+  // 3. Responsables y miembros de áreas del departamento
+  const { data: areas } = await supabase
+    .from('org_areas')
+    .select(`
+      responsible_id,
+      profiles!org_areas_responsible_id_fkey(full_name, avatar_url),
+      org_positions!org_areas_responsible_position_id_fkey(title),
+      org_members(
+        user_id,
+        profiles!org_members_user_id_fkey(full_name, avatar_url),
+        org_positions!org_members_position_id_fkey(title)
+      )
+    `)
+    .eq('department_id', orgDeptId)
+
+  for (const area of areas ?? []) {
+    if (area.responsible_id) {
+      const p = (area as any).profiles as { full_name: string | null; avatar_url: string | null } | null
+      const pos = (area as any).org_positions as { title: string } | null
+      addUser(area.responsible_id, p?.full_name ?? null, p?.avatar_url ?? null, pos?.title ?? null, 'area_responsible')
+    }
+    for (const m of ((area as any).org_members as any[]) ?? []) {
+      const p = m.profiles as { full_name: string | null; avatar_url: string | null } | null
+      const pos = m.org_positions as { title: string } | null
+      addUser(m.user_id, p?.full_name ?? null, p?.avatar_url ?? null, pos?.title ?? null, 'area_member')
+    }
+  }
+
+  return users
 }

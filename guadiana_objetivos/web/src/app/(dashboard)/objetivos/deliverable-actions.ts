@@ -59,19 +59,7 @@ export interface Review {
   reviewed_at: string
 }
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
-async function assertManage() {
-  const supabase = await createClient()
-  const { data } = await supabase.rpc('has_permission', { permission_key: 'objetivos.manage' })
-  if (!data) redirect('/sin-acceso')
-}
-
-async function assertReview() {
-  const supabase = await createClient()
-  const { data } = await supabase.rpc('has_permission', { permission_key: 'objetivos.review' })
-  if (!data) redirect('/sin-acceso')
-}
+// Los permisos de escritura los maneja RLS basado en el organigrama
 
 // ─── Lectura ──────────────────────────────────────────────────────────────────
 
@@ -187,7 +175,6 @@ export async function createDeliverable(
   objectiveId: string,
   data: DeliverableData
 ): Promise<{ error?: string; id?: string }> {
-  await assertManage()
   const supabase = await createClient()
 
   const { data: deliv, error } = await supabase
@@ -202,7 +189,10 @@ export async function createDeliverable(
     .select('id')
     .single()
 
-  if (error) return { error: error.message }
+  if (error) {
+    if (error.code === '42501') return { error: 'No tienes permiso para crear entregables en este objetivo' }
+    return { error: error.message }
+  }
 
   revalidatePath('/objetivos')
   return { id: deliv.id }
@@ -212,7 +202,6 @@ export async function updateDeliverable(
   id: string,
   data: Partial<DeliverableData>
 ): Promise<{ error?: string }> {
-  await assertManage()
   const supabase = await createClient()
 
   const { error } = await supabase
@@ -305,7 +294,6 @@ export async function reviewDeliverable(
   verdict: 'approved' | 'rejected',
   comment?: string
 ): Promise<{ error?: string }> {
-  await assertReview()
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -361,7 +349,6 @@ export async function requestAiAnalysis(
   deliverableId: string,
   notifyWhatsapp = false,
 ): Promise<{ data?: AiAnalysisResult; error?: string }> {
-  await assertReview()
 
   const aiServiceUrl = process.env.PYTHON_AI_SERVICE_URL
   const aiServiceKey = process.env.PYTHON_AI_SERVICE_API_KEY

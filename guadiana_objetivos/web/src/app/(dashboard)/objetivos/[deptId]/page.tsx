@@ -1,7 +1,7 @@
-import { requirePermission, checkPermission } from '@/lib/permissions'
+import { requirePermission } from '@/lib/permissions'
 import { createClient } from '@/lib/supabase/server'
 import { getObjectivesByDept } from '../objective-actions'
-import { getDeliverableWithDetail } from '../deliverable-actions'
+import { getDepartmentsForUser } from '../dept-actions'
 import { ObjectiveCard } from '@/components/objetivos/objective-card'
 import { DeliverableRow } from '@/components/objetivos/deliverable-row'
 import type { Deliverable } from '../deliverable-actions'
@@ -29,16 +29,18 @@ export default async function DeptObjetivosPage({ params, searchParams }: PagePr
   const [
     { data: dept },
     objectives,
-    canManage,
-    canReview,
     { data: { user } },
   ] = await Promise.all([
-    supabase.from('departments').select('id, name, description').eq('id', deptId).single(),
+    supabase.from('org_departments').select('id, name, color').eq('id', deptId).single(),
     getObjectivesByDept(deptId, month, year),
-    checkPermission('objetivos.manage'),
-    checkPermission('objetivos.review'),
     supabase.auth.getUser(),
   ])
+
+  // Determinar permisos basados en organigrama
+  const depts = await getDepartmentsForUser()
+  const thisDept = depts.find((d) => d.id === deptId)
+  const canManage = thisDept?.userCanManage ?? false
+  const canReview = canManage || (thisDept?.userRole === 'area_responsible')
 
   if (!dept) notFound()
 
@@ -130,9 +132,6 @@ export default async function DeptObjetivosPage({ params, searchParams }: PagePr
             <span>{dept.name}</span>
           </div>
           <h1 className="text-2xl font-bold tracking-tight">{dept.name}</h1>
-          {dept.description && (
-            <p className="text-sm text-muted-foreground mt-1">{dept.description}</p>
-          )}
         </div>
 
         {/* Selector mes/año */}
