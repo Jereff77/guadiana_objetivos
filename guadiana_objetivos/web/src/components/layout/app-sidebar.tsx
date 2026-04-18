@@ -28,6 +28,7 @@ import {
   GraduationCap,
   MessageCircle,
   Settings,
+  Network,
 } from 'lucide-react'
 import { logout } from '@/app/(auth)/login/actions'
 import { cn } from '@/lib/utils'
@@ -95,6 +96,7 @@ export function AppSidebar({ permissions = [], isRoot = false, user, companyName
       label: 'Desarrollo Humano',
       icon: GraduationCap,
       items: [
+        { title: 'Organigrama',  href: '/organigrama',  icon: Network,  permission: 'organigrama.view' },
         { title: 'Mentoring',    href: '/mentoring',    icon: Users2,   permission: 'mentoring.view' },
         { title: 'Capacitación', href: '/capacitacion', icon: BookOpen, permission: 'capacitacion.view' },
       ],
