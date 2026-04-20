@@ -1,12 +1,19 @@
 'use client'
 
 import { useState } from 'react'
-import { Download, ExternalLink, FileText } from 'lucide-react'
+import { Download, ExternalLink, FileText, Loader2 } from 'lucide-react'
 import {
   reviewDeliverable,
   approveLateSubmission,
 } from '../../app/(dashboard)/objetivos/deliverable-actions'
 import type { Evidence } from '../../app/(dashboard)/objetivos/deliverable-actions'
+
+function getOriginalFilename(storagePath: string): string {
+  const filename = storagePath.split('/').pop() ?? storagePath
+  // Formato: {deliverableId}_{timestamp}_{nombreOriginal}
+  const parts = filename.split('_')
+  return parts.length >= 3 ? parts.slice(2).join('_') : filename
+}
 
 function getPeriodCloseDate(
   month: number,
@@ -23,6 +30,7 @@ function getPeriodCloseDate(
 interface ReviewPanelProps {
   deliverableId: string
   evidences?: Evidence[]
+  isLoadingEvidences?: boolean
   onSuccess?: () => void
   // late submission context
   submittedAt?: string | null
@@ -38,6 +46,7 @@ interface ReviewPanelProps {
 export function ReviewPanel({
   deliverableId,
   evidences = [],
+  isLoadingEvidences = false,
   onSuccess,
   submittedAt,
   lateApprovedBy,
@@ -149,12 +158,18 @@ export function ReviewPanel({
       )}
 
       {/* Mostrar evidencias para revisión */}
-      {hasEvidences && (
-        <div className="space-y-2">
-          <p className="text-xs font-semibold text-muted-foreground">
-            Evidencias enviadas ({evidences.length}):
-          </p>
-          {evidences.map((ev) => (
+      <div className="space-y-2">
+        <p className="text-xs font-semibold text-muted-foreground">
+          Evidencias enviadas{hasEvidences ? ` (${evidences.length})` : ''}:
+        </p>
+
+        {isLoadingEvidences ? (
+          <div className="flex items-center gap-2 p-3 rounded border bg-muted/20">
+            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground shrink-0" />
+            <span className="text-xs text-muted-foreground">Cargando evidencias…</span>
+          </div>
+        ) : hasEvidences ? (
+          evidences.map((ev) => (
             <div key={ev.id} className="border rounded-md p-2 bg-background">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs text-muted-foreground">
@@ -165,7 +180,7 @@ export function ReviewPanel({
               {ev.storage_path && (
                 <div className="flex items-center gap-2 p-2 rounded bg-muted/30">
                   <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <span className="text-xs truncate flex-1">{ev.storage_path.split('/').pop()}</span>
+                  <span className="text-xs truncate flex-1">{getOriginalFilename(ev.storage_path)}</span>
                   <a
                     href={`/api/objetivos/evidence?path=${encodeURIComponent(ev.storage_path)}`}
                     target="_blank"
@@ -202,9 +217,13 @@ export function ReviewPanel({
                 <p className="text-xs text-muted-foreground mt-2 italic">Nota: {ev.notes}</p>
               )}
             </div>
-          ))}
-        </div>
-      )}
+          ))
+        ) : (
+          <p className="text-xs text-muted-foreground italic px-1">
+            No hay evidencias enviadas.
+          </p>
+        )}
+      </div>
 
       {/* Solo mostrar botones de revisión si no es tardía sin aprobar */}
       {(!isLate || lateApprovedBy) && (

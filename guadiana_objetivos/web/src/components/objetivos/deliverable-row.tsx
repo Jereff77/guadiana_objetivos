@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Download, ExternalLink, FileText, Loader2 } from 'lucide-react'
 import { EvidenceUploader } from './evidence-uploader'
 import { ReviewPanel } from './review-panel'
-import { getDeliverableWithDetail } from '../../app/(dashboard)/objetivos/deliverable-actions'
+import { getEvidencesByDeliverable } from '../../app/(dashboard)/objetivos/deliverable-actions'
 import type { Evidence, Review } from '../../app/(dashboard)/objetivos/deliverable-actions'
 
 interface Deliverable {
@@ -62,9 +62,14 @@ export function DeliverableRow({
       setShowReview(true)
       if (loadedEvidences === null) {
         setLoadingEvidences(true)
-        const detail = await getDeliverableWithDetail(deliverable.id)
-        setLoadedEvidences(detail?.evidences ?? [])
-        setLoadingEvidences(false)
+        try {
+          const evidences = await getEvidencesByDeliverable(deliverable.id)
+          setLoadedEvidences(evidences)
+        } catch {
+          setLoadedEvidences([])
+        } finally {
+          setLoadingEvidences(false)
+        }
       }
     } else {
       setShowReview(false)
@@ -86,7 +91,7 @@ export function DeliverableRow({
                 onClick={() => setShowEvidences(!showEvidences)}
                 className="text-xs text-muted-foreground hover:text-foreground underline"
               >
-                {showEvidences ? `Ocultar evidencias (${deliverable.evidences!.length})` : `Ver evidencias (${deliverable.evidences!.length})`}
+                {showEvidences ? `Ocultar evidencias (${evidencesToShow.length})` : `Ver evidencias (${evidencesToShow.length})`}
               </button>
             )}
           </div>
@@ -154,11 +159,18 @@ export function DeliverableRow({
         <ReviewPanel
           deliverableId={deliverable.id}
           evidences={evidencesToShow}
+          isLoadingEvidences={loadingEvidences}
           onSuccess={() => setShowReview(false)}
         />
       )}
     </div>
   )
+}
+
+function getOriginalFilename(storagePath: string): string {
+  const filename = storagePath.split('/').pop() ?? storagePath
+  const parts = filename.split('_')
+  return parts.length >= 3 ? parts.slice(2).join('_') : filename
 }
 
 // Componente para mostrar una evidencia
@@ -169,7 +181,7 @@ function EvidenceView({ evidence }: { evidence: Evidence }) {
       return (
         <div className="flex items-center gap-2 p-2 rounded bg-muted/30">
           <FileText className="h-4 w-4 text-muted-foreground" />
-          <span className="text-xs flex-1 truncate">{evidence.storage_path.split('/').pop()}</span>
+          <span className="text-xs flex-1 truncate">{getOriginalFilename(evidence.storage_path)}</span>
           <a
             href={`/api/objetivos/evidence?path=${encodeURIComponent(evidence.storage_path)}`}
             target="_blank"

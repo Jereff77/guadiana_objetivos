@@ -104,6 +104,35 @@ export async function getDeliverablesByObjective(objectiveId: string): Promise<D
   })
 }
 
+export async function getEvidencesByDeliverable(deliverableId: string): Promise<Evidence[]> {
+  const supabase = await createClient()
+
+  const { data } = await supabase
+    .from('objective_evidences')
+    .select('id, deliverable_id, submitted_by, storage_path, evidence_url, text_content, run_id, submitted_at, notes, profiles(full_name)')
+    .eq('deliverable_id', deliverableId)
+    .order('submitted_at')
+
+  if (!data) return []
+
+  return data.map((e) => {
+    const ev = e as Record<string, unknown>
+    const sub = ev.profiles as { full_name: string | null } | null
+    return {
+      id: ev.id as string,
+      deliverable_id: ev.deliverable_id as string,
+      submitted_by: ev.submitted_by as string,
+      submitter_name: sub?.full_name ?? null,
+      storage_path: ev.storage_path as string | null,
+      evidence_url: ev.evidence_url as string | null,
+      text_content: ev.text_content as string | null,
+      run_id: ev.run_id as string | null,
+      submitted_at: ev.submitted_at as string,
+      notes: ev.notes as string | null,
+    }
+  })
+}
+
 export async function getDeliverableWithDetail(id: string): Promise<Deliverable | null> {
   const supabase = await createClient()
 
