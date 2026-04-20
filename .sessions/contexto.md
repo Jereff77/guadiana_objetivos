@@ -1210,3 +1210,79 @@ Errores resueltos:
 - ✅ Sin error `revalidatePath during render`
 - ✅ Esquemas recién creados aparecen inmediatamente en la lista
 - ✅ Modelo correcto: sueldo base + bono máximo + fórmula `bonus_amount × (tier_pct / 100)`
+
+---
+
+### Claude Sonnet 4.6 – Sesión 2026-04-18 (Módulo Organigrama completo + Nodo Dirección)
+
+#### Rol: Orquestador IA
+- **Solicitud del usuario**: Completar el módulo Organigrama con la figura de Dirección (singleton) por encima de los departamentos, con su propio equipo directo y áreas horizontales.
+- **Análisis realizado**: Se continuó desde una sesión anterior que había dejado el canvas con departamentos y áreas funcionando. Esta sesión completó la integración de la Dirección: nodo visual prominente, áreas horizontales, conexiones en el canvas y toda la lógica de BD/acciones.
+- **Decisión de agentes**: Trabajo directo.
+
+#### Tareas Realizadas:
+
+1. **`direction-node.tsx`** (Herramientas: Write)
+   - Nodo visual grande y prominente (w-72, border-4, shadow-xl, rounded-2xl)
+   - Icono ★ relleno amarillo, nombre en MAYÚSCULAS
+   - Sección Responsable con avatar h-8, nombre y puesto en color de la Dirección
+   - Sección Equipo directo con MemberCard + botón "Agregar al equipo"
+   - Botones "Agregar Área" y "Editar Dirección" (solo canManage)
+   - 3 handles: `dir-out-bottom` (hacia departamentos), `dir-out-left` y `dir-out-right` (hacia áreas horizontales)
+
+2. **`direction-dialog.tsx`** (Herramientas: Write)
+   - Diálogo upsert (crea o edita) la Dirección singleton
+   - Campos: nombre, 8 colores preset, buscador de responsable, selector de puesto
+   - Detecta modo crear/editar según prop `direction`
+
+3. **`department-node.tsx`** (Herramientas: Edit)
+   - Agregado `hideAddArea?: boolean` para ocultar botón "Agregar Área" en áreas de Dirección
+   - Agregado `Handle type="target" id="dept-in"` en Position.Top para recibir conexiones de la Dirección
+
+4. **`create-direction-area-dialog.tsx`** (Herramientas: Write)
+   - Diálogo nuevo para crear áreas de la Dirección con nombre + selector de color
+   - Las áreas de Dirección tienen color propio (a diferencia de las áreas de departamento)
+
+5. **`organigrama-canvas.tsx`** (Herramientas: Write — reescritura completa)
+   - `NODE_TYPES` incluye `direction: DirectionNode`
+   - `buildNodes`: genera nodo Dirección + sus áreas horizontales (alternando izq/der) + departamentos con sus áreas
+   - `buildEdges`: aristas Dirección→Departamentos (handle bottom→top), Dirección→Áreas dir (left/right→top), Dept→Área (bottom→area-in)
+   - Props ampliadas: acepta `initialDirection: OrgDirection | null`
+   - Estado `direction` + `dirRef` para acceso estable
+   - Callbacks estables para todas las operaciones de Dirección y Áreas de Dirección
+   - `onNodeDragStop`: maneja prefijos `dir-area-` (primero), `dir-`, `dept-`, `area-`
+   - Handlers: `handleSaveDirection`, `handleCreateDirectionArea`, `handleEditDirectionArea`, `handleAssignDirectionMember`, `handleAssignDirectionAreaMember`
+   - Diálogos: DirectionDialog, CreateDirectionAreaDialog, EditDepartmentDialog (reutilizado para áreas de Dirección), 2× AssignMemberDialog (equipo de Dirección y equipo de área de Dirección)
+   - Panel: botón "Crear Dirección / Dirección" con color de la Dirección + icono ★
+
+6. **`organigrama-canvas-loader.tsx`** (Herramientas: Write)
+   - Agregado prop `initialDirection: OrgDirection | null`
+
+7. **`page.tsx`** (Herramientas: Write)
+   - Llama `getDirection()` en paralelo con las otras 3 consultas
+   - Pasa `initialDirection={direction}` al loader
+
+#### BD verificada:
+- Tablas `org_direction`, `org_direction_members`, `org_direction_areas`, `org_direction_area_members` confirmadas en Supabase (migración `20260418170927_create_org_direction`)
+- TypeScript sin errores en el módulo organigrama (`tsc --noEmit` limpio para organigrama)
+
+#### Archivos Creados:
+- `web/src/components/organigrama/direction-node.tsx`
+- `web/src/components/organigrama/direction-dialog.tsx`
+- `web/src/components/organigrama/create-direction-area-dialog.tsx`
+
+#### Archivos Modificados:
+- `web/src/components/organigrama/department-node.tsx`: `hideAddArea` + handle `dept-in`
+- `web/src/components/organigrama/organigrama-canvas.tsx`: integración completa Dirección
+- `web/src/components/organigrama/organigrama-canvas-loader.tsx`: prop `initialDirection`
+- `web/src/app/(dashboard)/organigrama/page.tsx`: carga `getDirection()` en paralelo
+
+#### Estado Final:
+- ✅ Nodo Dirección prominente (★, mayúsculas, color propio) en el canvas
+- ✅ Áreas de la Dirección posicionadas horizontalmente a los lados
+- ✅ Conexiones visuales: Dirección→Departamentos (abajo) y Dirección→Áreas (lados)
+- ✅ Botón "Crear Dirección" / "Dirección" en el panel del canvas
+- ✅ Equipo directo de la Dirección gestionable (agregar/quitar/cambiar puesto)
+- ✅ Áreas de la Dirección con nombre + color propio, responsable y equipo
+- ✅ Drag persistido en BD para Dirección y sus áreas
+- ✅ Snap-to-grid activo, solo `canManage` puede mover nodos

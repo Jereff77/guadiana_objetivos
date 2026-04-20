@@ -1,35 +1,76 @@
-import { requirePermission } from '@/lib/permissions'
+import { checkPermission, checkIsRoot } from '@/lib/permissions'
+import { redirect } from 'next/navigation'
 import { getIncentiveSchemas } from '../incentive-actions'
 import { IncentiveSchemaForm } from '@/components/incentivos/incentive-schema-form'
+import { IncentiveSchemasList } from '@/components/incentivos/incentive-schemas-list'
+import { getOrgContext } from '../../objetivos/dept-actions'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import { IncentiveSchemasList } from '@/components/incentivos/incentive-schemas-list'
 
-export const metadata = { title: 'Configurar Esquemas de Incentivos — Guadiana' }
+export const metadata = { title: 'Configurar Planes de Incentivos — Guadiana' }
 
 export default async function IncentivosConfigurarPage() {
-  await requirePermission('incentivos.manage')
+  const [canManage, isRoot] = await Promise.all([
+    checkPermission('incentivos.manage'),
+    checkIsRoot(),
+  ])
+
+  // Obtener contexto del usuario en el organigrama
+  const ctx = await getOrgContext()
+
+  // Accede quien puede gestionar incentivos globalmente O quien es responsable de depto/área
+  const isDeptResponsible =
+    (ctx?.responsibleDeptIds?.length ?? 0) > 0 ||
+    (ctx?.responsibleAreaIds?.length ?? 0) > 0
+
+  if (!canManage && !isRoot && !isDeptResponsible) {
+    redirect('/incentivos')
+  }
 
   const supabase = await createClient()
 
-  const [schemasResult, { data: departments }, { data: roles }] = await Promise.all([
-    getIncentiveSchemas(),
-    supabase.from('departments').select('id, name').eq('is_active', true).order('name'),
-    supabase.from('roles').select('id, name, is_root').eq('is_active', true).order('name'),
-  ])
+  // Obtener departamentos y áreas propios del usuario (o todos si es admin)
+  let orgDepts: { id: string; name: string }[] = []
+  let orgAreas: { id: string; name: string; department_id: string }[] = []
 
+  if (canManage || isRoot) {
+    // Admin: ve todos
+    const [{ data: allDepts }, { data: allAreas }] = await Promise.all([
+      supabase.from('org_departments').select('id, name').order('name'),
+      supabase.from('org_areas').select('id, name, department_id').order('name'),
+    ])
+    orgDepts = allDepts ?? []
+    orgAreas = allAreas ?? []
+  } else {
+    // Responsable: solo sus deptos y áreas
+    if ((ctx?.responsibleDeptIds?.length ?? 0) > 0) {
+      const { data } = await supabase
+        .from('org_departments')
+        .select('id, name')
+        .in('id', ctx!.responsibleDeptIds)
+        .order('name')
+      orgDepts = data ?? []
+    }
+    if ((ctx?.responsibleAreaIds?.length ?? 0) > 0) {
+      const { data } = await supabase
+        .from('org_areas')
+        .select('id, name, department_id')
+        .in('id', ctx!.responsibleAreaIds)
+        .order('name')
+      orgAreas = data ?? []
+    }
+  }
+
+  const schemasResult = await getIncentiveSchemas()
   const schemas = schemasResult.success ? (schemasResult.data ?? []) : []
-  const deptList = departments ?? []
-  const roleList = roles ?? []
 
   return (
     <div className="space-y-8">
-      {/* Header */}
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Configurar esquemas de incentivos</h1>
+          <h1 className="text-2xl font-bold tracking-tight">Planes de incentivos</h1>
           <p className="text-muted-foreground text-sm">
-            Define los montos base y niveles de bonificación por departamento/rol.
+            Define montos y tramos de bonificación para tu departamento o área.
           </p>
         </div>
         <Link
@@ -40,30 +81,24 @@ export default async function IncentivosConfigurarPage() {
         </Link>
       </div>
 
-      {/* Formulario de nuevo esquema */}
       <section className="rounded-lg border bg-card p-6">
-        <h2 className="text-lg font-semibold mb-4">Nuevo esquema</h2>
-        <IncentiveSchemaForm
-          departments={deptList}
-          roles={roleList}
-        />
+        <h2 className="text-lg font-semibold mb-4">Nuevo plan</h2>
+        <IncentiveSchemaForm orgDepts={orgDepts} orgAreas={orgAreas} />
       </section>
 
-      {/* Lista de esquemas existentes */}
       <section>
         <h2 className="text-lg font-semibold mb-4">
-          Esquemas configurados
+          Planes configurados
           {schemas.length > 0 && (
             <span className="ml-2 text-sm font-normal text-muted-foreground">({schemas.length})</span>
           )}
         </h2>
-
         {schemas.length === 0 ? (
           <div className="rounded-lg border bg-card p-8 text-center">
-            <p className="text-muted-foreground">No hay esquemas configurados aún.</p>
+            <p className="text-muted-foreground">No hay planes configurados aún.</p>
           </div>
         ) : (
-          <IncentiveSchemasList schemas={schemas} departments={deptList} roles={roleList} />
+          <IncentiveSchemasList schemas={schemas} orgDepts={orgDepts} orgAreas={orgAreas} />
         )}
       </section>
     </div>

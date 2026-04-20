@@ -14,11 +14,16 @@ export interface IncentiveTier {
 
 export interface IncentiveSchema {
   id: string
-  department_id: string | null
+  /** @deprecated Usar org_dept_id */
+  department_id?: string | null
+  org_dept_id: string | null
+  org_area_id: string | null
+  name: string | null
   role_id: string | null
   base_amount: number   // sueldo base (informativo)
   bonus_amount: number  // bono máximo al 100% de cumplimiento
   tiers: IncentiveTier[]
+  period_type: 'monthly' | 'annual' | 'custom'
   valid_from: string
   valid_to: string | null
   is_active: boolean
@@ -26,14 +31,16 @@ export interface IncentiveSchema {
   created_at: string
   updated_at: string
   // joined
-  department_name?: string
+  org_dept_name?: string
   role_name?: string
 }
 
 export interface IncentiveRecord {
   id: string
   user_id: string
-  department_id: string
+  /** @deprecated Usar org_dept_id */
+  department_id?: string | null
+  org_dept_id: string | null
   schema_id: string | null
   month: number
   year: number
@@ -55,8 +62,13 @@ export interface IncentiveRecord {
 }
 
 export interface CreateIncentiveSchemaData {
-  department_id: string | null
+  /** @deprecated Usar org_dept_id */
+  department_id?: string | null
+  org_dept_id?: string | null
+  org_area_id?: string | null
+  name?: string | null
   role_id: string | null
+  period_type?: 'monthly' | 'annual' | 'custom'
   base_amount: number   // sueldo base
   bonus_amount: number  // bono máximo al 100%
   tiers: IncentiveTier[]
@@ -96,7 +108,8 @@ export async function getIncentiveSchemas(): Promise<ActionResult<IncentiveSchem
     .from('incentive_schemas')
     .select(`
       *,
-      departments ( name ),
+      org_departments ( name ),
+      org_areas ( name ),
       roles ( name )
     `)
     .order('created_at', { ascending: false })
@@ -106,7 +119,7 @@ export async function getIncentiveSchemas(): Promise<ActionResult<IncentiveSchem
   const schemas: IncentiveSchema[] = (data ?? []).map((row) => ({
     ...row,
     tiers: Array.isArray(row.tiers) ? row.tiers : [],
-    department_name: (row.departments as { name: string } | null)?.name,
+    org_dept_name: (row.org_departments as { name: string } | null)?.name,
     role_name: (row.roles as { name: string } | null)?.name,
   }))
 
@@ -122,9 +135,6 @@ export async function createIncentiveSchema(
     return { success: false, error: 'Sin permiso para crear esquemas de incentivos.' }
   }
 
-  if (!formData.base_amount || formData.base_amount <= 0) {
-    return { success: false, error: 'El sueldo base debe ser mayor a 0.' }
-  }
   if (!formData.bonus_amount || formData.bonus_amount <= 0) {
     return { success: false, error: 'El monto del bono debe ser mayor a 0.' }
   }
@@ -138,7 +148,9 @@ export async function createIncentiveSchema(
   const { data, error } = await supabase
     .from('incentive_schemas')
     .insert({
-      department_id: formData.department_id,
+      org_dept_id: formData.org_dept_id ?? null,
+      org_area_id: formData.org_area_id ?? null,
+      name: formData.name ?? null,
       role_id: formData.role_id,
       base_amount: formData.base_amount,
       bonus_amount: formData.bonus_amount,
@@ -228,36 +240,59 @@ export async function calculateIncentivesForPeriod(
 
   const supabase = await createClient()
 
-  // Obtener todos los departamentos con objetivo_progress del período
-  const { data: progresses, error: progressError } = await supabase
-    .from('objective_progress')
-    .select(`
-      department_id,
-      completion_pct,
-      departments ( id, name )
-    `)
+  // Obtener org_dept_ids únicos de los objetivos del período
+  const { data: objRows, error: objError } = await supabase
+    .from('objectives')
+    .select('org_department_id, assignee_id')
     .eq('month', month)
     .eq('year', year)
+    .not('assignee_id', 'is', null)
 
-  if (progressError) return { success: false, error: progressError.message }
+  if (objError) return { success: false, error: objError.message }
 
-  if (!progresses || progresses.length === 0) {
+  if (!objRows || objRows.length === 0) {
     return { success: true, data: { created: 0, updated: 0 } }
+  }
+
+  // Agrupar assignees por org_dept_id
+  const deptUserMap = new Map<string, Set<string>>()
+  for (const row of objRows) {
+    if (!row.org_department_id || !row.assignee_id) continue
+    if (!deptUserMap.has(row.org_department_id)) {
+      deptUserMap.set(row.org_department_id, new Set())
+    }
+    deptUserMap.get(row.org_department_id)!.add(row.assignee_id)
   }
 
   let created = 0
   let updated = 0
   const today = new Date().toISOString().split('T')[0]
 
-  for (const progress of progresses) {
-    const deptId = progress.department_id
-    const completion = Number(progress.completion_pct ?? 0)
+  for (const [deptId, userIds] of deptUserMap.entries()) {
+    // Calcular completion promedio del dept en el período
+    const { data: deptObjectives } = await supabase
+      .from('objectives')
+      .select('id, weight, completion_pct')
+      .eq('org_department_id', deptId)
+      .eq('month', month)
+      .eq('year', year)
 
-    // Buscar esquema activo para este departamento
+    const totalWeight = (deptObjectives ?? []).reduce((s, o) => s + (o.weight ?? 0), 0)
+    const completion =
+      totalWeight > 0
+        ? Math.round(
+            (deptObjectives ?? []).reduce(
+              (s, o) => s + (o.weight ?? 0) * (o.completion_pct ?? 0),
+              0
+            ) / totalWeight
+          )
+        : 0
+
+    // Buscar esquema activo para este org_dept_id
     const { data: schemas } = await supabase
       .from('incentive_schemas')
       .select('*')
-      .eq('department_id', deptId)
+      .eq('org_dept_id', deptId)
       .eq('is_active', true)
       .lte('valid_from', today)
       .or(`valid_to.is.null,valid_to.gte.${today}`)
@@ -269,37 +304,17 @@ export async function calculateIncentivesForPeriod(
     const schema = schemas[0]
     const tiers: IncentiveTier[] = Array.isArray(schema.tiers) ? schema.tiers : []
     const bonusPct = applyTier(tiers, completion)
-    // bonus_amount = bono máximo; tier.bonus_pct = % del bono máximo que se gana
     const calculatedAmount = schema.bonus_amount * (bonusPct / 100)
-
-    // Obtener usuarios del departamento (los que tienen objetivos asignados)
-    const { data: assignees } = await supabase
-      .from('objective_deliverables')
-      .select('assignee_id')
-      .in(
-        'objective_id',
-        (
-          await supabase
-            .from('objectives')
-            .select('id')
-            .eq('department_id', deptId)
-            .eq('month', month)
-            .eq('year', year)
-        ).data?.map((o: { id: string }) => o.id) ?? []
-      )
-      .not('assignee_id', 'is', null)
-
-    const userIds = [...new Set((assignees ?? []).map((a: { assignee_id: string | null }) => a.assignee_id).filter(Boolean))] as string[]
 
     for (const userId of userIds) {
       const recordData = {
         user_id: userId,
-        department_id: deptId,
+        org_dept_id: deptId,
         schema_id: schema.id,
         month,
         year,
         completion_pct: completion,
-        base_amount: schema.bonus_amount, // bono máximo al momento del cálculo
+        base_amount: schema.bonus_amount,
         bonus_pct: bonusPct,
         calculated_amount: calculatedAmount,
         status: 'draft' as const,
@@ -311,10 +326,9 @@ export async function calculateIncentivesForPeriod(
         .eq('user_id', userId)
         .eq('month', month)
         .eq('year', year)
-        .single()
+        .maybeSingle()
 
       if (existing) {
-        // Solo actualizar si está en draft
         if (existing.status === 'draft') {
           await supabase
             .from('incentive_records')
@@ -416,7 +430,7 @@ export async function getMyIncentiveHistory(): Promise<ActionResult<IncentiveRec
     .from('incentive_records')
     .select(`
       *,
-      departments ( name ),
+      org_departments ( name ),
       approver:profiles!incentive_records_approved_by_fkey ( full_name )
     `)
     .eq('user_id', user.id)
@@ -427,7 +441,7 @@ export async function getMyIncentiveHistory(): Promise<ActionResult<IncentiveRec
 
   const records: IncentiveRecord[] = (data ?? []).map((row) => ({
     ...row,
-    department_name: (row.departments as { name: string } | null)?.name,
+    department_name: (row.org_departments as { name: string } | null)?.name,
     approved_by_name: (row.approver as { full_name: string } | null)?.full_name,
   }))
 
@@ -438,24 +452,20 @@ export async function getAllIncentiveRecords(
   month?: number,
   year?: number
 ): Promise<ActionResult<IncentiveRecord[]>> {
-  const canView = await checkPermission('incentivos.view')
-  const isRoot = await checkIsRoot()
-  if (!canView && !isRoot) {
-    return { success: false, error: 'Sin permiso para ver todos los incentivos.' }
-  }
-
+  // Sin guard de permiso: la RLS filtra automáticamente.
+  // Admins (incentivos.view) ven todo; responsables de depto ven solo su depto.
   const supabase = await createClient()
   let query = supabase
     .from('incentive_records')
     .select(`
       *,
       user:profiles!incentive_records_user_id_fkey ( full_name ),
-      departments ( name ),
+      org_departments ( name ),
       approver:profiles!incentive_records_approved_by_fkey ( full_name )
     `)
     .order('year', { ascending: false })
     .order('month', { ascending: false })
-    .order('department_id')
+    .order('org_dept_id')
 
   if (month !== undefined) query = query.eq('month', month)
   if (year !== undefined) query = query.eq('year', year)
@@ -466,7 +476,7 @@ export async function getAllIncentiveRecords(
   const records: IncentiveRecord[] = (data ?? []).map((row) => ({
     ...row,
     user_full_name: (row.user as { full_name: string } | null)?.full_name,
-    department_name: (row.departments as { name: string } | null)?.name,
+    department_name: (row.org_departments as { name: string } | null)?.name,
     approved_by_name: (row.approver as { full_name: string } | null)?.full_name,
   }))
 
@@ -485,12 +495,7 @@ export async function getIncentiveSummary(
   total_amount_approved: number
   total_amount_paid: number
 }>> {
-  const canView = await checkPermission('incentivos.view')
-  const isRoot = await checkIsRoot()
-  if (!canView && !isRoot) {
-    return { success: false, error: 'Sin permiso para ver resumen de incentivos.' }
-  }
-
+  // Sin guard: RLS filtra. El resumen refleja solo los registros visibles al usuario.
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('incentive_records')
@@ -512,4 +517,159 @@ export async function getIncentiveSummary(
   }
 
   return { success: true, data: summary }
+}
+
+// ── Nuevas funciones para vista centrada en usuarios ───────────────────────────
+
+export async function getIncentiveSchemasForDept(
+  orgDeptId: string
+): Promise<ActionResult<IncentiveSchema[]>> {
+  const supabase = await createClient()
+  const today = new Date().toISOString().split('T')[0]
+
+  // Obtener planes del dept específico + planes globales (org_dept_id IS NULL)
+  const { data, error } = await supabase
+    .from('incentive_schemas')
+    .select(`
+      *,
+      org_departments ( name ),
+      org_areas ( name ),
+      roles ( name )
+    `)
+    .eq('is_active', true)
+    .lte('valid_from', today)
+    .or(`valid_to.is.null,valid_to.gte.${today}`)
+    .or(`org_dept_id.eq.${orgDeptId},org_dept_id.is.null`)
+    .order('created_at', { ascending: false })
+
+  if (error) return { success: false, error: error.message }
+
+  const schemas: IncentiveSchema[] = (data ?? []).map((row) => ({
+    ...row,
+    tiers: Array.isArray(row.tiers) ? row.tiers : [],
+    org_dept_name: (row.org_departments as { name: string } | null)?.name,
+    role_name: (row.roles as { name: string } | null)?.name,
+  }))
+
+  return { success: true, data: schemas }
+}
+
+export async function assignIncentivePlanToUser(
+  userId: string,
+  orgDeptId: string,
+  schemaId: string,
+  month: number,
+  year: number
+): Promise<ActionResult<{ id: string }>> {
+  const supabase = await createClient()
+
+  // Verificar que el schema exista y sea del dept (o global)
+  const { data: schema, error: schemaError } = await supabase
+    .from('incentive_schemas')
+    .select('id, bonus_amount, org_dept_id')
+    .eq('id', schemaId)
+    .single()
+
+  if (schemaError || !schema) {
+    return { success: false, error: 'El plan de incentivo no existe.' }
+  }
+
+  if (schema.org_dept_id !== null && schema.org_dept_id !== orgDeptId) {
+    return { success: false, error: 'El plan no pertenece a este departamento.' }
+  }
+
+  const { data: upserted, error } = await supabase
+    .from('incentive_records')
+    .upsert(
+      {
+        user_id: userId,
+        org_dept_id: orgDeptId,
+        schema_id: schemaId,
+        month,
+        year,
+        completion_pct: 0,
+        base_amount: schema.bonus_amount,
+        bonus_pct: 0,
+        calculated_amount: 0,
+        status: 'draft',
+      },
+      { onConflict: 'user_id,month,year' }
+    )
+    .select('id')
+    .single()
+
+  if (error) return { success: false, error: error.message }
+
+  revalidatePath(`/objetivos/${orgDeptId}`)
+  return { success: true, data: { id: upserted.id } }
+}
+
+export interface LateDeliverable {
+  id: string
+  title: string
+  submitted_at: string
+  objective_title: string
+  objective_month: number
+  objective_year: number
+  assignee_name: string | null
+  assignee_id: string | null
+  period_type: 'monthly' | 'annual' | 'custom'
+  schema_valid_to: string | null
+}
+
+export async function getLateDeliverables(): Promise<ActionResult<LateDeliverable[]>> {
+  const [canApprove, isRoot] = await Promise.all([
+    checkPermission('incentivos.approve'),
+    checkIsRoot(),
+  ])
+  if (!canApprove && !isRoot) {
+    return { success: false, error: 'Sin permiso.' }
+  }
+
+  const supabase = await createClient()
+
+  // Obtener entregables enviados sin aprobación tardía, con datos del objetivo
+  const { data, error } = await supabase
+    .from('objective_deliverables')
+    .select(`
+      id, title, submitted_at, assignee_id,
+      profiles!objective_deliverables_assignee_id_fkey ( full_name ),
+      objectives ( title, month, year, org_department_id )
+    `)
+    .eq('status', 'submitted')
+    .not('submitted_at', 'is', null)
+    .is('late_approved_by', null)
+    .order('submitted_at', { ascending: false })
+
+  if (error) return { success: false, error: error.message }
+
+  const result: LateDeliverable[] = []
+
+  for (const row of data ?? []) {
+    if (!row.submitted_at) continue
+    const obj = Array.isArray(row.objectives) ? row.objectives[0] : row.objectives
+    if (!obj) continue
+
+    // Por ahora: comparar contra el último día del mes del objetivo (lógica mensual)
+    // El period_type real del esquema se resuelve con la migración; aquí usamos monthly como default
+    const closeDate = new Date(obj.year, obj.month, 0, 23, 59, 59)
+
+    if (new Date(row.submitted_at) > closeDate) {
+      const profile = (row.profiles as unknown) as { full_name: string | null } | null
+      result.push({
+        id: row.id,
+        title: row.title,
+        submitted_at: row.submitted_at,
+        objective_title: obj.title,
+        objective_month: obj.month,
+        objective_year: obj.year,
+        assignee_id: row.assignee_id,
+        assignee_name: profile?.full_name ?? null,
+        period_type: 'monthly',
+        schema_valid_to: null,
+      })
+    }
+  }
+
+  return { success: true, data: result }
 }

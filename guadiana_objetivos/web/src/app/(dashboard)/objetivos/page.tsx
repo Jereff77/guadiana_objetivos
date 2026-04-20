@@ -1,5 +1,5 @@
-import { requirePermission, checkPermission } from '@/lib/permissions'
-import { getDepartments } from './dept-actions'
+import { requirePermission } from '@/lib/permissions'
+import { getDepartmentsForUser } from './dept-actions'
 import { DepartmentsGrid } from '@/components/objetivos/departments-grid'
 import Link from 'next/link'
 
@@ -8,10 +8,8 @@ export const metadata = { title: 'Objetivos — Guadiana' }
 export default async function ObjetivosPage() {
   await requirePermission('objetivos.view')
 
-  const [departments, canManage] = await Promise.all([
-    getDepartments(),
-    checkPermission('objetivos.manage'),
-  ])
+  const departments = await getDepartmentsForUser()
+  const canManage = departments.some((d) => d.userCanManage)
 
   return (
     <div className="space-y-6">
@@ -33,7 +31,7 @@ export default async function ObjetivosPage() {
         )}
       </div>
 
-      <DepartmentsGrid departments={departments} canManage={canManage} />
+      <DepartmentsGrid departments={departments} />
     </div>
   )
 }

@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { checkPermission, checkIsRoot } from '@/lib/permissions'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { calculateObjectiveProgress } from './objective-actions'
@@ -32,6 +33,9 @@ export interface Deliverable {
   assignee_name: string | null
   status: string
   created_at: string
+  submitted_at: string | null
+  late_approved_by: string | null
+  late_approved_at: string | null
   evidences?: Evidence[]
   latest_review?: Review | null
 }
@@ -59,19 +63,7 @@ export interface Review {
   reviewed_at: string
 }
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
-async function assertManage() {
-  const supabase = await createClient()
-  const { data } = await supabase.rpc('has_permission', { permission_key: 'objetivos.manage' })
-  if (!data) redirect('/sin-acceso')
-}
-
-async function assertReview() {
-  const supabase = await createClient()
-  const { data } = await supabase.rpc('has_permission', { permission_key: 'objetivos.review' })
-  if (!data) redirect('/sin-acceso')
-}
+// Los permisos de escritura los maneja RLS basado en el organigrama
 
 // ─── Lectura ──────────────────────────────────────────────────────────────────
 
@@ -82,6 +74,7 @@ export async function getDeliverablesByObjective(objectiveId: string): Promise<D
     .from('objective_deliverables')
     .select(`
       id, objective_id, title, description, due_date, assignee_id, status, created_at,
+      submitted_at, late_approved_by, late_approved_at,
       profiles(full_name)
     `)
     .eq('objective_id', objectiveId)
@@ -104,6 +97,9 @@ export async function getDeliverablesByObjective(objectiveId: string): Promise<D
           : null,
       status: d.status,
       created_at: d.created_at,
+      submitted_at: d.submitted_at ?? null,
+      late_approved_by: d.late_approved_by ?? null,
+      late_approved_at: d.late_approved_at ?? null,
     }
   })
 }
@@ -115,6 +111,7 @@ export async function getDeliverableWithDetail(id: string): Promise<Deliverable 
     .from('objective_deliverables')
     .select(`
       id, objective_id, title, description, due_date, assignee_id, status, created_at,
+      submitted_at, late_approved_by, late_approved_at,
       profiles(full_name),
       objective_evidences(
         id, deliverable_id, submitted_by, storage_path, evidence_url,
@@ -176,6 +173,9 @@ export async function getDeliverableWithDetail(id: string): Promise<Deliverable 
         : null,
     status: d.status,
     created_at: d.created_at,
+    submitted_at: d.submitted_at ?? null,
+    late_approved_by: d.late_approved_by ?? null,
+    late_approved_at: d.late_approved_at ?? null,
     evidences,
     latest_review: reviews.length > 0 ? reviews[reviews.length - 1] : null,
   }
@@ -187,7 +187,6 @@ export async function createDeliverable(
   objectiveId: string,
   data: DeliverableData
 ): Promise<{ error?: string; id?: string }> {
-  await assertManage()
   const supabase = await createClient()
 
   const { data: deliv, error } = await supabase
@@ -202,7 +201,10 @@ export async function createDeliverable(
     .select('id')
     .single()
 
-  if (error) return { error: error.message }
+  if (error) {
+    if (error.code === '42501') return { error: 'No tienes permiso para crear entregables en este objetivo' }
+    return { error: error.message }
+  }
 
   revalidatePath('/objetivos')
   return { id: deliv.id }
@@ -212,7 +214,6 @@ export async function updateDeliverable(
   id: string,
   data: Partial<DeliverableData>
 ): Promise<{ error?: string }> {
-  await assertManage()
   const supabase = await createClient()
 
   const { error } = await supabase
@@ -242,11 +243,13 @@ export async function submitEvidence(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  // Cambiar estado del entregable a 'submitted'
-  await supabase
+  // Cambiar estado del entregable a 'submitted' y registrar cuándo se entregó
+  const { error: updateErr } = await supabase
     .from('objective_deliverables')
-    .update({ status: 'submitted' })
+    .update({ status: 'submitted', submitted_at: new Date().toISOString() })
     .eq('id', deliverableId)
+
+  if (updateErr) return { error: `No se pudo actualizar el estado del entregable: ${updateErr.message}` }
 
   const { data: evid, error } = await supabase
     .from('objective_evidences')
@@ -305,7 +308,6 @@ export async function reviewDeliverable(
   verdict: 'approved' | 'rejected',
   comment?: string
 ): Promise<{ error?: string }> {
-  await assertReview()
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -347,6 +349,62 @@ export async function reviewDeliverable(
   return {}
 }
 
+/**
+ * Aprobar excepcionalmente una entrega tardía. Requiere incentivos.approve o root.
+ * Marca el entregable como 'approved' directamente, registrando quién autorizó la excepción.
+ */
+export async function approveLateSubmission(
+  deliverableId: string
+): Promise<{ error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
+
+  const [canApprove, isRoot] = await Promise.all([
+    checkPermission('incentivos.approve'),
+    checkIsRoot(),
+  ])
+  if (!canApprove && !isRoot) {
+    return { error: 'No tienes permiso para aprobar entregas tardías.' }
+  }
+
+  const now = new Date().toISOString()
+
+  const { error: updErr } = await supabase
+    .from('objective_deliverables')
+    .update({
+      status: 'approved',
+      late_approved_by: user.id,
+      late_approved_at: now,
+    })
+    .eq('id', deliverableId)
+
+  if (updErr) return { error: updErr.message }
+
+  // Registrar la revisión con veredicto especial
+  await supabase.from('objective_reviews').insert({
+    deliverable_id: deliverableId,
+    reviewer_id: user.id,
+    verdict: 'approved',
+    comment: 'Entrega tardía aprobada excepcionalmente.',
+  })
+
+  // Recalcular progreso del objetivo padre
+  const { data: deliv } = await supabase
+    .from('objective_deliverables')
+    .select('objective_id')
+    .eq('id', deliverableId)
+    .single()
+
+  if (deliv) {
+    await calculateObjectiveProgress(deliv.objective_id)
+  }
+
+  revalidatePath('/objetivos')
+  revalidatePath('/incentivos')
+  return {}
+}
+
 // ─── IA: Disparar análisis (T-040) ───────────────────────────────────────────
 
 export interface AiAnalysisResult {
@@ -361,7 +419,6 @@ export async function requestAiAnalysis(
   deliverableId: string,
   notifyWhatsapp = false,
 ): Promise<{ data?: AiAnalysisResult; error?: string }> {
-  await assertReview()
 
   const aiServiceUrl = process.env.PYTHON_AI_SERVICE_URL
   const aiServiceKey = process.env.PYTHON_AI_SERVICE_API_KEY
