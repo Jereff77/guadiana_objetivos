@@ -10,42 +10,42 @@ import {
   type CreateIncentiveSchemaData,
 } from '@/app/(dashboard)/incentivos/incentive-actions'
 
-interface Department {
-  id: string
-  name: string
-}
-
-interface Role {
-  id: string
-  name: string
-  is_root: boolean
-}
+interface OrgDept { id: string; name: string }
+interface OrgArea { id: string; name: string; department_id: string }
 
 interface IncentiveSchemaFormProps {
   schema?: IncentiveSchema
-  departments: Department[]
-  roles: Role[]
+  orgDepts: OrgDept[]
+  orgAreas: OrgArea[]
 }
 
-const EMPTY_TIER: IncentiveTier = { min_pct: 0, max_pct: 100, bonus_pct: 0 }
-
-export function IncentiveSchemaForm({ schema, departments, roles }: IncentiveSchemaFormProps) {
+export function IncentiveSchemaForm({ schema, orgDepts, orgAreas }: IncentiveSchemaFormProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
 
-  const [departmentId, setDepartmentId] = useState<string>(schema?.department_id ?? '')
-  const [roleId, setRoleId] = useState<string>(schema?.role_id ?? '')
-  const [baseAmount, setBaseAmount] = useState<string>(String(schema?.base_amount ?? ''))
+  const [name, setName] = useState<string>(schema?.name ?? '')
+  const [periodType, setPeriodType] = useState<'monthly' | 'annual' | 'custom'>(
+    schema?.period_type ?? 'monthly'
+  )
+  const [orgDeptId, setOrgDeptId] = useState<string>(schema?.org_dept_id ?? '')
+  const [orgAreaId, setOrgAreaId] = useState<string>(schema?.org_area_id ?? '')
   const [bonusAmount, setBonusAmount] = useState<string>(String(schema?.bonus_amount ?? ''))
   const [validFrom, setValidFrom] = useState<string>(schema?.valid_from ?? '')
   const [validTo, setValidTo] = useState<string>(schema?.valid_to ?? '')
   const [tiers, setTiers] = useState<IncentiveTier[]>(
-    schema?.tiers?.length ? schema.tiers : [{ min_pct: 80, max_pct: 89, bonus_pct: 50 }, { min_pct: 90, max_pct: 100, bonus_pct: 100 }]
+    schema?.tiers?.length
+      ? schema.tiers
+      : [
+          { min_pct: 1, max_pct: 50, bonus_pct: 50 },
+          { min_pct: 51, max_pct: 80, bonus_pct: 80 },
+          { min_pct: 81, max_pct: 100, bonus_pct: 100 },
+          { min_pct: 101, max_pct: 999, bonus_pct: 115 },
+        ]
   )
 
   function addTier() {
-    setTiers((prev) => [...prev, { ...EMPTY_TIER }])
+    setTiers((prev) => [...prev, { min_pct: 0, max_pct: 100, bonus_pct: 0 }])
   }
 
   function removeTier(idx: number) {
@@ -58,14 +58,40 @@ export function IncentiveSchemaForm({ schema, departments, roles }: IncentiveSch
     )
   }
 
+  function handleScopeChange(type: 'dept' | 'area', id: string) {
+    if (type === 'dept') {
+      setOrgDeptId(id)
+      setOrgAreaId('')
+    } else {
+      setOrgAreaId(id)
+      setOrgDeptId('')
+    }
+  }
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
 
+    if (!name.trim()) {
+      setError('El nombre del plan es requerido.')
+      return
+    }
+    if (!bonusAmount || Number(bonusAmount) <= 0) {
+      setError('El bono máximo debe ser mayor a 0.')
+      return
+    }
+    if (!validFrom) {
+      setError('La fecha de inicio es requerida.')
+      return
+    }
+
     const formData: CreateIncentiveSchemaData = {
-      department_id: departmentId || null,
-      role_id: roleId || null,
-      base_amount: Number(baseAmount),
+      name: name.trim(),
+      org_dept_id: orgDeptId || null,
+      org_area_id: orgAreaId || null,
+      role_id: null,
+      period_type: periodType,
+      base_amount: 0,
       bonus_amount: Number(bonusAmount),
       tiers,
       valid_from: validFrom,
@@ -75,24 +101,23 @@ export function IncentiveSchemaForm({ schema, departments, roles }: IncentiveSch
     startTransition(async () => {
       if (schema) {
         const result = await updateIncentiveSchema(schema.id, formData)
-        if (!result.success) {
-          setError(result.error ?? 'Error al actualizar.')
-          return
-        }
+        if (!result.success) { setError(result.error ?? 'Error al actualizar.'); return }
       } else {
         const result = await createIncentiveSchema(formData)
-        if (!result.success) {
-          setError(result.error ?? 'Error al crear.')
-          return
-        }
-        // Resetear formulario tras crear
-        setDepartmentId('')
-        setRoleId('')
-        setBaseAmount('')
+        if (!result.success) { setError(result.error ?? 'Error al crear.'); return }
+        // Reset tras crear
+        setName('')
+        setOrgDeptId('')
+        setOrgAreaId('')
         setBonusAmount('')
         setValidFrom('')
         setValidTo('')
-        setTiers([{ min_pct: 80, max_pct: 89, bonus_pct: 50 }, { min_pct: 90, max_pct: 100, bonus_pct: 100 }])
+        setTiers([
+          { min_pct: 1, max_pct: 50, bonus_pct: 50 },
+          { min_pct: 51, max_pct: 80, bonus_pct: 80 },
+          { min_pct: 81, max_pct: 100, bonus_pct: 100 },
+          { min_pct: 101, max_pct: 999, bonus_pct: 115 },
+        ])
       }
       router.refresh()
     })
@@ -106,73 +131,93 @@ export function IncentiveSchemaForm({ schema, departments, roles }: IncentiveSch
         </div>
       )}
 
-      {/* Departamento */}
+      {/* Nombre del plan */}
       <div>
-        <label className="block text-sm font-medium mb-1">Departamento</label>
+        <label className="block text-sm font-medium mb-1">
+          Nombre del plan <span className="text-red-500">*</span>
+        </label>
+        <input
+          type="text"
+          required
+          className="w-full rounded-md border bg-background px-3 py-2 text-sm"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Ej: Plan Gerencia Procesos 2026"
+        />
+      </div>
+
+      {/* Tipo de período */}
+      <div>
+        <label className="block text-sm font-medium mb-1">
+          Tipo de período <span className="text-red-500">*</span>
+        </label>
         <select
           className="w-full rounded-md border bg-background px-3 py-2 text-sm"
-          value={departmentId}
-          onChange={(e) => setDepartmentId(e.target.value)}
+          value={periodType}
+          onChange={(e) => setPeriodType(e.target.value as 'monthly' | 'annual' | 'custom')}
         >
-          <option value="">— Todos los departamentos —</option>
-          {departments.map((d) => (
-            <option key={d.id} value={d.id}>{d.name}</option>
-          ))}
+          <option value="monthly">Mensual — se evalúa cada mes (cierra el último día del mes)</option>
+          <option value="annual">Anual — una sola evaluación al 31 de diciembre</option>
+          <option value="custom">Personalizado — se evalúa al vencer la vigencia</option>
         </select>
+      </div>
+
+      {/* Ámbito: departamento O área */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        {orgDepts.length > 0 && (
+          <div>
+            <label className="block text-sm font-medium mb-1">Departamento</label>
+            <select
+              className="w-full rounded-md border bg-background px-3 py-2 text-sm"
+              value={orgDeptId}
+              onChange={(e) => handleScopeChange('dept', e.target.value)}
+            >
+              <option value="">— Sin depto específico —</option>
+              {orgDepts.map((d) => (
+                <option key={d.id} value={d.id}>{d.name}</option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {orgAreas.length > 0 && (
+          <div>
+            <label className="block text-sm font-medium mb-1">Área</label>
+            <select
+              className="w-full rounded-md border bg-background px-3 py-2 text-sm"
+              value={orgAreaId}
+              onChange={(e) => handleScopeChange('area', e.target.value)}
+            >
+              <option value="">— Sin área específica —</option>
+              {orgAreas.map((a) => (
+                <option key={a.id} value={a.id}>{a.name}</option>
+              ))}
+            </select>
+          </div>
+        )}
+      </div>
+      <p className="text-xs text-muted-foreground -mt-4">
+        Selecciona depto o área para limitar el plan. Solo puedes asignarlo dentro de ese ámbito.
+      </p>
+
+      {/* Bono máximo */}
+      <div>
+        <label className="block text-sm font-medium mb-1">
+          Bono máximo al 100% <span className="text-red-500">*</span>
+        </label>
+        <input
+          type="number"
+          min="0"
+          step="0.01"
+          required
+          className="w-full rounded-md border bg-background px-3 py-2 text-sm"
+          value={bonusAmount}
+          onChange={(e) => setBonusAmount(e.target.value)}
+          placeholder="Ej: 5000"
+        />
         <p className="text-xs text-muted-foreground mt-1">
-          Deja vacío para aplicar a todos los departamentos.
+          Monto que recibe el colaborador al cumplir el 100% de sus objetivos.
         </p>
-      </div>
-
-      {/* Rol */}
-      <div>
-        <label className="block text-sm font-medium mb-1">Rol</label>
-        <select
-          className="w-full rounded-md border bg-background px-3 py-2 text-sm"
-          value={roleId}
-          onChange={(e) => setRoleId(e.target.value)}
-        >
-          <option value="">— Todos los roles —</option>
-          {roles.filter((r) => !r.is_root).map((r) => (
-            <option key={r.id} value={r.id}>{r.name}</option>
-          ))}
-        </select>
-      </div>
-
-      {/* Sueldo base y Bono máximo */}
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium mb-1">
-            Sueldo base <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="number"
-            min="0"
-            step="0.01"
-            required
-            className="w-full rounded-md border bg-background px-3 py-2 text-sm"
-            value={baseAmount}
-            onChange={(e) => setBaseAmount(e.target.value)}
-            placeholder="Ej: 5000.00"
-          />
-          <p className="text-xs text-muted-foreground mt-1">Salario fijo del empleado.</p>
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-1">
-            Bono máximo al 100% <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="number"
-            min="0"
-            step="0.01"
-            required
-            className="w-full rounded-md border bg-background px-3 py-2 text-sm"
-            value={bonusAmount}
-            onChange={(e) => setBonusAmount(e.target.value)}
-            placeholder="Ej: 2000.00"
-          />
-          <p className="text-xs text-muted-foreground mt-1">Bono al cumplir el 100%.</p>
-        </div>
       </div>
 
       {/* Vigencia */}
@@ -197,27 +242,25 @@ export function IncentiveSchemaForm({ schema, departments, roles }: IncentiveSch
             value={validTo}
             onChange={(e) => setValidTo(e.target.value)}
           />
-          <p className="text-xs text-muted-foreground mt-1">Deja vacío para vigencia indefinida.</p>
+          <p className="text-xs text-muted-foreground mt-1">Vacío = indefinido.</p>
         </div>
       </div>
 
-      {/* Niveles de bonificación */}
+      {/* Tramos de cumplimiento */}
       <div>
         <div className="flex items-center justify-between mb-2">
-          <label className="block text-sm font-medium">Niveles de bonificación</label>
+          <label className="block text-sm font-medium">Tramos de cumplimiento</label>
           <button
             type="button"
             onClick={addTier}
             className="text-xs text-primary hover:underline"
           >
-            + Agregar nivel
+            + Agregar tramo
           </button>
         </div>
 
         {tiers.length === 0 && (
-          <p className="text-sm text-muted-foreground">
-            Sin niveles configurados. El bono base es 0%.
-          </p>
+          <p className="text-sm text-muted-foreground">Sin tramos — el bono siempre será 0.</p>
         )}
 
         <div className="space-y-2">
@@ -229,7 +272,6 @@ export function IncentiveSchemaForm({ schema, departments, roles }: IncentiveSch
                   <input
                     type="number"
                     min="0"
-                    max="100"
                     className="w-full rounded border bg-background px-2 py-1 text-sm"
                     value={tier.min_pct}
                     onChange={(e) => updateTier(idx, 'min_pct', e.target.value)}
@@ -240,17 +282,17 @@ export function IncentiveSchemaForm({ schema, departments, roles }: IncentiveSch
                   <input
                     type="number"
                     min="0"
-                    max="100"
                     className="w-full rounded border bg-background px-2 py-1 text-sm"
                     value={tier.max_pct}
                     onChange={(e) => updateTier(idx, 'max_pct', e.target.value)}
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-muted-foreground">Bono %</label>
+                  <label className="text-xs text-muted-foreground">% del bono</label>
                   <input
                     type="number"
                     min="0"
+                    max="200"
                     className="w-full rounded border bg-background px-2 py-1 text-sm"
                     value={tier.bonus_pct}
                     onChange={(e) => updateTier(idx, 'bonus_pct', e.target.value)}
@@ -261,27 +303,25 @@ export function IncentiveSchemaForm({ schema, departments, roles }: IncentiveSch
                 type="button"
                 onClick={() => removeTier(idx)}
                 className="text-red-500 hover:text-red-700 text-lg leading-none p-1"
-                aria-label="Eliminar nivel"
+                aria-label="Eliminar tramo"
               >
                 ×
               </button>
             </div>
           ))}
         </div>
-
         <p className="text-xs text-muted-foreground mt-2">
-          Ejemplo: cumplimiento 80–89% → gana el 50% del bono máximo. Cumplimiento 90–100% → gana el 100% del bono máximo.
+          Ej: 1–50% → 50% del bono | 51–80% → 80% | 81–100% → 100% | más de 100% → 115%
         </p>
       </div>
 
-      {/* Acciones */}
       <div className="flex gap-3">
         <button
           type="submit"
           disabled={isPending}
           className="rounded-md bg-primary text-primary-foreground px-4 py-2 text-sm font-medium hover:bg-primary/90 disabled:opacity-50"
         >
-          {isPending ? 'Guardando...' : schema ? 'Actualizar esquema' : 'Crear esquema'}
+          {isPending ? 'Guardando...' : schema ? 'Actualizar plan' : 'Crear plan'}
         </button>
         <button
           type="button"

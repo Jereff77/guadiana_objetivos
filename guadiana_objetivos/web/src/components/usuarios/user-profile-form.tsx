@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { updateUserProfile } from '@/app/(dashboard)/usuarios/user-actions'
 
 interface UserProfileFormProps {
@@ -10,8 +10,20 @@ interface UserProfileFormProps {
     phone: string | null
     whatsapp: string | null
     avatar_url: string | null
+    email?: string | null
   }
   readOnly?: boolean
+}
+
+function fallbackCopy(text: string) {
+  const el = document.createElement('textarea')
+  el.value = text
+  el.style.position = 'fixed'
+  el.style.opacity = '0'
+  document.body.appendChild(el)
+  el.select()
+  document.execCommand('copy')
+  document.body.removeChild(el)
 }
 
 export function UserProfileForm({ userId, initialData, readOnly = false }: UserProfileFormProps) {
@@ -22,6 +34,18 @@ export function UserProfileForm({ userId, initialData, readOnly = false }: UserP
   const [saving, setSaving] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [copied, setCopied] = useState(false)
+
+  const handleCopyEmail = useCallback(() => {
+    if (!initialData.email) return
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(initialData.email).catch(() => fallbackCopy(initialData.email!))
+    } else {
+      fallbackCopy(initialData.email)
+    }
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }, [initialData.email])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -55,6 +79,45 @@ export function UserProfileForm({ userId, initialData, readOnly = false }: UserP
       {success && (
         <div className="rounded-md bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700">
           Perfil actualizado correctamente.
+        </div>
+      )}
+
+      {initialData.email != null && (
+        <div>
+          <label className="block text-sm font-medium mb-1.5">
+            Correo electrónico
+          </label>
+          <div className="flex gap-2">
+            <input
+              type="email"
+              value={initialData.email}
+              disabled
+              className="flex-1 rounded-md border border-input bg-muted px-3 py-2 text-sm
+                text-muted-foreground cursor-not-allowed opacity-80"
+            />
+            <button
+              type="button"
+              onClick={handleCopyEmail}
+              title="Copiar correo"
+              className="inline-flex items-center justify-center rounded-md border border-input bg-background
+                px-3 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground
+                transition-colors shrink-0"
+            >
+              {copied ? (
+                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-600">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              ) : (
+                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
+                  <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+                </svg>
+              )}
+            </button>
+          </div>
+          <p className="text-xs text-muted-foreground mt-1">
+            El correo no puede modificarse desde aquí.
+          </p>
         </div>
       )}
 

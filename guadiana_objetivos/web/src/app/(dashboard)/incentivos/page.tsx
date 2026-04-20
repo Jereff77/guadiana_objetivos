@@ -1,5 +1,7 @@
-import { requirePermission, checkPermission, checkIsRoot } from '@/lib/permissions'
-import { getAllIncentiveRecords, getIncentiveSummary, getMyIncentiveHistory } from './incentive-actions'
+import { checkPermission, checkIsRoot } from '@/lib/permissions'
+import { redirect } from 'next/navigation'
+import { getAllIncentiveRecords, getIncentiveSummary, getMyIncentiveHistory, getLateDeliverables } from './incentive-actions'
+import { LateDeliverablesList } from '@/components/incentivos/late-deliverables-list'
 import { IncentiveRecordRow } from '@/components/incentivos/incentive-record-row'
 import Link from 'next/link'
 
@@ -23,8 +25,6 @@ function SummaryCard({ label, value, sub }: { label: string; value: string; sub?
 }
 
 export default async function IncentivosPage({ searchParams }: PageProps) {
-  await requirePermission('incentivos.view')
-
   const params = await searchParams
   const now = new Date()
   const month = params.month ? Number(params.month) : now.getMonth() + 1
@@ -32,20 +32,29 @@ export default async function IncentivosPage({ searchParams }: PageProps) {
   const calc = params.calc
   const calcMsg = params.msg ? decodeURIComponent(params.msg) : undefined
 
-  const [canManage, canApprove, isRoot] = await Promise.all([
+  const [canViewIncentivos, canViewObjetivos, canManage, canApprove, isRoot] = await Promise.all([
+    checkPermission('incentivos.view'),
+    checkPermission('objetivos.view'),
     checkPermission('incentivos.manage'),
     checkPermission('incentivos.approve'),
     checkIsRoot(),
   ])
 
-  const [recordsResult, summaryResult] = await Promise.all([
+  // Accede quien gestiona incentivos O quien gestiona objetivos (responsables de depto)
+  if (!canViewIncentivos && !canViewObjetivos && !isRoot) {
+    redirect('/dashboard')
+  }
+
+  const [recordsResult, summaryResult, lateResult] = await Promise.all([
     getAllIncentiveRecords(month, year),
     getIncentiveSummary(month, year),
+    canApprove || isRoot ? getLateDeliverables() : Promise.resolve({ success: true, data: [] }),
   ])
 
   const records = recordsResult.success ? (recordsResult.data ?? []) : []
   const summary = summaryResult.success ? summaryResult.data : null
   const canActOnRecords = canApprove || isRoot
+  const lateDeliverables = lateResult.success ? (lateResult.data ?? []) : []
 
   const myHistoryResult = await getMyIncentiveHistory()
   const myRecords = myHistoryResult.success ? (myHistoryResult.data ?? []) : []
@@ -230,6 +239,27 @@ export default async function IncentivosPage({ searchParams }: PageProps) {
               />
             ))}
           </div>
+        </section>
+      )}
+
+      {/* Entregas tardías pendientes */}
+      {(canApprove || isRoot) && (
+        <section>
+          <h2 className="text-lg font-semibold mb-3">
+            Entregas tardías pendientes de autorización
+            {lateDeliverables.length > 0 && (
+              <span className="ml-2 text-sm font-normal text-amber-600">
+                ({lateDeliverables.length})
+              </span>
+            )}
+          </h2>
+          {lateDeliverables.length === 0 ? (
+            <div className="rounded-lg border bg-card p-6 text-center">
+              <p className="text-muted-foreground text-sm">No hay entregas tardías pendientes.</p>
+            </div>
+          ) : (
+            <LateDeliverablesList items={lateDeliverables} />
+          )}
         </section>
       )}
 

@@ -37,6 +37,14 @@ export default async function UsuarioPerfilPage({ params }: PageProps) {
 
   if (!canView) redirect('/sin-acceso')
 
+  // Obtener email del usuario objetivo
+  let targetEmail: string | null = currentUser.email ?? null
+  if (!isSelf && (canEdit || isRoot)) {
+    const { createAdminClient } = await import('@/lib/supabase/admin')
+    const { data: adminUser } = await createAdminClient().auth.admin.getUserById(id)
+    targetEmail = adminUser.user?.email ?? null
+  }
+
   // Obtener perfil del usuario
   const { data: profile } = await supabase
     .from('profiles')
@@ -108,6 +116,7 @@ export default async function UsuarioPerfilPage({ params }: PageProps) {
             phone: profile.phone,
             whatsapp: profile.whatsapp,
             avatar_url: profile.avatar_url,
+            email: targetEmail,
           }}
           readOnly={!canEditProfile}
         />

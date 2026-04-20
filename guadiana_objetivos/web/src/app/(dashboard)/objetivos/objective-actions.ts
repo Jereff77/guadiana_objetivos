@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { getAssignableUsersForDept } from './dept-actions'
 
 // ─── Tipos ───────────────────────────────────────────────────────────────────
 
@@ -15,6 +16,7 @@ export interface ObjectiveData {
   target_value?: number | null
   evidence_type: 'document' | 'photo' | 'text' | 'checklist'
   checklist_id?: string | null
+  assignee_id?: string | null
 }
 
 export interface Objective {
@@ -32,6 +34,41 @@ export interface Objective {
   created_by: string | null
   created_at: string
   completion_pct?: number
+  assignee_id: string | null
+  assignee_name?: string | null
+}
+
+export interface ObjectiveDeliverable {
+  id: string
+  objective_id: string
+  title: string
+  description: string | null
+  due_date: string | null
+  assignee_id: string | null
+  assignee_name: string | null
+  status: string
+  created_at: string
+  submitted_at: string | null
+  late_approved_by: string | null
+  late_approved_at: string | null
+}
+
+export interface UserWithObjectives {
+  userId: string
+  userName: string | null
+  avatarUrl: string | null
+  positionName: string | null
+  source: string
+  area_id: string | null
+  area_name: string | null
+  objectives: (Objective & { deliverables_count: number; approved_count: number; deliverables: ObjectiveDeliverable[] })[]
+  completionPct: number
+  incentiveRecord: {
+    id: string
+    schema_id: string | null
+    calculated_amount: number
+    status: string
+  } | null
 }
 
 // ─── Lectura ──────────────────────────────────────────────────────────────────
@@ -89,6 +126,7 @@ export async function createObjective(
       evidence_type: data.evidence_type,
       checklist_id: data.checklist_id || null,
       created_by: user.id,
+      assignee_id: data.assignee_id ?? null,
     })
     .select('id')
     .single()
@@ -266,6 +304,140 @@ export async function calculateObjectiveProgress(objectiveId: string): Promise<n
   return pct
 }
 
+export async function getObjectivesGroupedByUser(
+  orgDeptId: string,
+  month: number,
+  year: number
+): Promise<UserWithObjectives[]> {
+  const supabase = await createClient()
+
+  // 1. Obtener todos los usuarios asignables del depto
+  const assignableUsers = await getAssignableUsersForDept(orgDeptId)
+
+  // 2. Obtener todos los objetivos del período con nombre del asignado
+  const { data: rawObjectives } = await supabase
+    .from('objectives')
+    .select('*, profiles!objectives_assignee_id_fkey(full_name)')
+    .eq('org_department_id', orgDeptId)
+    .eq('month', month)
+    .eq('year', year)
+
+  const objectives: (Objective & { deliverables_count: number; approved_count: number; deliverables: ObjectiveDeliverable[] })[] =
+    await Promise.all(
+      (rawObjectives ?? []).map(async (obj) => {
+        const assigneeProfile = (obj as any).profiles as { full_name: string | null } | null
+        const { data: delivs } = await supabase
+          .from('objective_deliverables')
+          .select('id, objective_id, title, description, due_date, assignee_id, status, created_at, submitted_at, late_approved_by, late_approved_at')
+          .eq('objective_id', obj.id)
+
+        const deliverablesArr = delivs ?? []
+        const approved_count = deliverablesArr.filter((d) => d.status === 'approved').length
+        const obj_completion_pct = deliverablesArr.length > 0
+          ? Math.round((approved_count / deliverablesArr.length) * 100)
+          : 0
+
+        const deliverables: ObjectiveDeliverable[] = deliverablesArr.map((d) => ({
+          id: d.id,
+          objective_id: d.objective_id,
+          title: d.title,
+          description: d.description,
+          due_date: d.due_date,
+          assignee_id: d.assignee_id,
+          assignee_name: assigneeProfile?.full_name ?? null,
+          status: d.status,
+          created_at: d.created_at,
+          submitted_at: d.submitted_at,
+          late_approved_by: d.late_approved_by,
+          late_approved_at: d.late_approved_at,
+        }))
+
+        return {
+          id: obj.id,
+          org_department_id: obj.org_department_id,
+          title: obj.title,
+          description: obj.description,
+          month: obj.month,
+          year: obj.year,
+          weight: obj.weight,
+          target_value: obj.target_value,
+          evidence_type: obj.evidence_type,
+          checklist_id: obj.checklist_id,
+          status: obj.status,
+          created_by: obj.created_by,
+          created_at: obj.created_at,
+          completion_pct: obj_completion_pct,
+          assignee_id: obj.assignee_id ?? null,
+          assignee_name: assigneeProfile?.full_name ?? null,
+          deliverables_count: deliverablesArr.length,
+          approved_count,
+          deliverables,
+        }
+      })
+    )
+
+  // 3. Obtener incentive_records del período para los usuarios del depto
+  const { data: incentiveRows } = await supabase
+    .from('incentive_records')
+    .select('user_id, id, schema_id, calculated_amount, status')
+    .eq('org_dept_id', orgDeptId)
+    .eq('month', month)
+    .eq('year', year)
+
+  const incentiveByUser = new Map<
+    string,
+    { id: string; schema_id: string | null; calculated_amount: number; status: string }
+  >()
+  for (const rec of incentiveRows ?? []) {
+    incentiveByUser.set(rec.user_id, {
+      id: rec.id,
+      schema_id: rec.schema_id,
+      calculated_amount: Number(rec.calculated_amount),
+      status: rec.status,
+    })
+  }
+
+  // 4. Agrupar objetivos por assignee_id
+  const objectivesByUser = new Map<string, typeof objectives>()
+  for (const obj of objectives) {
+    if (!obj.assignee_id) continue
+    if (!objectivesByUser.has(obj.assignee_id)) {
+      objectivesByUser.set(obj.assignee_id, [])
+    }
+    objectivesByUser.get(obj.assignee_id)!.push(obj)
+  }
+
+  // 5. Construir resultado — incluir todos los usuarios del depto aunque no tengan objetivos
+  const result: UserWithObjectives[] = assignableUsers.map((u) => {
+    const userObjectives = objectivesByUser.get(u.id) ?? []
+
+    // Completitud ponderada: suma(weight * completion_pct) / suma(weight)
+    const totalWeight = userObjectives.reduce((s, o) => s + o.weight, 0)
+    const completionPct =
+      totalWeight > 0
+        ? Math.round(
+            userObjectives.reduce((s, o) => s + o.weight * (o.completion_pct ?? 0), 0) /
+              totalWeight
+          )
+        : 0
+
+    return {
+      userId: u.id,
+      userName: u.full_name,
+      avatarUrl: u.avatar_url,
+      positionName: u.position_name,
+      source: u.source,
+      area_id: u.area_id,
+      area_name: u.area_name,
+      objectives: userObjectives,
+      completionPct,
+      incentiveRecord: incentiveByUser.get(u.id) ?? null,
+    }
+  })
+
+  return result
+}
+
 export async function checkAndCreateAlerts(month: number, year: number): Promise<void> {
   const supabase = await createClient()
 
@@ -367,4 +539,59 @@ export async function checkAndCreateAlerts(month: number, year: number): Promise
   if (alerts.length > 0) {
     await supabase.from('system_alerts').insert(alerts)
   }
+}
+
+export async function createObjectiveWithDeliverable(
+  orgDeptId: string,
+  data: ObjectiveData & { due_date?: string | null }
+): Promise<{ error?: string; objectiveId?: string; deliverableId?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
+
+  const { data: obj, error: objError } = await supabase
+    .from('objectives')
+    .insert({
+      org_department_id: orgDeptId,
+      title: data.title.trim(),
+      description: data.description?.trim() || null,
+      month: data.month,
+      year: data.year,
+      weight: data.weight,
+      target_value: data.target_value ?? null,
+      evidence_type: data.evidence_type,
+      checklist_id: data.checklist_id || null,
+      created_by: user.id,
+      assignee_id: data.assignee_id ?? null,
+    })
+    .select('id')
+    .single()
+
+  if (objError) {
+    if (objError.code === '23505') return { error: 'Ya existe un objetivo con ese título en este período' }
+    if (objError.code === '42501') return { error: 'No tienes permiso para crear objetivos en este departamento' }
+    return { error: objError.message }
+  }
+
+  const { data: deliv, error: delivError } = await supabase
+    .from('objective_deliverables')
+    .insert({
+      objective_id: obj.id,
+      title: data.title.trim(),
+      description: data.description?.trim() || null,
+      assignee_id: data.assignee_id ?? null,
+      due_date: data.due_date || null,
+      status: 'pending',
+    })
+    .select('id')
+    .single()
+
+  if (delivError) {
+    await supabase.from('objectives').delete().eq('id', obj.id)
+    return { error: delivError.message }
+  }
+
+  revalidatePath('/objetivos')
+  revalidatePath(`/objetivos/${orgDeptId}`)
+  return { objectiveId: obj.id, deliverableId: deliv.id }
 }

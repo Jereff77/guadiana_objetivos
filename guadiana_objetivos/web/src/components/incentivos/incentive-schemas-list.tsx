@@ -8,24 +8,16 @@ import {
 } from '@/app/(dashboard)/incentivos/incentive-actions'
 import { IncentiveSchemaForm } from './incentive-schema-form'
 
-interface Department {
-  id: string
-  name: string
-}
-
-interface Role {
-  id: string
-  name: string
-  is_root: boolean
-}
+interface OrgDept { id: string; name: string }
+interface OrgArea { id: string; name: string; department_id: string }
 
 interface IncentiveSchemasListProps {
   schemas: IncentiveSchema[]
-  departments: Department[]
-  roles: Role[]
+  orgDepts: OrgDept[]
+  orgAreas: OrgArea[]
 }
 
-export function IncentiveSchemasList({ schemas, departments, roles }: IncentiveSchemasListProps) {
+export function IncentiveSchemasList({ schemas, orgDepts, orgAreas }: IncentiveSchemasListProps) {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -64,8 +56,8 @@ export function IncentiveSchemasList({ schemas, departments, roles }: IncentiveS
               </div>
               <IncentiveSchemaForm
                 schema={schema}
-                departments={departments}
-                roles={roles}
+                orgDepts={orgDepts}
+                orgAreas={orgAreas}
               />
             </div>
           )
@@ -77,7 +69,7 @@ export function IncentiveSchemasList({ schemas, departments, roles }: IncentiveS
               <div className="min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <p className="font-medium text-sm">
-                    {schema.department_name ?? 'Todos los departamentos'}
+                    {schema.name ?? schema.org_dept_name ?? 'Todos los departamentos'}
                     {schema.role_name && ` · ${schema.role_name}`}
                   </p>
                   <span

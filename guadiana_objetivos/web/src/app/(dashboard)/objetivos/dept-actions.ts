@@ -22,6 +22,8 @@ export interface AssignableUser {
   avatar_url: string | null
   position_name: string | null
   source: 'dept_responsible' | 'dept_member' | 'area_responsible' | 'area_member'
+  area_id: string | null
+  area_name: string | null
 }
 
 export interface OrgContext {
@@ -92,7 +94,7 @@ export async function getDepartmentsForUser(): Promise<OrgDeptForObjectives[]> {
     .select(`
       id, name, color, responsible_id,
       profiles!org_departments_responsible_id_fkey(full_name, avatar_url),
-      org_positions!org_departments_responsible_position_id_fkey(title)
+      org_positions!org_departments_responsible_position_id_fkey(name)
     `)
     .order('name')
 
@@ -102,7 +104,7 @@ export async function getDepartmentsForUser(): Promise<OrgDeptForObjectives[]> {
 
   return depts.map((d: any) => {
     const resp = d.profiles as { full_name: string | null; avatar_url: string | null } | null
-    const pos = d.org_positions as { title: string } | null
+    const pos = d.org_positions as { name: string } | null
 
     const isDeptResponsible = ctx.responsibleDeptIds.includes(d.id)
     const isAreaResponsibleHere = ctx.responsibleAreaDeptIds.includes(d.id)
@@ -123,7 +125,7 @@ export async function getDepartmentsForUser(): Promise<OrgDeptForObjectives[]> {
       color: d.color ?? '#6366f1',
       responsible_id: d.responsible_id,
       responsible_name: resp?.full_name ?? null,
-      responsible_position_name: pos?.title ?? null,
+      responsible_position_name: pos?.name ?? null,
       userCanManage,
       userCanCreateDeliverables,
       userRole,
@@ -144,11 +146,13 @@ export async function getAssignableUsersForDept(orgDeptId: string): Promise<Assi
     full_name: string | null,
     avatar_url: string | null,
     position_name: string | null,
-    source: AssignableUser['source']
+    source: AssignableUser['source'],
+    area_id: string | null = null,
+    area_name: string | null = null,
   ) {
     if (!seen.has(id)) {
       seen.add(id)
-      users.push({ id, full_name, avatar_url, position_name, source })
+      users.push({ id, full_name, avatar_url, position_name, source, area_id, area_name })
     }
   }
 
@@ -158,15 +162,15 @@ export async function getAssignableUsersForDept(orgDeptId: string): Promise<Assi
     .select(`
       responsible_id,
       profiles!org_departments_responsible_id_fkey(full_name, avatar_url),
-      org_positions!org_departments_responsible_position_id_fkey(title)
+      org_positions!org_departments_responsible_position_id_fkey(name)
     `)
     .eq('id', orgDeptId)
     .maybeSingle()
 
   if (dept?.responsible_id) {
     const p = (dept as any).profiles as { full_name: string | null; avatar_url: string | null } | null
-    const pos = (dept as any).org_positions as { title: string } | null
-    addUser(dept.responsible_id, p?.full_name ?? null, p?.avatar_url ?? null, pos?.title ?? null, 'dept_responsible')
+    const pos = (dept as any).org_positions as { name: string } | null
+    addUser(dept.responsible_id, p?.full_name ?? null, p?.avatar_url ?? null, pos?.name ?? null, 'dept_responsible')
   }
 
   // 2. Miembros directos del departamento
@@ -175,41 +179,43 @@ export async function getAssignableUsersForDept(orgDeptId: string): Promise<Assi
     .select(`
       user_id,
       profiles!org_department_members_user_id_fkey(full_name, avatar_url),
-      org_positions!org_department_members_position_id_fkey(title)
+      org_positions!org_department_members_position_id_fkey(name)
     `)
     .eq('department_id', orgDeptId)
 
   for (const m of deptMembers ?? []) {
     const p = (m as any).profiles as { full_name: string | null; avatar_url: string | null } | null
-    const pos = (m as any).org_positions as { title: string } | null
-    addUser(m.user_id, p?.full_name ?? null, p?.avatar_url ?? null, pos?.title ?? null, 'dept_member')
+    const pos = (m as any).org_positions as { name: string } | null
+    addUser(m.user_id, p?.full_name ?? null, p?.avatar_url ?? null, pos?.name ?? null, 'dept_member')
   }
 
   // 3. Responsables y miembros de áreas del departamento
   const { data: areas } = await supabase
     .from('org_areas')
     .select(`
-      responsible_id,
+      id, name, responsible_id,
       profiles!org_areas_responsible_id_fkey(full_name, avatar_url),
-      org_positions!org_areas_responsible_position_id_fkey(title),
+      org_positions!org_areas_responsible_position_id_fkey(name),
       org_members(
         user_id,
         profiles!org_members_user_id_fkey(full_name, avatar_url),
-        org_positions!org_members_position_id_fkey(title)
+        org_positions!org_members_position_id_fkey(name)
       )
     `)
     .eq('department_id', orgDeptId)
 
   for (const area of areas ?? []) {
+    const areaId = (area as any).id as string
+    const areaName = (area as any).name as string | null
     if (area.responsible_id) {
       const p = (area as any).profiles as { full_name: string | null; avatar_url: string | null } | null
-      const pos = (area as any).org_positions as { title: string } | null
-      addUser(area.responsible_id, p?.full_name ?? null, p?.avatar_url ?? null, pos?.title ?? null, 'area_responsible')
+      const pos = (area as any).org_positions as { name: string } | null
+      addUser(area.responsible_id, p?.full_name ?? null, p?.avatar_url ?? null, pos?.name ?? null, 'area_responsible', areaId, areaName)
     }
     for (const m of ((area as any).org_members as any[]) ?? []) {
       const p = m.profiles as { full_name: string | null; avatar_url: string | null } | null
-      const pos = m.org_positions as { title: string } | null
-      addUser(m.user_id, p?.full_name ?? null, p?.avatar_url ?? null, pos?.title ?? null, 'area_member')
+      const pos = m.org_positions as { name: string } | null
+      addUser(m.user_id, p?.full_name ?? null, p?.avatar_url ?? null, pos?.name ?? null, 'area_member', areaId, areaName)
     }
   }
 
