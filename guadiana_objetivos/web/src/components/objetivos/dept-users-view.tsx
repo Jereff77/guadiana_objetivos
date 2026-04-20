@@ -268,6 +268,11 @@ function UserCard({
 
   const isHead = level === 'dept-head' || level === 'area-head'
 
+  const allDeliverables = user.objectives.flatMap((o) => o.deliverables)
+  const submittedCount = allDeliverables.filter((d) => d.status === 'submitted').length
+  const approvedCount = allDeliverables.filter((d) => d.status === 'approved').length
+  const pendingCount = allDeliverables.filter((d) => d.status === 'pending' || d.status === 'rejected').length
+
   return (
     <Card className={`hover:shadow-md transition-shadow ${isHead ? 'border-l-4 border-l-brand-blue/40' : ''}`}>
       <CardContent className="p-4 space-y-3">
@@ -288,9 +293,16 @@ function UserCard({
             )}
           </div>
 
-          <Badge variant={SOURCE_BADGE_VARIANT[user.source] ?? 'outline'} className="shrink-0 text-xs">
-            {SOURCE_LABELS[user.source] ?? user.source}
-          </Badge>
+          <div className="flex flex-col items-end gap-1 shrink-0">
+            <Badge variant={SOURCE_BADGE_VARIANT[user.source] ?? 'outline'} className="text-xs">
+              {SOURCE_LABELS[user.source] ?? user.source}
+            </Badge>
+            {submittedCount > 0 && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 text-amber-700 border border-amber-300 px-2 py-0.5 text-xs font-semibold">
+                ⏳ {submittedCount} por revisar
+              </span>
+            )}
+          </div>
         </div>
 
         <div className="space-y-1">
@@ -304,6 +316,27 @@ function UserCard({
           </div>
           <Progress value={user.completionPct} className="h-1.5" />
         </div>
+
+        {/* Pills de estado de entregables */}
+        {allDeliverables.length > 0 && (
+          <div className="flex flex-wrap gap-1.5">
+            {approvedCount > 0 && (
+              <span className="inline-flex items-center rounded-full bg-green-100 text-green-700 px-2 py-0.5 text-xs">
+                ✓ {approvedCount} aprobado{approvedCount !== 1 ? 's' : ''}
+              </span>
+            )}
+            {submittedCount > 0 && (
+              <span className="inline-flex items-center rounded-full bg-amber-100 text-amber-700 px-2 py-0.5 text-xs">
+                ⏳ {submittedCount} enviado{submittedCount !== 1 ? 's' : ''}
+              </span>
+            )}
+            {pendingCount > 0 && (
+              <span className="inline-flex items-center rounded-full bg-gray-100 text-gray-600 px-2 py-0.5 text-xs">
+                ○ {pendingCount} pendiente{pendingCount !== 1 ? 's' : ''}
+              </span>
+            )}
+          </div>
+        )}
 
         {user.incentiveRecord && (
           <div className="flex items-center gap-1.5">

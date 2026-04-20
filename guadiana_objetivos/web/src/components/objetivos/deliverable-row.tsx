@@ -1,9 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import { Download, ExternalLink, FileText } from 'lucide-react'
+import { Download, ExternalLink, FileText, Loader2 } from 'lucide-react'
 import { EvidenceUploader } from './evidence-uploader'
 import { ReviewPanel } from './review-panel'
+import { getDeliverableWithDetail } from '../../app/(dashboard)/objetivos/deliverable-actions'
 import type { Evidence, Review } from '../../app/(dashboard)/objetivos/deliverable-actions'
 
 interface Deliverable {
@@ -46,12 +47,29 @@ export function DeliverableRow({
   const [showUpload, setShowUpload] = useState(false)
   const [showReview, setShowReview] = useState(false)
   const [showEvidences, setShowEvidences] = useState(false)
+  const [loadedEvidences, setLoadedEvidences] = useState<Evidence[] | null>(null)
+  const [loadingEvidences, setLoadingEvidences] = useState(false)
 
   const statusInfo = STATUS_STYLES[deliverable.status] ?? STATUS_STYLES.pending
   const canUpload = currentUserIsAssignee && ['pending', 'rejected'].includes(deliverable.status)
   const canReviewThis = canReview && deliverable.status === 'submitted'
 
-  const hasEvidences = deliverable.evidences && deliverable.evidences.length > 0
+  const evidencesToShow = loadedEvidences ?? deliverable.evidences ?? []
+  const hasEvidences = evidencesToShow.length > 0
+
+  async function handleOpenReview() {
+    if (!showReview) {
+      setShowReview(true)
+      if (loadedEvidences === null) {
+        setLoadingEvidences(true)
+        const detail = await getDeliverableWithDetail(deliverable.id)
+        setLoadedEvidences(detail?.evidences ?? [])
+        setLoadingEvidences(false)
+      }
+    } else {
+      setShowReview(false)
+    }
+  }
 
   return (
     <div className="border rounded-lg p-3 space-y-2 bg-background">
@@ -105,9 +123,11 @@ export function DeliverableRow({
           )}
           {canReviewThis && (
             <button
-              onClick={() => setShowReview(!showReview)}
-              className="text-xs bg-brand-orange text-white rounded px-2 py-1 hover:bg-brand-orange/90"
+              onClick={handleOpenReview}
+              disabled={loadingEvidences}
+              className="text-xs bg-brand-orange text-white rounded px-2 py-1 hover:bg-brand-orange/90 disabled:opacity-60 flex items-center gap-1"
             >
+              {loadingEvidences && <Loader2 className="h-3 w-3 animate-spin" />}
               {showReview ? 'Cancelar' : 'Revisar'}
             </button>
           )}
@@ -117,7 +137,7 @@ export function DeliverableRow({
       {/* Evidencias */}
       {showEvidences && hasEvidences && (
         <div className="ml-4 space-y-2">
-          {deliverable.evidences!.map((ev) => (
+          {evidencesToShow.map((ev) => (
             <EvidenceView key={ev.id} evidence={ev} />
           ))}
         </div>
@@ -133,7 +153,7 @@ export function DeliverableRow({
       {showReview && (
         <ReviewPanel
           deliverableId={deliverable.id}
-          evidences={deliverable.evidences ?? []}
+          evidences={evidencesToShow}
           onSuccess={() => setShowReview(false)}
         />
       )}
