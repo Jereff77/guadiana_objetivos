@@ -68,8 +68,17 @@ export function AppSidebar({ permissions = [], isRoot = false, user, companyName
     return permissions.includes(key)
   }
 
-  const isActive = (href: string) =>
-    pathname === href || pathname.startsWith(href + '/')
+  const isActive = (href: string, groupItems?: { href: string }[]) => {
+    if (pathname === href) return true
+    if (pathname.startsWith(href + '/')) {
+      if (groupItems) {
+        const hasExactMatch = groupItems.some(item => pathname === item.href)
+        if (hasExactMatch) return false
+      }
+      return true
+    }
+    return false
+  }
 
   // ── Definición de grupos ──────────────────────────────────────────────────
 
@@ -106,6 +115,14 @@ export function AppSidebar({ permissions = [], isRoot = false, user, companyName
       icon: MessageCircle,
       items: [
         { title: 'Chat', href: '/chat', icon: MessageSquare, permission: 'chat.view', badge: totalUnread || undefined },
+      ],
+    },
+    {
+      label: 'Documentos',
+      icon: FileText,
+      items: [
+        { title: 'Repositorio', href: '/documentos', icon: FileText, permission: 'documentos.view' },
+        { title: 'Chat', href: '/documentos/chat', icon: MessageSquare, permission: 'documentos.chat' },
       ],
     },
     {
@@ -233,11 +250,11 @@ function NavGroupCollapsible({
   setOpenGroup,
 }: {
   group: NavGroupDef
-  isActive: (href: string) => boolean
+  isActive: (href: string, groupItems?: { href: string }[]) => boolean
   openGroup: string | null
   setOpenGroup: (g: string | null) => void
 }) {
-  const hasActiveChild = group.items.some(i => isActive(i.href))
+  const hasActiveChild = group.items.some(i => isActive(i.href, group.items))
   const expanded = openGroup === group.label
   const GroupIcon = group.icon
 
@@ -281,7 +298,7 @@ function NavGroupCollapsible({
       )}>
         <ul className="mt-0.5 mb-1 space-y-0.5 pl-2">
           {group.items.map((item) => {
-            const active = isActive(item.href)
+            const active = isActive(item.href, group.items)
             const Icon = item.icon
             return (
               <li key={item.href}>
