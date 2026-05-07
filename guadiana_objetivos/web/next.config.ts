@@ -59,10 +59,8 @@ const nextConfig: NextConfig = {
   },
 
   // ── Límite de Server Actions (2 MB para upload de avatar) ────────────────────
-  experimental: {
-    serverActions: {
-      bodySizeLimit: '2mb',
-    },
+  serverActions: {
+    bodySizeLimit: '2mb',
   },
 }
 
