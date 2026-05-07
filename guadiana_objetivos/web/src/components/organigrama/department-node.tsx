@@ -5,6 +5,7 @@ import { Handle, Position, type NodeProps } from '@xyflow/react'
 import { Plus, Trash2, Building2, UserCircle2, Pencil, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { MemberCard } from './member-card'
+import { AvatarLightbox } from './avatar-lightbox'
 import { type OrgDepartmentMember, type OrgPosition } from '@/app/(dashboard)/organigrama/organigrama-actions'
 
 export interface DepartmentNodeData {
@@ -43,7 +44,7 @@ export function DepartmentNode(props: NodeProps) {
         style={{ backgroundColor: d.color }}
       >
         <Building2 className="h-4 w-4 text-white shrink-0" />
-        <span className="text-sm font-semibold text-white truncate flex-1">{d.name}</span>
+        <span className="text-sm font-semibold text-white leading-tight break-words flex-1">{d.name}</span>
         {d.canManage && hovered && (
           <div className="flex items-center gap-1 shrink-0">
             <button
@@ -69,9 +70,13 @@ export function DepartmentNode(props: NodeProps) {
         <span className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">Responsable</span>
         {d.responsibleName ? (
           <div className="flex items-center gap-2 mt-1">
-            <div className="h-6 w-6 rounded-full text-white text-[10px] font-bold flex items-center justify-center shrink-0" style={{ backgroundColor: d.color }}>
-              {d.responsibleName.charAt(0).toUpperCase()}
-            </div>
+            {d.responsibleAvatar ? (
+              <AvatarLightbox src={d.responsibleAvatar} name={d.responsibleName ?? ''} className="h-6 w-6 rounded-full object-cover shrink-0" />
+            ) : (
+              <div className="h-6 w-6 rounded-full text-white text-[10px] font-bold flex items-center justify-center shrink-0" style={{ backgroundColor: d.color }}>
+                {d.responsibleName.charAt(0).toUpperCase()}
+              </div>
+            )}
             <div className="flex flex-col min-w-0">
               <span className="text-xs font-medium text-gray-800 truncate leading-tight">{d.responsibleName}</span>
               {d.responsiblePositionName && (

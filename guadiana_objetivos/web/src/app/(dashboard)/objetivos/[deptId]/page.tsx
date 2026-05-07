@@ -1,5 +1,6 @@
 import { requirePermission } from '@/lib/permissions'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { getDepartmentsForUser } from '../dept-actions'
 import { getObjectivesGroupedByUser } from '../objective-actions'
 import { getIncentiveSchemasForDept } from '../../incentivos/incentive-actions'
@@ -47,6 +48,42 @@ export default async function DeptObjetivosPage({ params, searchParams }: PagePr
 
   const incentiveSchemas = incentiveSchemasResult.data ?? []
 
+  // IDs de usuarios con permiso taller_fill (para mostrar botón Taller)
+  const adminSupabase = createAdminClient()
+  const { data: tallerModule } = await adminSupabase
+    .from('platform_modules')
+    .select('id')
+    .eq('key', 'taller_fill')
+    .single()
+
+  let tallerFillUserIds: string[] = []
+  if (tallerModule?.id) {
+    const [rolePermsResult, rootRolesResult] = await Promise.all([
+      adminSupabase
+        .from('role_permissions')
+        .select('role_id')
+        .eq('module_id', tallerModule.id),
+      adminSupabase
+        .from('roles')
+        .select('id')
+        .eq('is_root', true),
+    ])
+
+    const allRoleIds = [
+      ...(rolePermsResult.data ?? []).map((r: { role_id: string }) => r.role_id),
+      ...(rootRolesResult.data ?? []).map((r: { id: string }) => r.id),
+    ]
+
+    if (allRoleIds.length > 0) {
+      const { data: profiles } = await adminSupabase
+        .from('profiles')
+        .select('id')
+        .in('role_id', allRoleIds)
+
+      tallerFillUserIds = (profiles ?? []).map((p: { id: string }) => p.id)
+    }
+  }
+
   return (
     <div className="space-y-6">
       {/* Cabecera */}
@@ -87,6 +124,7 @@ export default async function DeptObjetivosPage({ params, searchParams }: PagePr
         canReview={canReview}
         incentiveSchemas={incentiveSchemas}
         currentUserId={currentUserId}
+        tallerFillUserIds={tallerFillUserIds}
       />
     </div>
   )

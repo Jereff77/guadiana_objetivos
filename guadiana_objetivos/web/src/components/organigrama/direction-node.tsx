@@ -5,6 +5,7 @@ import { Handle, Position, type NodeProps } from '@xyflow/react'
 import { Plus, Pencil, Users, Star, UserCircle2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { MemberCard } from './member-card'
+import { AvatarLightbox } from './avatar-lightbox'
 import { type OrgMember, type OrgPosition } from '@/app/(dashboard)/organigrama/organigrama-actions'
 
 export interface DirectionNodeData {
@@ -41,7 +42,7 @@ export function DirectionNode(props: NodeProps) {
         style={{ backgroundColor: d.color }}
       >
         <Star className="h-5 w-5 text-yellow-300 shrink-0 fill-yellow-300" />
-        <span className="text-base font-bold text-white uppercase tracking-wide truncate flex-1">
+        <span className="text-base font-bold text-white uppercase tracking-wide leading-tight break-words flex-1">
           {d.name}
         </span>
         {d.canManage && hovered && (
@@ -60,12 +61,16 @@ export function DirectionNode(props: NodeProps) {
         <span className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">Director / Responsable</span>
         {d.responsibleName ? (
           <div className="flex items-center gap-2 mt-1">
-            <div
-              className="h-8 w-8 rounded-full text-white text-xs font-bold flex items-center justify-center shrink-0"
-              style={{ backgroundColor: d.color }}
-            >
-              {d.responsibleName.charAt(0).toUpperCase()}
-            </div>
+            {d.responsibleAvatar ? (
+              <AvatarLightbox src={d.responsibleAvatar} name={d.responsibleName ?? ''} className="h-8 w-8 rounded-full object-cover shrink-0" />
+            ) : (
+              <div
+                className="h-8 w-8 rounded-full text-white text-xs font-bold flex items-center justify-center shrink-0"
+                style={{ backgroundColor: d.color }}
+              >
+                {d.responsibleName.charAt(0).toUpperCase()}
+              </div>
+            )}
             <div className="flex flex-col min-w-0">
               <span className="text-sm font-semibold text-gray-800 truncate leading-tight">{d.responsibleName}</span>
               {d.responsiblePositionName && (

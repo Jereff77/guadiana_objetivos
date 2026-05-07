@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import type { UserWithObjectives } from '@/app/(dashboard)/objetivos/objective-actions'
 import type { IncentiveSchema } from '@/app/(dashboard)/incentivos/incentive-actions'
 import { UserObjectivesPanel } from './user-objectives-panel'
@@ -48,6 +49,7 @@ interface DeptUsersViewProps {
   canReview: boolean
   incentiveSchemas: IncentiveSchema[]
   currentUserId: string
+  tallerFillUserIds: string[]
 }
 
 // ─── Helpers de agrupación ────────────────────────────────────────────────────
@@ -90,6 +92,7 @@ export function DeptUsersView({
   canReview,
   incentiveSchemas,
   currentUserId,
+  tallerFillUserIds,
 }: DeptUsersViewProps) {
   const router = useRouter()
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
@@ -114,6 +117,7 @@ export function DeptUsersView({
 
   const cardProps = {
     canOpen: (u: UserWithObjectives) => canManage || canReview || u.userId === currentUserId,
+    showTallerBtn: (_u: UserWithObjectives) => true,
     onSelect: (userId: string) => setSelectedUserId(userId),
   }
 
@@ -166,6 +170,7 @@ export function DeptUsersView({
             <UserCard
               user={deptResponsible}
               canOpen={cardProps.canOpen(deptResponsible)}
+              showTallerBtn={cardProps.showTallerBtn(deptResponsible)}
               onSelect={() => cardProps.onSelect(deptResponsible.userId)}
               level="dept-head"
             />
@@ -179,6 +184,7 @@ export function DeptUsersView({
                   key={u.userId}
                   user={u}
                   canOpen={cardProps.canOpen(u)}
+                  showTallerBtn={cardProps.showTallerBtn(u)}
                   onSelect={() => cardProps.onSelect(u.userId)}
                   level="dept-member"
                 />
@@ -202,6 +208,7 @@ export function DeptUsersView({
                 <UserCard
                   user={area.responsible}
                   canOpen={cardProps.canOpen(area.responsible)}
+                  showTallerBtn={cardProps.showTallerBtn(area.responsible)}
                   onSelect={() => cardProps.onSelect(area.responsible!.userId)}
                   level="area-head"
                 />
@@ -210,15 +217,16 @@ export function DeptUsersView({
               {/* Miembros del área */}
               {area.members.length > 0 && (
                 <div className="ml-4 pl-4 border-l-2 border-l-muted space-y-1">
-                  {area.members.map((u) => (
-                    <UserCard
-                      key={u.userId}
-                      user={u}
-                      canOpen={cardProps.canOpen(u)}
-                      onSelect={() => cardProps.onSelect(u.userId)}
-                      level="area-member"
-                    />
-                  ))}
+              {area.members.map((u) => (
+                <UserCard
+                  key={u.userId}
+                  user={u}
+                  canOpen={cardProps.canOpen(u)}
+                  showTallerBtn={cardProps.showTallerBtn(u)}
+                  onSelect={() => cardProps.onSelect(u.userId)}
+                  level="area-member"
+                />
+              ))}
                 </div>
               )}
             </div>
@@ -251,11 +259,13 @@ type CardLevel = 'dept-head' | 'dept-member' | 'area-head' | 'area-member'
 function UserCard({
   user,
   canOpen,
+  showTallerBtn,
   onSelect,
   level,
 }: {
   user: UserWithObjectives
   canOpen: boolean
+  showTallerBtn: boolean
   onSelect: () => void
   level: CardLevel
 }) {
@@ -353,13 +363,22 @@ function UserCard({
           </div>
         )}
 
-        {canOpen ? (
-          <Button variant="outline" size="sm" className="w-full text-xs" onClick={onSelect}>
-            Ver objetivos
-          </Button>
-        ) : (
-          <p className="text-xs text-center text-muted-foreground py-1">Sin acceso</p>
-        )}
+        <div className="flex gap-2 mt-1">
+          {canOpen && (
+            <Button variant="outline" size="sm" className="flex-1 text-xs" onClick={onSelect}>
+              Ver objetivos
+            </Button>
+          )}
+          {showTallerBtn && (
+            <Link href={`/taller/${user.userId}`}
+              className={`inline-flex items-center justify-center rounded-md border border-input bg-background px-3 py-1.5 text-xs font-medium hover:bg-accent hover:text-accent-foreground transition-colors ${canOpen ? '' : 'w-full'}`}>
+              Taller
+            </Link>
+          )}
+          {!canOpen && !showTallerBtn && (
+            <p className="text-xs text-center text-muted-foreground py-1 w-full">Sin acceso</p>
+          )}
+        </div>
       </CardContent>
     </Card>
   )

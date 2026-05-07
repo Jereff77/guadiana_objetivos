@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useCallback } from 'react'
-import { updateUserProfile } from '@/app/(dashboard)/usuarios/user-actions'
+import { useState, useCallback, useRef } from 'react'
+import { updateUserProfile, uploadAvatarAction } from '@/app/(dashboard)/usuarios/user-actions'
 
 interface UserProfileFormProps {
   userId: string
@@ -13,6 +13,11 @@ interface UserProfileFormProps {
     email?: string | null
   }
   readOnly?: boolean
+}
+
+function getInitials(name: string | null): string {
+  if (!name) return '?'
+  return name.split(' ').slice(0, 2).map((n) => n[0]).join('').toUpperCase()
 }
 
 function fallbackCopy(text: string) {
@@ -35,6 +40,9 @@ export function UserProfileForm({ userId, initialData, readOnly = false }: UserP
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleCopyEmail = useCallback(() => {
     if (!initialData.email) return
@@ -46,6 +54,46 @@ export function UserProfileForm({ userId, initialData, readOnly = false }: UserP
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }, [initialData.email])
+
+  async function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setUploadError(null)
+    setUploading(true)
+
+    if (file.size > 2 * 1024 * 1024) {
+      setUploadError('La imagen no debe superar 2 MB')
+      setUploading(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+      return
+    }
+
+    if (!file.type.startsWith('image/')) {
+      setUploadError('Solo se permiten imágenes')
+      setUploading(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+      return
+    }
+
+    const fd = new FormData()
+    fd.append('avatar', file)
+
+    try {
+      const result = await uploadAvatarAction(userId, fd)
+
+      if (result.error) {
+        setUploadError(result.error)
+      } else if (result.data) {
+        setAvatarUrl(result.data)
+      }
+    } catch {
+      setUploadError('Error al subir la imagen. Verifica el tamaño e inténtalo de nuevo.')
+    }
+
+    setUploading(false)
+    if (fileInputRef.current) fileInputRef.current.value = ''
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -121,6 +169,44 @@ export function UserProfileForm({ userId, initialData, readOnly = false }: UserP
         </div>
       )}
 
+      {/* Avatar */}
+      <div>
+        <label className="block text-sm font-medium mb-2">Foto de perfil</label>
+        <div className="flex items-center gap-4">
+          <div className="h-16 w-16 shrink-0 rounded-full overflow-hidden bg-brand-blue/10 flex items-center justify-center text-brand-blue font-bold text-lg">
+            {avatarUrl ? (
+              <img src={avatarUrl} alt="Avatar" className="h-full w-full object-cover" />
+            ) : (
+              getInitials(fullName)
+            )}
+          </div>
+          {!readOnly && (
+            <div className="space-y-1">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileSelect}
+                className="hidden"
+              />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                className="inline-flex items-center rounded-md border border-input bg-background px-3 py-1.5 text-sm
+                  hover:bg-accent hover:text-accent-foreground transition-colors disabled:opacity-60"
+              >
+                {uploading ? 'Subiendo...' : 'Cambiar foto'}
+              </button>
+              <p className="text-xs text-muted-foreground">JPEG, PNG, WEBP o GIF. Máximo 2 MB.</p>
+            </div>
+          )}
+        </div>
+        {uploadError && (
+          <p className="text-xs text-red-600 mt-1">{uploadError}</p>
+        )}
+      </div>
+
       <div>
         <label htmlFor="full-name" className="block text-sm font-medium mb-1.5">
           Nombre completo
@@ -172,23 +258,6 @@ export function UserProfileForm({ userId, initialData, readOnly = false }: UserP
         <p className="text-xs text-muted-foreground mt-1">
           Formato E.164 con código de país (ej: +521234567890). Este número se usa para comunicación con la IA.
         </p>
-      </div>
-
-      <div>
-        <label htmlFor="avatar-url" className="block text-sm font-medium mb-1.5">
-          URL de foto de perfil
-        </label>
-        <input
-          id="avatar-url"
-          type="url"
-          value={avatarUrl}
-          onChange={(e) => setAvatarUrl(e.target.value)}
-          disabled={readOnly || saving}
-          placeholder="https://..."
-          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm
-            placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand-blue/30
-            disabled:opacity-60 disabled:cursor-not-allowed"
-        />
       </div>
 
       {!readOnly && (

@@ -64,6 +64,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
           companyName={configMap['empresa_nombre'] ?? undefined}
           logoUrl={configMap['branding_logo_url'] ?? null}
           appVersion={version}
+          userId={user?.id}
         />
         <div className="flex-1 flex flex-col overflow-hidden">
           {previewRoleName && <PreviewBanner roleName={previewRoleName} />}

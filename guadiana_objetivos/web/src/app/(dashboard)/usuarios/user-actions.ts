@@ -388,3 +388,31 @@ export async function createUser(
   revalidatePath('/usuarios')
   return { userId }
 }
+
+// ─── Avatar upload ─────────────────────────────────────────────────────────────
+
+export async function uploadAvatarAction(userId: string, formData: FormData) {
+  const supabase = await createClient()
+  const file = formData.get('avatar') as File
+  if (!file || file.size === 0) return { error: 'No se seleccionó archivo' }
+  if (file.size > 2 * 1024 * 1024) return { error: 'La imagen no debe superar 2 MB' }
+
+  const ext = file.name.split('.').pop()
+  const path = `${userId}/avatar.${ext}`
+
+  const { error: uploadError } = await supabase.storage
+    .from('avatars')
+    .upload(path, file, { upsert: true, contentType: file.type })
+
+  if (uploadError) return { error: uploadError.message }
+
+  const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(path)
+
+  const { error: updateError } = await supabase
+    .from('profiles')
+    .update({ avatar_url: publicUrl, updated_at: new Date().toISOString() })
+    .eq('id', userId)
+
+  if (updateError) return { error: updateError.message }
+  return { data: publicUrl }
+}

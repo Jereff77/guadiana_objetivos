@@ -1,6 +1,8 @@
+import path from 'path'
 import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
+  outputFileTracingRoot: path.join(__dirname, '..'),
   // ── Producción: output standalone para despliegue en Hostinger Node.js ──────
   output: 'standalone',
 
@@ -53,6 +55,13 @@ const nextConfig: NextConfig = {
   logging: {
     fetches: {
       fullUrl: process.env.NODE_ENV === 'development',
+    },
+  },
+
+  // ── Límite de Server Actions (2 MB para upload de avatar) ────────────────────
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '2mb',
     },
   },
 }

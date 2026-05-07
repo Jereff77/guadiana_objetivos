@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { X, ChevronDown } from 'lucide-react'
+import { AvatarLightbox } from './avatar-lightbox'
 import { type OrgPosition } from '@/app/(dashboard)/organigrama/organigrama-actions'
 
 interface MemberCardProps {
@@ -25,7 +26,7 @@ export function MemberCard({
     <div className="relative">
       <div className="flex items-center gap-2 py-1 px-2 rounded hover:bg-gray-50 group">
         {avatarUrl ? (
-          <img src={avatarUrl} alt={fullName ?? ''} className="h-6 w-6 rounded-full object-cover shrink-0" />
+          <AvatarLightbox src={avatarUrl} name={fullName ?? ''} className="h-6 w-6 rounded-full object-cover shrink-0" />
         ) : (
           <div className="h-6 w-6 rounded-full bg-[#004B8D] text-white text-[10px] font-bold flex items-center justify-center shrink-0">
             {initials}

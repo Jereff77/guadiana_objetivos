@@ -8,6 +8,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select'
 import { MemberCard } from './member-card'
+import { AvatarLightbox } from './avatar-lightbox'
 import { type OrgPosition } from '@/app/(dashboard)/organigrama/organigrama-actions'
 
 export interface AreaMember {
@@ -80,7 +81,7 @@ export function AreaNode(props: NodeProps) {
         style={{ backgroundColor: d.departmentColor + '18' }}
       >
         <FolderOpen className="h-3.5 w-3.5 shrink-0" style={{ color: d.departmentColor }} />
-        <span className="text-xs font-semibold text-gray-700 truncate flex-1">{d.name}</span>
+        <span className="text-xs font-semibold text-gray-700 leading-tight break-words flex-1">{d.name}</span>
         {d.canManage && hovered && (
           <button
             onClick={() => d.onDelete(d.areaId)}
@@ -97,9 +98,13 @@ export function AreaNode(props: NodeProps) {
         <span className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold px-1">Responsable</span>
         {d.responsibleId && d.responsibleName ? (
           <div className="flex items-center gap-2 py-1 px-1 rounded mt-0.5" style={{ backgroundColor: d.departmentColor + '12' }}>
-            <div className="h-6 w-6 rounded-full flex items-center justify-center shrink-0 text-white text-[10px] font-bold" style={{ backgroundColor: d.departmentColor }}>
-              {d.responsibleName.charAt(0).toUpperCase()}
-            </div>
+            {d.responsibleAvatar ? (
+              <AvatarLightbox src={d.responsibleAvatar} name={d.responsibleName ?? ''} className="h-6 w-6 rounded-full object-cover shrink-0" />
+            ) : (
+              <div className="h-6 w-6 rounded-full flex items-center justify-center shrink-0 text-white text-[10px] font-bold" style={{ backgroundColor: d.departmentColor }}>
+                {d.responsibleName.charAt(0).toUpperCase()}
+              </div>
+            )}
             <div className="flex flex-col flex-1 min-w-0">
               <span className="text-xs font-semibold text-gray-800 truncate leading-tight">{d.responsibleName}</span>
               {d.responsiblePositionName && (

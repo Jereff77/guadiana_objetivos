@@ -41,6 +41,7 @@ interface AppSidebarProps {
   companyName?: string
   logoUrl?: string | null
   appVersion?: string
+  userId?: string
 }
 
 interface NavItem {
@@ -57,7 +58,7 @@ interface NavGroupDef {
   items: NavItem[]
 }
 
-export function AppSidebar({ permissions = [], isRoot = false, user, companyName, logoUrl, appVersion }: AppSidebarProps) {
+export function AppSidebar({ permissions = [], isRoot = false, user, companyName, logoUrl, appVersion, userId }: AppSidebarProps) {
   const pathname = usePathname()
   const { totalUnread } = useChatNotifications()
   const [openGroup, setOpenGroup] = useState<string | null>(null)
@@ -84,12 +85,12 @@ export function AppSidebar({ permissions = [], isRoot = false, user, companyName
 
   const navGroups: NavGroupDef[] = [
     {
-      label: 'Objetivos',
+      label: 'Plan de Trabajo',
       icon: Target,
       items: [
-        { title: 'Dashboard',  href: '/dashboard',  icon: TrendingUp, permission: 'dashboard.view' },
-        { title: 'Objetivos',  href: '/objetivos',  icon: Target,     permission: 'objetivos.view' },
-        { title: 'Incentivos', href: '/incentivos', icon: DollarSign, permission: 'incentivos.view' },
+        { title: 'Dashboard',       href: '/dashboard',  icon: TrendingUp, permission: 'dashboard.view' },
+        { title: 'Plan de Trabajo', href: '/objetivos',  icon: Target,     permission: 'objetivos.view' },
+        { title: 'Incentivos',      href: '/incentivos', icon: DollarSign, permission: 'incentivos.view' },
       ],
     },
     {
@@ -106,6 +107,7 @@ export function AppSidebar({ permissions = [], isRoot = false, user, companyName
       icon: GraduationCap,
       items: [
         { title: 'Organigrama',  href: '/organigrama',  icon: Network,  permission: 'organigrama.view' },
+        { title: 'Mi Taller',    href: userId ? `/taller/${userId}` : '/taller', icon: ClipboardList, permission: 'taller_fill' },
         { title: 'Mentoring',    href: '/mentoring',    icon: Users2,   permission: 'mentoring.view' },
         { title: 'Capacitación', href: '/capacitacion', icon: BookOpen, permission: 'capacitacion.view' },
       ],
@@ -121,7 +123,7 @@ export function AppSidebar({ permissions = [], isRoot = false, user, companyName
       label: 'Documentos',
       icon: FileText,
       items: [
-        { title: 'Repositorio', href: '/documentos', icon: FileText, permission: 'documentos.view' },
+        { title: 'Biblioteca', href: '/documentos', icon: FileText, permission: 'documentos.view' },
         { title: 'Chat', href: '/documentos/chat', icon: MessageSquare, permission: 'documentos.chat' },
       ],
     },

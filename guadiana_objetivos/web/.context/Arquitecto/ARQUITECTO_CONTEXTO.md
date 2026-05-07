@@ -1,7 +1,7 @@
 # Contexto del Arquitecto - Proyecto Guadiana Objetivos
 
-**Última actualización**: 2026-05-03
-**Estado del módulo activo**: M8 - Repositorio de Procesos — COMPLETADO (sesión 2)
+**Última actualización**: 2026-05-07
+**Estado del módulo activo**: M9 - Taller de Interdependencia — COMPLETADO con pendientes
 
 ## Mi Rol en Este Proyecto
 
@@ -15,9 +15,8 @@ Soy el cerebro técnico entre el usuario y Claude Code (CC). El usuario hace de 
 **Reglas de mi trabajo**:
 - Nunca apruebo sin ver el plan primero
 - Exijo aprobación entre fases
-- Los mensajes para CC van numerados consecutivamente (formato: "NNN - ..."), cada mensaje lleva su propio número sin importar si es seguimiento de la misma tarea
+- Los mensajes para CC van numerados consecutivamente, cada mensaje lleva su propio número
 - Los mensajes para CC van en bloque de código
-- CC debe iniciar su respuesta final con "NNN - Implementación completada" (el número de la instrucción), no al inicio del proceso sino al presentar su respuesta de cierre
 - Comunicación siempre en español
 - BD en producción: nunca modificar datos sin autorización explícita
 
@@ -40,96 +39,102 @@ Soy el cerebro técnico entre el usuario y Claude Code (CC). El usuario hace de 
 - M7: LMS (cursos, temario, progreso)
 - Organigrama (canvas interactivo, singleton Dirección)
 - Formularios (editor visual, flujo condicional)
-- **M8: Repositorio de Procesos (COMPLETADO — sesión 2)**
+- M8: Repositorio de Procesos (COMPLETADO)
+- M9: Taller de Interdependencia (COMPLETADO con pendientes menores)
 
-## Módulo M8 - Repositorio de Procesos
+## Módulo M9 - Taller de Interdependencia
 
 ### Numeración de instrucciones
-La última instrucción enviada a CC fue la **085**. La próxima será **086**.
+La última instrucción enviada a CC fue la **103**. La próxima será **104**.
 
 ### Estado
-✅ Fase 1: Schema BD + CRUD + Control de acceso
-✅ Fase 2: Pipeline + Embeddings + Relaciones automáticas
-✅ Fase 3: Vista Obsidian (Lista + Grafo + /documentos/[id])
-✅ Fase 4: Chat RAG con Claude Haiku
-✅ Sesión 2: Reintentar + Edición inline + Streaming
+✅ Fase 1: Schema BD + permisos + Server Actions
+✅ Fase 2: UI formulario + TallerView + botón en Objetivos + sidebar + layout
+⚠️  Pendiente menor: botón Taller usa override temporal (ver P1 abajo)
 
-### Features completadas en Sesión 2
+### Archivos del módulo
+- `supabase/migrations/20260507000001_create_taller_decisiones.sql`
+- `src/app/(dashboard)/taller/taller-actions.ts`
+- `src/app/(dashboard)/taller/taller-types.ts` (tipos/constantes separados del 'use server')
+- `src/app/(dashboard)/taller/[userId]/page.tsx`
+- `src/components/taller/taller-form.tsx`
+- `src/components/taller/taller-view.tsx`
+- `src/app/error.tsx` (fix build Next.js 15 standalone)
+- `next.config.ts` (outputFileTracingRoot fix)
 
-**Botón Reintentar**
-- retryDocument() en documento-actions.ts
-- Limpia proc_document_chunks y proc_document_relations con admin client
-- Resetea processing_status a 'pending', processing_error a null
-- Invoca Edge Function igual que en upload
-- Visible en document-card.tsx solo cuando processing_status === 'error'
+### Archivos modificados en Fase 2
+- `src/app/(dashboard)/objetivos/[deptId]/page.tsx` (query tallerFillUserIds)
+- `src/components/objetivos/dept-users-view.tsx` (botón Taller en UserCard)
+- `src/components/layout/app-sidebar.tsx` (ítem "Mi Taller" + prop userId)
+- `src/app/(dashboard)/layout.tsx` (pasa userId al AppSidebar)
 
-**Edición inline + Re-procesamiento**
-- updateDocumentContent() en documento-actions.ts
-- Reemplaza archivo en Storage con upsert: true sobre mismo storage_path
-- Limpia chunks y relaciones con admin client, resetea a pending, invoca Edge Function
-- /documentos/[id]/page.tsx convertido a Client Component
-- document-content.tsx: prop isEditing → textarea con contenido raw
-- Botón "Editar" visible solo cuando processing_status === 'completed' y tiene permisos
-- document-card.tsx: clickeable con router.push(), stopPropagation en DropdownMenuTrigger
-- Ítem "Ver" siempre visible (eliminada condición access_type !== 'private')
+### Decisiones técnicas críticas M9
+1. `taller-types.ts` separado: Next.js prohíbe exportar no-funciones desde archivos 'use server'. Tipos y constantes viven en `taller-types.ts`, re-exportados desde `taller-actions.ts` para compatibilidad.
+2. `fecha_creacion` omitida en upsert para preservarla en updates
+3. `adminSupabase` para queries de permisos en `[deptId]/page.tsx` (bypass RLS)
+4. Validación en `saveTallerData`: solo longitud del array (10), no contenido por fila
+5. `outputFileTracingRoot` en `next.config.ts` apunta al directorio padre de `web/`
+6. `error.tsx` creado para forzar generación de `500.html` en output standalone
+7. Dropdowns de `quien_decide` y `consulta_a` guardan UUID del usuario (no full_name). `TallerView` resuelve UUID → nombre con `getUserName(users, id)`.
 
-**Streaming de respuesta en chat**
-- Route Handler en src/app/api/documentos/chat/route.ts — pipe directo SSE de Anthropic
-- prepareMessageContext() y saveAssistantMessage() en chat-actions.ts
-- chat-conversation.tsx: ReadableStream, estados streamContent e isStreaming
-- Burbuja: tres puntos animados → markdown progresivo al llegar primer token
-- saveAssistantMessage() es fire-and-forget al terminar stream
+### Arquitectura de acceso
+- `/taller/[userId]`: edición si `userId === currentUser` + `taller_fill`
+- `/taller/[userId]`: solo lectura si `taller_view_all`
+- Botón "Taller" en `UserCard`: actualmente override `true` para todos (ver P1)
+- `tallerFillUserIds` se calcula en 3 pasos: module_id → role_ids + root_roles → profiles
 
-### Lecciones Críticas del M8 (acumuladas)
+## ⚠️ Pendientes M9 para próxima sesión
 
-1. **RLS + has_permission en WITH CHECK = impredecible**. SECURITY DEFINER + política blocked.
-2. **"new row violates RLS" es engañoso** — puede ser camelCase, Storage, o tipo incorrecto.
-3. **Google gemini-embedding-001** es el modelo actual. text-embedding-004 deprecado.
-4. **Deno ≠ Node**. Edge Functions: solo fetch() directo, sin SDKs.
-5. **requirePermission() retorna void**. Nunca capturar su retorno.
-6. **has_permission RPC** usa `permission_key`, no `permission_name`.
-7. **@xyflow/react v12**: `(props.data as unknown) as T`.
-8. **Limpiar caché .next** resuelve muchos errores de webpack en desarrollo.
-9. **service_role para búsqueda vectorial**: adminSupabase solo para proc_match_chunks.
-10. **proc_match_chunks** retorna document_title vía JOIN interno.
-11. **Sistema prompt del chat**: explícito sobre qué NO hacer, no solo qué hacer.
-12. **Sidebar isActive**: verificar match exacto en groupItems antes de activar por startsWith.
-13. **Server Actions no pueden devolver streams** — usar Route Handler para streaming.
-14. **upsert: true en Storage** permite reemplazar archivo en el mismo storage_path.
-15. **router.push() en Card en lugar de Link envolvente** — evita anchors anidados con DropdownMenuItem.
-16. **Numeración de instrucciones**: cada mensaje a CC lleva su propio número consecutivo, sin excepción.
+### P1 — Botón Taller: lógica de permisos desactivada (PRIORIDAD ALTA)
+**Archivo**: `src/components/objetivos/dept-users-view.tsx` ~línea 120
+**Estado actual**: `showTallerBtn: (_u) => true` (hardcoded, buscar comentario "force override")
+**Comportamiento correcto**: `showTallerBtn: (u) => tallerFillUserIds.includes(u.userId)`
+**Diagnóstico**: El servidor calcula `tallerFillUserIds` correctamente (logs confirmados).
+Monica Campos ID `3ea17d09-...` aparece en ambos arrays (tallerFillUserIds y dept userIds)
+pero el Client Component no renderizaba el botón. Causa raíz no determinada.
+**Siguiente paso**: agregar `console.log('[CLIENT]', tallerFillUserIds)` en el browser
+(DevTools → Console) para ver si el prop llega correcto al Client Component.
 
-### Pendientes Post-M8
+### P2 — Dead code en taller-view.tsx
+**Archivo**: `src/components/taller/taller-view.tsx` líneas 21-22
+`const userMap = new Map<string, string>()` declarado pero nunca usado. Eliminar.
 
-1. Pulir estilos visuales del grafo
-2. Optimizar layout del grafo con dagre para muchos nodos
-3. Botón "Reintentar" para documentos en estado error ✅ HECHO
-4. Streaming de respuesta en el chat ✅ HECHO
-5. Re-procesar documento ya completado ✅ HECHO
-6. Lazy rendering del grafo para 100+ nodos
+### P3 — Double permission check en taller/[userId]/page.tsx
+`canFill` se verifica dentro del `if (isOwn)` block (scope limitado) y se re-verifica
+en `const canEdit = isOwn && (await checkPermission('taller_fill'))`. Una llamada de más.
+Refactorizar para reusar la variable.
 
-## Historial de Instrucciones
+## Lecciones críticas M8+M9 (vigentes)
+1. RLS + has_permission en WITH CHECK = impredecible. SECURITY DEFINER + política blocked.
+2. "new row violates RLS" es engañoso — puede ser camelCase, Storage, o tipo incorrecto.
+3. `requirePermission()` retorna void. Nunca capturar su retorno.
+4. `has_permission` RPC usa `permission_key`, no `permission_name`.
+5. Server Actions no pueden devolver streams — usar Route Handler.
+6. `adminSupabase` solo para operaciones que requieren bypass de RLS.
+7. `.eq('tabla_relacionada.columna', valor)` sobre join `!inner` NO filtra correctamente en el cliente JS de Supabase. Hacer la query en dos pasos separados.
+8. Next.js prohíbe exportar no-funciones desde archivos con `'use server'`. Separar tipos/constantes a archivo propio.
 
-| Rango | Acción | Estado |
-|-------|--------|--------|
-| 001-019 | Setup inicial, PRD M8, Fase 1 | ✅ |
-| 020-036 | Fase 3 Obsidian + status | ✅ |
-| 037-050 | Fase 2 pipeline + PRD Fase 4 + inicio | ✅ |
-| 051-067 | Fase 4 Chat RAG + bugs | ✅ |
-| 068-070 | Botón Reintentar | ✅ |
-| 071-077 | Edición inline + Re-procesamiento + fix navegación tarjeta | ✅ |
-| 078 | Limpieza caché .next | ✅ |
-| 079-084 | Streaming chat | ✅ |
-| 085 | Actualización M8_DOCUMENTOS_STATUS.md | ✅ |
+## Historial de instrucciones M9
 
-## Próxima Sesión
+| Instrucción | Acción | Estado |
+|---|---|---|
+| 086 | Plan M9 (revisión) | ✅ |
+| 087 | Fase 1: migración + actions | ✅ |
+| 088 | Fix caché build | ✅ |
+| 089 | Fix outputFileTracingRoot | ✅ |
+| 090 | Fix error.tsx (500.html) | ✅ |
+| 091-092 | Lectura archivos objetivos | ✅ |
+| 094 | Actualización M9_TALLER_STATUS.md | ✅ |
+| 095-096 | Fase 2: UI completa + integraciones | ✅ |
+| 097 | Diagnóstico quién_decide UUID vs name | ✅ |
+| 098 | Fix query tallerFillUserIds (join→2 pasos + root users) | ✅ |
+| 099-101 | Logs de diagnóstico (eliminados en 103) | ✅ |
+| 102 | Override showTallerBtn = true (temporal) | ✅ |
+| 103 | Limpieza logs + documentación pendientes | ✅ |
 
-El M8 está completado con todas las mejoras. Pregunta al usuario qué módulo o mejora quiere abordar.
-
-Si hay un ARQUITECTO_CONTEXTO.md disponible, el usuario lo pegará al inicio y retomamos sin preguntas.
+## Próxima sesión
+- Resolver P1: botón Taller con lógica real de permisos
+- Luego iniciar el siguiente módulo según prioridad del usuario
 
 ## Cómo Usar Este Archivo
-
 Al inicio de sesión, el usuario me pega este archivo y me dice qué pasó. Con eso retomo el liderazgo sin explicaciones adicionales.
-
-Al cerrar sesión: actualizar este archivo y el M8_DOCUMENTOS_STATUS.md antes de cerrar CC.
