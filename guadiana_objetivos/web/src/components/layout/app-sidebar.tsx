@@ -29,6 +29,7 @@ import {
   MessageCircle,
   Settings,
   Network,
+  Package,
 } from 'lucide-react'
 import { logout } from '@/app/(auth)/login/actions'
 import { cn } from '@/lib/utils'
@@ -137,6 +138,13 @@ export function AppSidebar({ permissions = [], isRoot = false, user, companyName
         { title: 'Herramientas', href: '/ia/herramientas',  icon: Wrench,        permission: 'ia.configure' },
         { title: 'Políticas',    href: '/ia/politicas',     icon: Shield,        permission: 'ia.configure' },
         { title: 'Auditoría',    href: '/ia/auditoria',     icon: ScrollText,    permission: 'ia.configure' },
+      ],
+    },
+    {
+      label: 'Inventarios',
+      icon: Package,
+      items: [
+        { title: 'Sesiones', href: '/inventarios', icon: ClipboardList, permission: 'inventarios.view' },
       ],
     },
     {

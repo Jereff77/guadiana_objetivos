@@ -1,7 +1,7 @@
 name: guadiana_app
 description: Aplicación móvil de gestión de inventarios con Flutter, Supabase y SQLite (Drift)
 publish_to: "none"
-version: 0.1.0
+version: 1.0.0+1
 
 environment:
   sdk: ">=3.2.0 <4.0.0"

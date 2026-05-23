@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../services/auth_service.dart';
 import '../../core/utils/auth_error_mapper.dart';
+import '../../core/config/app_version.dart';
 import 'home_page.dart';
-import 'forgot_password_page.dart';
-import 'register_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -144,24 +143,12 @@ class _LoginPageState extends State<LoginPage> {
                               : const Text('Ingresar'),
                         ),
                       ),
-                      const SizedBox(height: 12),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                                builder: (_) => const ForgotPasswordPage()),
-                          );
-                        },
-                        child: const Text('¿Olvidaste tu contraseña?'),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                                builder: (_) => const RegisterPage()),
-                          );
-                        },
-                        child: const Text('Registrarse'),
+                      const SizedBox(height: 8),
+                      Text(
+                        AppVersion.displayVersion,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: Colors.grey,
+                            ),
                       ),
                     ],
                   ),
